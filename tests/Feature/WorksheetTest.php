@@ -59,4 +59,17 @@ class WorksheetTest extends TestCase
         $response->assertSee('Worksheet Submitted!');
         $response->assertSee($submission->token);
     }
+
+    public function test_pdf_export_downloads_valid_pdf_stream(): void
+    {
+        $payload = [
+            's1_recruitment_high' => 'Great mobilization',
+            's8_one_word' => 'Empowered',
+        ];
+
+        $response = $this->post('/export-pdf', $payload);
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/pdf');
+    }
 }

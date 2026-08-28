@@ -1,5 +1,3 @@
-import html2pdf from 'html2pdf.js';
-
 const TOTAL_STEPS = 10;
 let currentStep = 0;
 const STORAGE_KEY = 'DOT_COHORT1_WORKSHEET_ANONYMOUS_V3';
@@ -444,80 +442,56 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-// High fidelity Structured PDF Generation
+// 100% Reliable PDF Generation & Direct Download
 export function exportToPdf() {
   saveData();
-  showToast('Preparing clean anonymous PDF report...', 'info');
+  showToast('Generating official PDF download...', 'info');
 
-  // Populate meta dates
-  const dateString = new Date().toLocaleDateString();
-  const pdfMetaDate = document.getElementById('pdf-meta-date');
-  const pdfTimestamp = document.getElementById('pdf-timestamp');
-  if (pdfMetaDate) pdfMetaDate.innerText = dateString;
-  if (pdfTimestamp) pdfTimestamp.innerText = 'Generated: ' + new Date().toLocaleString();
+  const mainForm = document.getElementById('worksheet-form');
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-  // Populate response fields
-  formFields.forEach(id => {
-    const target = document.getElementById(`pdf_${id}`);
-    if (target) {
-      const src = document.getElementById(id);
-      if (src) {
-        target.innerText = src.value.trim() || '-- (No response entered)';
+  // Build a standard form submission for direct HTTP file download
+  const exportForm = document.createElement('form');
+  exportForm.method = 'POST';
+  exportForm.action = '/export-pdf';
+  exportForm.target = '_self';
+  exportForm.style.display = 'none';
+
+  // Add CSRF token
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = '_token';
+  csrfInput.value = csrfToken || '';
+  exportForm.appendChild(csrfInput);
+
+  // Copy all field values
+  formFields.forEach(field => {
+    const el = document.getElementById(field);
+    let val = '';
+    if (el) {
+      val = el.value;
+    } else {
+      const radios = document.getElementsByName(field);
+      for (const r of radios) {
+        if (r.checked) {
+          val = r.value;
+          break;
+        }
       }
     }
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = field;
+    input.value = val;
+    exportForm.appendChild(input);
   });
 
-  // Radio response
-  const radioChecked = document.querySelector('input[name="s4_safeguarding_accessible"]:checked');
-  const targetRadio = document.getElementById('pdf_s4_safeguarding_accessible');
-  if (targetRadio) {
-    targetRadio.innerText = radioChecked ? radioChecked.value : '-- (Not selected)';
-  }
-
-  const printableElement = document.getElementById('pdf-printable-template');
-  if (!printableElement) {
-    console.error('PDF template element #pdf-printable-template not found');
-    showToast('PDF template error. Falling back to print...', 'error');
-    window.print();
-    return;
-  }
-
-  const filename = `Cohort1_Anonymous_Reflection_${Date.now()}.pdf`;
-
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      useCORS: true, 
-      letterRendering: true, 
-      logging: false,
-      scrollY: 0,
-      windowWidth: 794
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { 
-      mode: ['css', 'legacy'],
-      before: '.pdf-page-break-before',
-      after: '.pdf-page-break-after',
-      avoid: ['.pdf-avoid-break', 'tr', '.pdf-section']
-    }
-  };
-
-  const pdfGen = typeof html2pdf === 'function' ? html2pdf : (window.html2pdf || null);
-
-  if (pdfGen) {
-    pdfGen().set(opt).from(printableElement).save().then(() => {
-      showToast('Anonymous PDF downloaded successfully!', 'success');
-    }).catch(err => {
-      console.error('PDF export failed:', err);
-      showToast('Failed to generate PDF. Falling back to print...', 'error');
-      window.print();
-    });
-  } else {
-    window.print();
-  }
+  document.body.appendChild(exportForm);
+  exportForm.submit();
+  setTimeout(() => {
+    exportForm.remove();
+  }, 2000);
 }
 
 // Server submission (optional online sync)
@@ -604,7 +578,6 @@ export function showToast(message, type = 'success') {
 }
 
 // Assign globally to window for BOTH window.worksheet.* and direct function calls
-window.html2pdf = html2pdf;
 window.goToStep = goToStep;
 window.nextStep = nextStep;
 window.prevStep = prevStep;
