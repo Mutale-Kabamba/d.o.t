@@ -596,12 +596,14 @@ export function showToast(message, type = 'success') {
   if (!toast || !msg) return;
 
   msg.innerText = message;
-  if (type === 'error') {
-    icon.className = 'w-4 h-4 text-rose-400';
-  } else if (type === 'info') {
-    icon.className = 'w-4 h-4 text-sky-400';
-  } else {
-    icon.className = 'w-4 h-4 text-emerald-400';
+  if (icon) {
+    if (type === 'error') {
+      icon.setAttribute('class', 'w-4 h-4 text-rose-400');
+    } else if (type === 'info') {
+      icon.setAttribute('class', 'w-4 h-4 text-sky-400');
+    } else {
+      icon.setAttribute('class', 'w-4 h-4 text-emerald-400');
+    }
   }
 
   toast.classList.remove('translate-y-20', 'opacity-0');
