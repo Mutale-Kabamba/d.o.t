@@ -40,13 +40,16 @@
   -webkit-backdrop-filter: blur(14px);
 }
 
-/* Offscreen container for PDF rendering */
+/* Offscreen container for PDF rendering - positioned in view for html2canvas but transparent and below content */
 #pdf-render-zone {
-  position: absolute;
-  left: -9999px;
+  position: fixed;
+  left: 0;
   top: 0;
   width: 794px; /* Exact standard A4 width at 96 DPI */
   background: #ffffff;
+  z-index: -9999;
+  opacity: 0.001;
+  pointer-events: none;
 }
 
 /* Print & PDF Page Break Rules */

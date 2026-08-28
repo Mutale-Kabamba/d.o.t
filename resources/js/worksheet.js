@@ -1,3 +1,5 @@
+import html2pdf from 'html2pdf.js';
+
 const TOTAL_STEPS = 10;
 let currentStep = 0;
 const STORAGE_KEY = 'DOT_COHORT1_WORKSHEET_ANONYMOUS_V3';
@@ -37,6 +39,7 @@ export function initWorksheet() {
   buildNavigations();
   loadSavedData();
   setupAutoSave();
+  setupButtonListeners();
 
   const savedStep = localStorage.getItem(CURRENT_STEP_KEY);
   if (savedStep !== null) {
@@ -53,13 +56,40 @@ export function initWorksheet() {
   updateProgress();
 }
 
+// Attach direct event listeners to static buttons
+export function setupButtonListeners() {
+  document.querySelectorAll('[data-action="next"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); nextStep(); });
+  });
+
+  document.querySelectorAll('[data-action="prev"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); prevStep(); });
+  });
+
+  document.querySelectorAll('[data-action="export-pdf"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); exportToPdf(); });
+  });
+
+  document.querySelectorAll('[data-action="reset"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); openResetModal(); });
+  });
+
+  document.querySelectorAll('[data-action="toggle-drawer"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); toggleMobileStepDrawer(); });
+  });
+
+  document.querySelectorAll('[data-action="submit-server"]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.preventDefault(); submitToServer(); });
+  });
+}
+
 // Build responsive navigation items
 export function buildNavigations() {
   // Desktop Stepper
   const desktopNav = document.getElementById('stepper-list');
   if (desktopNav) {
     desktopNav.innerHTML = stepDefinitions.map(s => `
-      <button type="button" onclick="window.worksheet.goToStep(${s.id})" class="step-nav-btn w-full text-left p-2.5 sm:p-3 rounded-xl transition flex items-center gap-3 text-xs font-medium group" data-step="${s.id}">
+      <button type="button" onclick="goToStep(${s.id})" class="step-nav-btn w-full text-left p-2.5 sm:p-3 rounded-xl transition flex items-center gap-3 text-xs font-medium group cursor-pointer" data-step="${s.id}">
         <div class="step-badge w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-100 text-slate-600 group-hover:bg-brand-100 group-hover:text-brand-700">${s.id === 0 ? '★' : (s.id === 9 ? '✓' : s.id)}</div>
         <div class="flex-1 truncate">
           <span class="block font-semibold text-slate-800">${s.title}</span>
@@ -73,7 +103,7 @@ export function buildNavigations() {
   const mobileChips = document.getElementById('mobile-chips-container');
   if (mobileChips) {
     mobileChips.innerHTML = stepDefinitions.map(s => `
-      <button type="button" onclick="window.worksheet.goToStep(${s.id})" class="mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 border" data-step="${s.id}">
+      <button type="button" onclick="goToStep(${s.id})" class="mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 border cursor-pointer" data-step="${s.id}">
         ${s.id === 0 ? 'Intro' : `${s.id}: ${s.title}`}
       </button>
     `).join('');
@@ -83,7 +113,7 @@ export function buildNavigations() {
   const mobileDrawer = document.getElementById('mobile-drawer-list');
   if (mobileDrawer) {
     mobileDrawer.innerHTML = stepDefinitions.map(s => `
-      <button type="button" onclick="window.worksheet.goToStep(${s.id}); window.worksheet.toggleMobileStepDrawer();" class="drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs font-medium" data-step="${s.id}">
+      <button type="button" onclick="goToStep(${s.id}); toggleMobileStepDrawer();" class="drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs font-medium cursor-pointer" data-step="${s.id}">
         <div class="step-badge w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs bg-slate-100 text-slate-700">${s.id === 0 ? '★' : (s.id === 9 ? '✓' : s.id)}</div>
         <div class="flex-1 truncate">
           <span class="block font-bold text-slate-800 text-sm">${s.title}</span>
@@ -144,10 +174,10 @@ export function updateStepperUI() {
   document.querySelectorAll('.mobile-chip-btn').forEach(chip => {
     const step = parseInt(chip.getAttribute('data-step'), 10);
     if (step === currentStep) {
-      chip.className = 'mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 bg-brand-600 text-white border-brand-600 shadow-xs';
+      chip.className = 'mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 bg-brand-600 text-white border-brand-600 shadow-xs cursor-pointer';
       chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     } else {
-      chip.className = 'mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 bg-white text-slate-600 border-slate-200 hover:bg-slate-100';
+      chip.className = 'mobile-chip-btn whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition shrink-0 bg-white text-slate-600 border-slate-200 hover:bg-slate-100 cursor-pointer';
     }
   });
 
@@ -155,9 +185,9 @@ export function updateStepperUI() {
   document.querySelectorAll('.drawer-step-btn').forEach(btn => {
     const step = parseInt(btn.getAttribute('data-step'), 10);
     if (step === currentStep) {
-      btn.className = 'drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs bg-brand-50 border border-brand-200 text-brand-900 font-bold';
+      btn.className = 'drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs bg-brand-50 border border-brand-200 text-brand-900 font-bold cursor-pointer';
     } else {
-      btn.className = 'drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs text-slate-700 hover:bg-slate-50';
+      btn.className = 'drawer-step-btn w-full text-left p-3 rounded-xl transition flex items-center gap-3 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer';
     }
   });
 
@@ -445,6 +475,13 @@ export function exportToPdf() {
   }
 
   const printableElement = document.getElementById('pdf-printable-template');
+  if (!printableElement) {
+    console.error('PDF template element #pdf-printable-template not found');
+    showToast('PDF template error. Falling back to print...', 'error');
+    window.print();
+    return;
+  }
+
   const filename = `Cohort1_Anonymous_Reflection_${Date.now()}.pdf`;
 
   const opt = {
@@ -456,7 +493,8 @@ export function exportToPdf() {
       useCORS: true, 
       letterRendering: true, 
       logging: false,
-      scrollY: 0
+      scrollY: 0,
+      windowWidth: 794
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { 
@@ -467,12 +505,15 @@ export function exportToPdf() {
     }
   };
 
-  if (typeof html2pdf === 'function') {
-    html2pdf().set(opt).from(printableElement).save().then(() => {
+  const pdfGen = typeof html2pdf === 'function' ? html2pdf : (window.html2pdf || null);
+
+  if (pdfGen) {
+    pdfGen().set(opt).from(printableElement).save().then(() => {
       showToast('Anonymous PDF downloaded successfully!', 'success');
     }).catch(err => {
       console.error('PDF export failed:', err);
-      showToast('Failed to generate PDF. Please try again.', 'error');
+      showToast('Failed to generate PDF. Falling back to print...', 'error');
+      window.print();
     });
   } else {
     window.print();
@@ -562,7 +603,21 @@ export function showToast(message, type = 'success') {
   }, 3500);
 }
 
-// Bind to window for HTML inline calls
+// Assign globally to window for BOTH window.worksheet.* and direct function calls
+window.html2pdf = html2pdf;
+window.goToStep = goToStep;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.toggleMobileStepDrawer = toggleMobileStepDrawer;
+window.saveData = saveData;
+window.exportToPdf = exportToPdf;
+window.submitToServer = submitToServer;
+window.openResetModal = openResetModal;
+window.closeResetModal = closeResetModal;
+window.confirmReset = confirmReset;
+window.showToast = showToast;
+window.renderReviewSummary = renderReviewSummary;
+
 window.worksheet = {
   initWorksheet,
   goToStep,
@@ -575,5 +630,6 @@ window.worksheet = {
   openResetModal,
   closeResetModal,
   confirmReset,
-  showToast
+  showToast,
+  renderReviewSummary
 };

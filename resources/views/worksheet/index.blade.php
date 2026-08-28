@@ -37,14 +37,14 @@
           </div>
 
           <!-- Reset Button -->
-          <button type="button" onclick="window.worksheet.openResetModal()" title="Reset Worksheet" class="p-2 sm:p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100 active:scale-95">
+          <button type="button" data-action="reset" onclick="openResetModal()" title="Reset Worksheet" class="p-2 sm:p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100 active:scale-95 cursor-pointer">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
 
           <!-- Download PDF Button -->
-          <button type="button" onclick="window.worksheet.exportToPdf()" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition shadow-sm active:scale-95">
+          <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl transition shadow-sm active:scale-95 cursor-pointer">
             <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -65,7 +65,7 @@
         <span id="mobile-step-title" class="text-[11px] font-bold text-slate-700 truncate font-display">Introduction &amp; Overview</span>
         <div class="flex items-center gap-1.5 shrink-0">
           <span id="mobile-progress-badge" class="text-[10px] font-extrabold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-md border border-brand-200">0%</span>
-          <button type="button" onclick="window.worksheet.toggleMobileStepDrawer()" class="text-[11px] text-brand-600 font-bold px-2 py-0.5 rounded hover:bg-brand-50">View All</button>
+          <button type="button" data-action="toggle-drawer" onclick="toggleMobileStepDrawer()" class="text-[11px] text-brand-600 font-bold px-2 py-0.5 rounded hover:bg-brand-50 cursor-pointer">View All</button>
         </div>
       </div>
       <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="mobile-chips-container">
@@ -459,13 +459,13 @@
               <p class="text-xs sm:text-sm text-slate-500 mt-1">Review your feedback summary below before downloading your official PDF copy.</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-2">
-              <button type="button" onclick="window.worksheet.submitToServer()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95">
+              <button type="button" data-action="submit-server" onclick="submitToServer()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 <span>Submit Anonymously</span>
               </button>
-              <button type="button" onclick="window.worksheet.exportToPdf()" class="inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-brand-500/20 active:scale-95">
+              <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-brand-500/20 active:scale-95 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
@@ -482,7 +482,7 @@
 
         <!-- Desktop & In-Flow Nav Footer -->
         <div class="hidden lg:flex items-center justify-between pt-2">
-          <button type="button" id="prev-btn" onclick="window.worksheet.prevStep()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+          <button type="button" id="prev-btn" data-action="prev" onclick="prevStep()" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -493,7 +493,7 @@
             <span id="step-indicator" class="text-xs font-semibold text-slate-400">Step 1 of 10</span>
           </div>
 
-          <button type="button" id="next-btn" onclick="window.worksheet.nextStep()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition shadow-sm active:scale-95">
+          <button type="button" id="next-btn" data-action="next" onclick="nextStep()" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition shadow-sm active:scale-95 cursor-pointer">
             <span id="next-btn-text">Get Started</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -507,14 +507,14 @@
   <!-- Mobile Sticky Bottom Navigation Bar (Visible below lg) -->
   <div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 shadow-lg">
     <div class="max-w-md mx-auto flex items-center justify-between gap-3">
-      <button type="button" id="mobile-prev-btn" onclick="window.worksheet.prevStep()" class="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 active:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition disabled:opacity-30 disabled:pointer-events-none">
+      <button type="button" id="mobile-prev-btn" data-action="prev" onclick="prevStep()" class="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 active:bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
         <span>Back</span>
       </button>
 
-      <button type="button" id="mobile-next-btn" onclick="window.worksheet.nextStep()" class="flex-[2] py-2.5 px-4 rounded-xl bg-brand-600 active:bg-brand-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+      <button type="button" id="mobile-next-btn" data-action="next" onclick="nextStep()" class="flex-[2] py-2.5 px-4 rounded-xl bg-brand-600 active:bg-brand-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition cursor-pointer">
         <span id="mobile-next-btn-text">Get Started</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -531,7 +531,7 @@
           <h3 class="text-sm font-bold text-slate-900 font-display">Worksheet Outline</h3>
           <p class="text-xs text-slate-500">Jump directly to any section</p>
         </div>
-        <button type="button" onclick="window.worksheet.toggleMobileStepDrawer()" class="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
+        <button type="button" data-action="toggle-drawer" onclick="toggleMobileStepDrawer()" class="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -557,8 +557,8 @@
         <p class="text-xs sm:text-sm text-slate-500 mt-1">This will erase your saved draft from this device's memory. This action cannot be undone.</p>
       </div>
       <div class="flex items-center justify-end gap-2.5 pt-2">
-        <button type="button" onclick="window.worksheet.closeResetModal()" class="px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">Cancel</button>
-        <button type="button" onclick="window.worksheet.confirmReset()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition shadow-sm">Yes, Clear All</button>
+        <button type="button" onclick="closeResetModal()" class="px-3.5 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer">Cancel</button>
+        <button type="button" onclick="confirmReset()" class="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition shadow-sm cursor-pointer">Yes, Clear All</button>
       </div>
     </div>
   </div>
