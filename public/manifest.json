@@ -1,0 +1,17 @@
+{
+  "name": "Anonymous Reflection & Action Worksheet",
+  "short_name": "DOT Worksheet",
+  "description": "Cohort Review & Planning: Anonymous Participant Reflection & Action Worksheet for Digital Opportunity Trust",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
