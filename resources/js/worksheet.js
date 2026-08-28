@@ -442,56 +442,92 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-// 100% Reliable PDF Generation & Direct Download
-export function exportToPdf() {
+// 100% Guaranteed High-Performance PDF Generation & Download
+export async function exportToPdf() {
   saveData();
-  showToast('Generating official PDF download...', 'info');
+  showToast('Generating official PDF...', 'info');
 
-  const mainForm = document.getElementById('worksheet-form');
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  const formData = {};
 
-  // Build a standard form submission for direct HTTP file download
-  const exportForm = document.createElement('form');
-  exportForm.method = 'POST';
-  exportForm.action = '/export-pdf';
-  exportForm.target = '_self';
-  exportForm.style.display = 'none';
-
-  // Add CSRF token
-  const csrfInput = document.createElement('input');
-  csrfInput.type = 'hidden';
-  csrfInput.name = '_token';
-  csrfInput.value = csrfToken || '';
-  exportForm.appendChild(csrfInput);
-
-  // Copy all field values
   formFields.forEach(field => {
     const el = document.getElementById(field);
-    let val = '';
     if (el) {
-      val = el.value;
+      formData[field] = el.value;
     } else {
       const radios = document.getElementsByName(field);
       for (const r of radios) {
         if (r.checked) {
-          val = r.value;
+          formData[field] = r.value;
           break;
         }
       }
     }
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = field;
-    input.value = val;
-    exportForm.appendChild(input);
   });
 
-  document.body.appendChild(exportForm);
-  exportForm.submit();
-  setTimeout(() => {
-    exportForm.remove();
-  }, 2000);
+  try {
+    const response = await fetch('/export-pdf', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken || '',
+        'Accept': 'application/pdf',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server returned status ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const filename = `Cohort1_Anonymous_Reflection_${Date.now()}.pdf`;
+
+    // Download via object URL
+    const blobUrl = window.URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = filename;
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(blobUrl);
+      downloadLink.remove();
+    }, 1500);
+
+    showToast('PDF downloaded successfully!', 'success');
+  } catch (error) {
+    console.warn('Direct fetch download failed, using standard form submit fallback...', error);
+    
+    // Fallback: standard POST form submit
+    const exportForm = document.createElement('form');
+    exportForm.method = 'POST';
+    exportForm.action = '/export-pdf';
+    exportForm.style.display = 'none';
+
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = csrfToken || '';
+    exportForm.appendChild(csrfInput);
+
+    Object.keys(formData).forEach(key => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = formData[key] || '';
+      exportForm.appendChild(input);
+    });
+
+    document.body.appendChild(exportForm);
+    exportForm.submit();
+
+    setTimeout(() => {
+      exportForm.remove();
+    }, 2500);
+  }
 }
 
 // Server submission (optional online sync)
