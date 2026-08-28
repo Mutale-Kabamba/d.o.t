@@ -204,8 +204,22 @@ export function updateStepperUI() {
   // Prev/Next buttons
   const prevBtn = document.getElementById('prev-btn');
   const mobilePrevBtn = document.getElementById('mobile-prev-btn');
-  if (prevBtn) prevBtn.disabled = currentStep === 0;
-  if (mobilePrevBtn) mobilePrevBtn.disabled = currentStep === 0;
+  
+  if (prevBtn) {
+    if (currentStep === 0) {
+      prevBtn.classList.add('hidden');
+    } else {
+      prevBtn.classList.remove('hidden');
+    }
+  }
+
+  if (mobilePrevBtn) {
+    if (currentStep === 0) {
+      mobilePrevBtn.classList.add('hidden');
+    } else {
+      mobilePrevBtn.classList.remove('hidden');
+    }
+  }
 
   const nextBtnText = document.getElementById('next-btn-text');
   const mobileNextBtnText = document.getElementById('mobile-next-btn-text');

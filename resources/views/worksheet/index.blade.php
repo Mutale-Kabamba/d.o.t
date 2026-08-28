@@ -465,18 +465,18 @@
               <h2 class="text-lg sm:text-2xl font-extrabold text-slate-900 font-display mt-0.5">Review Anonymous Responses</h2>
               <p class="text-xs sm:text-sm text-slate-500 mt-1">Review your feedback summary below before downloading your official PDF copy.</p>
             </div>
-            <div class="flex flex-col sm:flex-row gap-2">
-              <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-xs active:scale-95 cursor-pointer">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow-xs active:scale-95 cursor-pointer whitespace-nowrap">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>Download PDF Only</span>
+                <span>PDF Only</span>
               </button>
-              <button type="button" data-action="submit-server" onclick="submitToServer()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer group">
-                <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button type="button" data-action="submit-server" onclick="submitToServer()" class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow-sm shadow-emerald-500/20 active:scale-95 cursor-pointer group whitespace-nowrap">
+                <svg class="w-3.5 h-3.5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Submit and Download Official PDF</span>
+                <span>Submit &amp; Download PDF</span>
                 <span class="group-hover:translate-x-0.5 transition-transform font-black text-emerald-200">&raquo;</span>
               </button>
             </div>
