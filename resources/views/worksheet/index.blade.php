@@ -36,6 +36,13 @@
             <span id="save-status-text">Draft auto-saved</span>
           </div>
 
+          <!-- Admin Dashboard Button -->
+          <a href="{{ route('admin.submissions.index') }}" title="Admin Dashboard" class="p-2 sm:p-2.5 text-slate-400 hover:text-brand-700 hover:bg-brand-50 rounded-xl transition-colors border border-transparent hover:border-brand-100 active:scale-95 cursor-pointer">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </a>
+
           <!-- Reset Button -->
           <button type="button" data-action="reset" onclick="openResetModal()" title="Reset Worksheet" class="p-2 sm:p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent hover:border-rose-100 active:scale-95 cursor-pointer">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,17 +466,18 @@
               <p class="text-xs sm:text-sm text-slate-500 mt-1">Review your feedback summary below before downloading your official PDF copy.</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-2">
-              <button type="button" data-action="submit-server" onclick="submitToServer()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-xs active:scale-95 cursor-pointer">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Download PDF Only</span>
+              </button>
+              <button type="button" data-action="submit-server" onclick="submitToServer()" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer group">
+                <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
-                <span>Submit Anonymously</span>
-              </button>
-              <button type="button" data-action="export-pdf" onclick="exportToPdf()" class="inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-brand-500/20 active:scale-95 cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>Download Official PDF</span>
+                <span>Submit and Download Official PDF</span>
+                <span class="group-hover:translate-x-0.5 transition-transform font-black text-emerald-200">&raquo;</span>
               </button>
             </div>
           </div>

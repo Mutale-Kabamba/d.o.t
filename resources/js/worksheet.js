@@ -216,7 +216,7 @@ export function updateStepperUI() {
   } else if (currentStep === TOTAL_STEPS - 2) {
     label = 'Review Summary';
   } else if (currentStep === TOTAL_STEPS - 1) {
-    label = 'Download PDF';
+    label = 'Submit and Download Official PDF »';
   }
 
   if (nextBtnText) nextBtnText.innerText = label;
@@ -225,7 +225,7 @@ export function updateStepperUI() {
 
 export function nextStep() {
   if (currentStep === TOTAL_STEPS - 1) {
-    exportToPdf();
+    submitToServer();
     return;
   }
   goToStep(currentStep + 1);
@@ -530,14 +530,14 @@ export async function exportToPdf() {
   }
 }
 
-// Server submission (optional online sync)
+// Server submission with instant official PDF download
 export async function submitToServer() {
   saveData();
   const form = document.getElementById('worksheet-form');
   const formData = new FormData(form);
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-  showToast('Submitting anonymous responses...', 'info');
+  showToast('Submitting responses & generating PDF...', 'info');
 
   try {
     const res = await fetch('/submit', {
@@ -551,9 +551,26 @@ export async function submitToServer() {
 
     const result = await res.json();
     if (result.success) {
-      showToast('Worksheet successfully submitted!', 'success');
+      showToast('Worksheet submitted! Downloading official PDF...', 'success');
+      
+      // Trigger PDF download with token
+      if (result.token) {
+        const downloadUrl = `/download-pdf/${result.token}`;
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `DOT_Cohort1_Anonymous_Reflection_${result.token}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 1200);
+      } else {
+        exportToPdf();
+      }
+
+      // Smooth transition to receipt confirmation page
       if (result.redirect_url) {
-        window.location.href = result.redirect_url;
+        setTimeout(() => {
+          window.location.href = result.redirect_url;
+        }, 1500);
       }
     } else {
       showToast('Submission error. Please try again.', 'error');
