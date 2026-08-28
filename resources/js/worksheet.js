@@ -17,20 +17,46 @@ const stepDefinitions = [
   { id: 9, title: 'Review & PDF', subtitle: 'Summary & Export' }
 ];
 
-// Form fields
-const formFields = [
-  's1_recruitment_high', 's1_recruitment_challenges',
-  's1_grad_high', 's1_grad_challenges',
-  's1_bds_high', 's1_bds_challenges',
-  's2_ops_comm', 's2_host_criteria', 's2_reporting_fixes',
-  's3_pacra_strategy', 's3_market_access',
-  's4_household_buyin', 's4_safeguarding_accessible', 's4_safeguarding_details',
-  's5_recruitment_walkthroughs', 's5_finance_stipends',
-  's6_yl_transition',
-  's7_skills_gained', 's7_mindset_shift', 's7_action_taken',
-  's8_top_worked', 's8_top_barriers',
-  's8_change_one_thing', 's8_one_word', 's8_final_message'
+// All mandatory questions with labels, sections, and steps
+const fieldDefinitions = [
+  // Section 1 (Step 1)
+  { id: 's1_recruitment_high', step: 1, section: '1. Journey Mapping', label: 'Recruitment Highs & Successes' },
+  { id: 's1_recruitment_challenges', step: 1, section: '1. Journey Mapping', label: 'Recruitment Challenges & Bottlenecks' },
+  { id: 's1_grad_high', step: 1, section: '1. Journey Mapping', label: 'Graduation Highs & Successes' },
+  { id: 's1_grad_challenges', step: 1, section: '1. Journey Mapping', label: 'Graduation Challenges & Bottlenecks' },
+  { id: 's1_bds_high', step: 1, section: '1. Journey Mapping', label: 'BDS Support Highs' },
+  { id: 's1_bds_challenges', step: 1, section: '1. Journey Mapping', label: 'BDS Support Challenges' },
+  // Section 2 (Step 2)
+  { id: 's2_ops_comm', step: 2, section: '2. Operations & Placements', label: 'Operational & Communication Hurdles' },
+  { id: 's2_host_criteria', step: 2, section: '2. Operations & Placements', label: 'Host Organization Criteria' },
+  { id: 's2_reporting_fixes', step: 2, section: '2. Operations & Placements', label: 'Standardized Reporting Fixes' },
+  // Section 3 (Step 3)
+  { id: 's3_pacra_strategy', step: 3, section: '3. PACRA 50% Target', label: 'Strategy for 50% PACRA Goal' },
+  { id: 's3_market_access', step: 3, section: '3. PACRA 50% Target', label: 'BDS Linkages & Market Access' },
+  // Section 4 (Step 4)
+  { id: 's4_household_buyin', step: 4, section: '4. Community & Safeguarding', label: 'Household Buy-In & Retention' },
+  { id: 's4_safeguarding_accessible', step: 4, section: '4. Community & Safeguarding', label: 'Safeguarding Channels Accessible' },
+  { id: 's4_safeguarding_details', step: 4, section: '4. Community & Safeguarding', label: 'Safeguarding Protocols & Inclusion' },
+  // Section 5 (Step 5)
+  { id: 's5_recruitment_walkthroughs', step: 5, section: '5. Finance & Recruitment', label: 'Market Walk-Through Strategy' },
+  { id: 's5_finance_stipends', step: 5, section: '5. Finance & Recruitment', label: 'Financial Processes & Stipends' },
+  // Section 6 (Step 6)
+  { id: 's6_yl_transition', step: 6, section: '6. Youth Leader Transition', label: 'Transition Barriers & Linkages' },
+  // Section 7 (Step 7)
+  { id: 's7_skills_gained', step: 7, section: '7. Personal & Mindset Impact', label: 'Skills Gained' },
+  { id: 's7_mindset_shift', step: 7, section: '7. Personal & Mindset Impact', label: 'Mindset & Confidence Shift' },
+  { id: 's7_action_taken', step: 7, section: '7. Personal & Mindset Impact', label: 'Action Taken in Community' },
+  // Section 8 (Step 8)
+  { id: 's8_top_worked', step: 8, section: '8. Summary Recommendations', label: 'Top Things That Worked Well' },
+  { id: 's8_top_barriers', step: 8, section: '8. Summary Recommendations', label: 'Top Challenges & Barriers' },
+  { id: 's8_change_one_thing', step: 8, section: '8. Summary Recommendations', label: 'Change ONE Thing for Next Cohort' },
+  { id: 's8_one_word', step: 8, section: '8. Summary Recommendations', label: 'One Word Feeling' },
+  { id: 's8_final_message', step: 8, section: '8. Summary Recommendations', label: 'Final Message for YSO / DOT' }
 ];
+
+const formFields = fieldDefinitions.map(f => f.id);
+
+let currentMissingFields = [];
 
 // Initialize DOM
 export function initWorksheet() {
@@ -122,7 +148,7 @@ export function buildNavigations() {
   }
 }
 
-// Step Switcher
+// Step Switcher (Users can freely jump to any step)
 export function goToStep(stepIndex) {
   if (stepIndex < 0 || stepIndex >= TOTAL_STEPS) return;
 
@@ -201,7 +227,7 @@ export function updateStepperUI() {
     desktopStepInd.innerText = currentStep === 0 ? 'Welcome & Intro' : `Step ${currentStep + 1} of ${TOTAL_STEPS}`;
   }
 
-  // Prev/Next buttons
+  // Prev/Next buttons - Hide Back on Step 0
   const prevBtn = document.getElementById('prev-btn');
   const mobilePrevBtn = document.getElementById('mobile-prev-btn');
   
@@ -324,6 +350,101 @@ export function setupAutoSave() {
   }
 }
 
+// Check for missing mandatory questions
+export function getMissingFields() {
+  const missing = [];
+  
+  fieldDefinitions.forEach(field => {
+    let value = '';
+    const el = document.getElementById(field.id);
+    if (el) {
+      value = el.value.trim();
+    } else {
+      const radios = document.getElementsByName(field.id);
+      for (const r of radios) {
+        if (r.checked) {
+          value = r.value.trim();
+          break;
+        }
+      }
+    }
+
+    if (!value) {
+      missing.push(field);
+    }
+  });
+
+  return missing;
+}
+
+// Show Mandatory Validation Alert
+export function showValidationModal(missing) {
+  currentMissingFields = missing;
+  const modal = document.getElementById('validation-modal');
+  const listContainer = document.getElementById('missing-fields-list');
+  const badge = document.getElementById('missing-count-badge');
+
+  if (!modal || !listContainer) return;
+
+  if (badge) {
+    badge.innerText = `${missing.length} Item${missing.length > 1 ? 's' : ''} Missing`;
+  }
+
+  listContainer.innerHTML = missing.map(f => `
+    <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-rose-100 hover:border-rose-300 transition text-xs">
+      <div class="truncate mr-2">
+        <span class="font-bold text-slate-800 block text-[11px]">${f.section}</span>
+        <span class="text-rose-600 text-[11px] truncate block">&bull; ${f.label}</span>
+      </div>
+      <button type="button" onclick="jumpToField(${f.step}, '${f.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[11px] rounded-lg transition shrink-0 cursor-pointer">
+        Complete &rarr;
+      </button>
+    </div>
+  `).join('');
+
+  modal.classList.remove('hidden');
+}
+
+export function closeValidationModal() {
+  const modal = document.getElementById('validation-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+export function fixFirstMissingField() {
+  if (currentMissingFields.length > 0) {
+    const first = currentMissingFields[0];
+    jumpToField(first.step, first.id);
+  } else {
+    closeValidationModal();
+  }
+}
+
+export function jumpToField(step, fieldId) {
+  closeValidationModal();
+  goToStep(step);
+  
+  setTimeout(() => {
+    const el = document.getElementById(fieldId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.focus();
+      el.classList.add('ring-2', 'ring-rose-500', 'border-rose-500');
+      setTimeout(() => {
+        el.classList.remove('ring-2', 'ring-rose-500', 'border-rose-500');
+      }, 3500);
+    } else {
+      const radioContainer = document.getElementsByName(fieldId)[0]?.closest('.space-y-2');
+      if (radioContainer) {
+        radioContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        radioContainer.classList.add('ring-2', 'ring-rose-500', 'p-2', 'rounded-xl');
+        setTimeout(() => {
+          radioContainer.classList.remove('ring-2', 'ring-rose-500', 'p-2', 'rounded-xl');
+        }, 3500);
+      }
+    }
+  }, 350);
+}
+
 export function updateProgress() {
   let filled = 0;
   let total = formFields.length;
@@ -353,95 +474,121 @@ export function updateProgress() {
   if (mobileBadge) mobileBadge.innerText = `${percentage}%`;
 }
 
-// Dynamic Review Summary
+// Dynamic Review Summary with Incomplete/Complete Badges
 export function renderReviewSummary() {
   const container = document.getElementById('review-container');
   if (!container) return;
 
+  const missing = getMissingFields();
+  const isComplete = missing.length === 0;
+
   let html = `
-    <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 flex items-center justify-between">
+    <div class="${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
       <div class="flex items-center gap-2">
-        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        <svg class="w-5 h-5 ${isComplete ? 'text-emerald-600' : 'text-amber-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isComplete ? 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' : 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'}" />
         </svg>
-        <span class="text-xs font-bold text-emerald-900">Anonymous Submission (No identifying profile collected)</span>
+        <div>
+          <span class="text-xs font-bold ${isComplete ? 'text-emerald-900' : 'text-amber-900'} block">
+            ${isComplete ? 'All Mandatory Sections Completed!' : 'Your Feedback Matters, Say Something'}
+          </span>
+          <span class="text-[11px] ${isComplete ? 'text-emerald-700' : 'text-amber-700'}">
+            ${isComplete ? 'Ready to submit anonymously & download official PDF receipt.' : `${missing.length} question${missing.length > 1 ? 's' : ''} left out. Complete all questions to enable submit/download.`}
+          </span>
+        </div>
       </div>
-      <span class="text-[11px] text-emerald-700 font-medium">${new Date().toLocaleDateString()}</span>
+      <span class="text-[11px] ${isComplete ? 'text-emerald-700' : 'text-amber-800 font-bold'}">${new Date().toLocaleDateString()}</span>
     </div>
   `;
 
-  const addSection = (title, items) => {
+  const addSection = (title, items, step) => {
     let itemsHtml = '';
+    let sectionHasMissing = false;
+
     items.forEach(item => {
-      const val = item.value ? escapeHtml(item.value) : '<span class="text-slate-400 italic">No entry provided</span>';
+      const isMissing = !item.value || item.value.trim().length === 0;
+      if (isMissing) sectionHasMissing = true;
+
+      const val = !isMissing 
+        ? escapeHtml(item.value) 
+        : '<span class="text-rose-500 font-semibold italic">Left out (Mandatory response required)</span>';
+
       itemsHtml += `
         <div class="mt-2 text-xs">
-          <span class="font-bold text-slate-700 block text-[11px]">${item.label}:</span>
-          <p class="text-slate-600 bg-white p-2 sm:p-2.5 rounded-lg border border-slate-100 mt-0.5 whitespace-pre-wrap leading-relaxed">${val}</p>
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-700 block text-[11px]">${item.label}:</span>
+            ${isMissing ? `<button type="button" onclick="jumpToField(${step}, '${item.id}')" class="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer">Fill Now &rarr;</button>` : ''}
+          </div>
+          <p class="text-slate-600 bg-white p-2 sm:p-2.5 rounded-lg border ${isMissing ? 'border-rose-200 bg-rose-50/30' : 'border-slate-100'} mt-0.5 whitespace-pre-wrap leading-relaxed">${val}</p>
         </div>
       `;
     });
 
     return `
-      <div class="bg-slate-100/70 p-3 sm:p-4 rounded-xl border border-slate-200">
-        <h4 class="text-xs font-extrabold uppercase text-slate-800 tracking-wide">${title}</h4>
+      <div class="bg-slate-100/70 p-3 sm:p-4 rounded-xl border ${sectionHasMissing ? 'border-rose-200' : 'border-slate-200'}">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-extrabold uppercase text-slate-800 tracking-wide">${title}</h4>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${sectionHasMissing ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+            ${sectionHasMissing ? 'Incomplete' : 'Complete ✓'}
+          </span>
+        </div>
         ${itemsHtml}
       </div>
     `;
   };
 
   html += addSection("1. Journey Mapping", [
-    { label: "Recruitment - Highs", value: document.getElementById('s1_recruitment_high')?.value },
-    { label: "Recruitment - Challenges", value: document.getElementById('s1_recruitment_challenges')?.value },
-    { label: "Graduation - Highs", value: document.getElementById('s1_grad_high')?.value },
-    { label: "Graduation - Challenges", value: document.getElementById('s1_grad_challenges')?.value },
-    { label: "BDS - Highs", value: document.getElementById('s1_bds_high')?.value },
-    { label: "BDS - Challenges", value: document.getElementById('s1_bds_challenges')?.value }
-  ]);
+    { id: 's1_recruitment_high', label: "Recruitment - Highs", value: document.getElementById('s1_recruitment_high')?.value },
+    { id: 's1_recruitment_challenges', label: "Recruitment - Challenges", value: document.getElementById('s1_recruitment_challenges')?.value },
+    { id: 's1_grad_high', label: "Graduation - Highs", value: document.getElementById('s1_grad_high')?.value },
+    { id: 's1_grad_challenges', label: "Graduation - Challenges", value: document.getElementById('s1_grad_challenges')?.value },
+    { id: 's1_bds_high', label: "BDS - Highs", value: document.getElementById('s1_bds_high')?.value },
+    { id: 's1_bds_challenges', label: "BDS - Challenges", value: document.getElementById('s1_bds_challenges')?.value }
+  ], 1);
 
   html += addSection("2. Operations & Placements", [
-    { label: "Operational & Communication Hurdles", value: document.getElementById('s2_ops_comm')?.value },
-    { label: "Host Org Criteria & Placements", value: document.getElementById('s2_host_criteria')?.value },
-    { label: "Standardized Reporting Fixes", value: document.getElementById('s2_reporting_fixes')?.value }
-  ]);
+    { id: 's2_ops_comm', label: "Operational & Communication Hurdles", value: document.getElementById('s2_ops_comm')?.value },
+    { id: 's2_host_criteria', label: "Host Org Criteria & Placements", value: document.getElementById('s2_host_criteria')?.value },
+    { id: 's2_reporting_fixes', label: "Standardized Reporting Fixes", value: document.getElementById('s2_reporting_fixes')?.value }
+  ], 2);
 
   html += addSection("3. PACRA 50% Target & BDS", [
-    { label: "Strategy for 50% PACRA Goal", value: document.getElementById('s3_pacra_strategy')?.value },
-    { label: "BDS Linkages & Market Access", value: document.getElementById('s3_market_access')?.value }
-  ]);
+    { id: 's3_pacra_strategy', label: "Strategy for 50% PACRA Goal", value: document.getElementById('s3_pacra_strategy')?.value },
+    { id: 's3_market_access', label: "BDS Linkages & Market Access", value: document.getElementById('s3_market_access')?.value }
+  ], 3);
 
   let safeguardingVal = '';
   const radios = document.getElementsByName('s4_safeguarding_accessible');
   for (const r of radios) { if (r.checked) safeguardingVal = r.value; }
 
   html += addSection("4. Community & Safeguarding", [
-    { label: "Household Buy-In & Retention", value: document.getElementById('s4_household_buyin')?.value },
-    { label: "Safeguarding Accessible?", value: safeguardingVal },
-    { label: "Specific Safeguarding & Inclusion Protocols", value: document.getElementById('s4_safeguarding_details')?.value }
-  ]);
+    { id: 's4_household_buyin', label: "Household Buy-In & Retention", value: document.getElementById('s4_household_buyin')?.value },
+    { id: 's4_safeguarding_accessible', label: "Safeguarding Accessible?", value: safeguardingVal },
+    { id: 's4_safeguarding_details', label: "Specific Safeguarding & Inclusion Protocols", value: document.getElementById('s4_safeguarding_details')?.value }
+  ], 4);
 
   html += addSection("5. Recruitment Walk-Throughs & Finance", [
-    { label: "Market Walk-Through Strategy", value: document.getElementById('s5_recruitment_walkthroughs')?.value },
-    { label: "Financial Processes & Stipends", value: document.getElementById('s5_finance_stipends')?.value }
-  ]);
+    { id: 's5_recruitment_walkthroughs', label: "Market Walk-Through Strategy", value: document.getElementById('s5_recruitment_walkthroughs')?.value },
+    { id: 's5_finance_stipends', label: "Financial Processes & Stipends", value: document.getElementById('s5_finance_stipends')?.value }
+  ], 5);
 
   html += addSection("6. Youth Leader Transition", [
-    { label: "Barriers & Practical Linkages", value: document.getElementById('s6_yl_transition')?.value }
-  ]);
+    { id: 's6_yl_transition', label: "Barriers & Practical Linkages", value: document.getElementById('s6_yl_transition')?.value }
+  ], 6);
 
   html += addSection("7. Personal & Mindset Impact", [
-    { label: "Skills Gained", value: document.getElementById('s7_skills_gained')?.value },
-    { label: "Mindset / Confidence Shift", value: document.getElementById('s7_mindset_shift')?.value },
-    { label: "Action Taken in Community", value: document.getElementById('s7_action_taken')?.value }
-  ]);
+    { id: 's7_skills_gained', label: "Skills Gained", value: document.getElementById('s7_skills_gained')?.value },
+    { id: 's7_mindset_shift', label: "Mindset / Confidence Shift", value: document.getElementById('s7_mindset_shift')?.value },
+    { id: 's7_action_taken', label: "Action Taken in Community", value: document.getElementById('s7_action_taken')?.value }
+  ], 7);
 
   html += addSection("8. Summary Recommendations", [
-    { label: "Top Things That Worked Well", value: document.getElementById('s8_top_worked')?.value },
-    { label: "Top Challenges / Barriers", value: document.getElementById('s8_top_barriers')?.value },
-    { label: "Change One Thing", value: document.getElementById('s8_change_one_thing')?.value },
-    { label: "One Word Feeling", value: document.getElementById('s8_one_word')?.value },
-    { label: "Final Message for YSO / DOT", value: document.getElementById('s8_final_message')?.value }
-  ]);
+    { id: 's8_top_worked', label: "Top Things That Worked Well", value: document.getElementById('s8_top_worked')?.value },
+    { id: 's8_top_barriers', label: "Top Challenges / Barriers", value: document.getElementById('s8_top_barriers')?.value },
+    { id: 's8_change_one_thing', label: "Change One Thing", value: document.getElementById('s8_change_one_thing')?.value },
+    { id: 's8_one_word', label: "One Word Feeling", value: document.getElementById('s8_one_word')?.value },
+    { id: 's8_final_message', label: "Final Message for YSO / DOT", value: document.getElementById('s8_final_message')?.value }
+  ], 8);
 
   container.innerHTML = html;
 }
@@ -456,9 +603,18 @@ export function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-// 100% Guaranteed High-Performance PDF Generation & Download
+// Guarded PDF Generation & Download
 export async function exportToPdf() {
   saveData();
+
+  // Validate all fields before export
+  const missing = getMissingFields();
+  if (missing.length > 0) {
+    showToast('Your Feedback Matters, Say Something', 'error');
+    showValidationModal(missing);
+    return false;
+  }
+
   showToast('Generating official PDF...', 'info');
 
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -544,9 +700,18 @@ export async function exportToPdf() {
   }
 }
 
-// Server submission with instant official PDF download
+// Guarded Server submission with instant official PDF download
 export async function submitToServer() {
   saveData();
+
+  // Validate all fields before submission
+  const missing = getMissingFields();
+  if (missing.length > 0) {
+    showToast('Your Feedback Matters, Say Something', 'error');
+    showValidationModal(missing);
+    return false;
+  }
+
   const form = document.getElementById('worksheet-form');
   const formData = new FormData(form);
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -629,11 +794,11 @@ export function showToast(message, type = 'success') {
   msg.innerText = message;
   if (icon) {
     if (type === 'error') {
-      icon.setAttribute('class', 'w-4 h-4 text-rose-400');
+      icon.setAttribute('class', 'w-4 h-4 text-rose-400 shrink-0');
     } else if (type === 'info') {
-      icon.setAttribute('class', 'w-4 h-4 text-sky-400');
+      icon.setAttribute('class', 'w-4 h-4 text-sky-400 shrink-0');
     } else {
-      icon.setAttribute('class', 'w-4 h-4 text-emerald-400');
+      icon.setAttribute('class', 'w-4 h-4 text-emerald-400 shrink-0');
     }
   }
 
@@ -643,7 +808,7 @@ export function showToast(message, type = 'success') {
   setTimeout(() => {
     toast.classList.add('translate-y-20', 'opacity-0');
     toast.classList.remove('translate-y-0', 'opacity-100');
-  }, 3500);
+  }, 4000);
 }
 
 // Assign globally to window for BOTH window.worksheet.* and direct function calls
@@ -659,6 +824,11 @@ window.closeResetModal = closeResetModal;
 window.confirmReset = confirmReset;
 window.showToast = showToast;
 window.renderReviewSummary = renderReviewSummary;
+window.showValidationModal = showValidationModal;
+window.closeValidationModal = closeValidationModal;
+window.fixFirstMissingField = fixFirstMissingField;
+window.jumpToField = jumpToField;
+window.getMissingFields = getMissingFields;
 
 window.worksheet = {
   initWorksheet,
@@ -673,5 +843,10 @@ window.worksheet = {
   closeResetModal,
   confirmReset,
   showToast,
-  renderReviewSummary
+  renderReviewSummary,
+  showValidationModal,
+  closeValidationModal,
+  fixFirstMissingField,
+  jumpToField,
+  getMissingFields
 };

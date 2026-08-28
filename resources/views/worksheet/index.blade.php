@@ -552,6 +552,44 @@
     </div>
   </div>
 
+  <!-- Mandatory Validation Alert Modal -->
+  <div id="validation-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-slate-200 space-y-4 animate-scale-up">
+      <div class="flex items-start gap-3.5">
+        <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <span class="text-[10px] font-extrabold uppercase bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200">Mandatory Review</span>
+          <h3 class="text-base sm:text-lg font-black text-slate-900 font-display mt-0.5">Your Feedback Matters, Say Something</h3>
+          <p class="text-xs text-slate-500 mt-1">Every reflection question is required before submitting and downloading your official PDF. Please complete the remaining questions below.</p>
+        </div>
+      </div>
+
+      <!-- Missing Fields List -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+          <span>Items Left Out:</span>
+          <span id="missing-count-badge" class="bg-rose-50 text-rose-700 px-2.5 py-0.5 rounded-full border border-rose-200 text-[11px] font-extrabold">0 Missing</span>
+        </div>
+        <div id="missing-fields-list" class="max-h-56 overflow-y-auto space-y-1.5 p-1.5 bg-slate-50 rounded-2xl border border-slate-200">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-1">
+        <button type="button" onclick="closeValidationModal()" class="px-4 py-2.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer">
+          Dismiss
+        </button>
+        <button type="button" id="fix-first-missing-btn" onclick="fixFirstMissingField()" class="px-5 py-2.5 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition shadow-md shadow-brand-500/20 active:scale-95 cursor-pointer">
+          Complete Missing Items &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Reset Confirmation Modal -->
   <div id="reset-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm sm:max-w-md w-full p-5 sm:p-6 shadow-xl border border-slate-200 space-y-4">
