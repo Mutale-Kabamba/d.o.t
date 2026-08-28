@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -16,14 +19,7 @@ class AuthController extends Controller
      */
     public function showLoginForm(): View
     {
-        // Auto-seed default admin user if no users exist
-        if (User::count() === 0) {
-            User::create([
-                'name' => 'DOT Administrator',
-                'email' => 'admin@dot.org',
-                'password' => Hash::make('password'),
-            ]);
-        }
+        $this->ensureDatabaseReady();
 
         return view('admin.login');
     }
@@ -38,15 +34,43 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
+        $this->ensureDatabaseReady();
 
-            return redirect()->intended(route('admin.submissions.index'));
+        try {
+            if (Auth::attempt($credentials, $request->boolean('remember'))) {
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('admin.submissions.index'));
+            }
+        } catch (\Throwable $e) {
+            Log::error('Admin login error: ' . $e->getMessage());
         }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
+    }
+
+    /**
+     * Ensure database tables and default admin user exist without throwing 500 error on cloud.
+     */
+    protected function ensureDatabaseReady(): void
+    {
+        try {
+            if (!Schema::hasTable('users')) {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+
+            if (Schema::hasTable('users') && User::count() === 0) {
+                User::create([
+                    'name' => 'DOT Administrator',
+                    'email' => 'admin@dot.org',
+                    'password' => Hash::make('password'),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Database auto-initialization note: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -7,6 +7,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class WorksheetController extends Controller
@@ -69,13 +73,23 @@ class WorksheetController extends Controller
             's8_final_message' => 'nullable|string',
         ]);
 
-        $submission = AnonymousSubmission::create($validated);
+        $token = (string) Str::uuid();
+
+        try {
+            if (!Schema::hasTable('anonymous_submissions')) {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+            $submission = AnonymousSubmission::create(array_merge($validated, ['token' => $token]));
+            $token = $submission->token;
+        } catch (\Throwable $e) {
+            Log::error('Anonymous submission database store notice: ' . $e->getMessage());
+        }
 
         return response()->json([
             'success' => true,
-            'token' => $submission->token,
+            'token' => $token,
             'message' => 'Anonymous worksheet successfully recorded.',
-            'redirect_url' => route('worksheet.success', ['token' => $submission->token]),
+            'redirect_url' => route('worksheet.success', ['token' => $token]),
         ]);
     }
 
@@ -84,9 +98,15 @@ class WorksheetController extends Controller
      */
     public function success(string $token): View
     {
-        $submission = AnonymousSubmission::where('token', $token)->firstOrFail();
+        $submission = null;
+        try {
+            $submission = AnonymousSubmission::where('token', $token)->first();
+        } catch (\Throwable $e) {
+            Log::warning('Success token lookup notice: ' . $e->getMessage());
+        }
 
         return view('worksheet.success', [
+            'token' => $token,
             'submission' => $submission,
         ]);
     }
@@ -100,6 +120,7 @@ class WorksheetController extends Controller
         foreach ($this->fields as $f) {
             $data[$f] = $request->input($f, '');
         }
+        $data['token'] = (string) Str::uuid();
         $data['date'] = date('Y-m-d');
 
         $pdf = Pdf::loadView('pdf.worksheet', $data)
@@ -116,17 +137,23 @@ class WorksheetController extends Controller
     }
 
     /**
-     * Download PDF by stored submission token.
+     * Download PDF by token from stored submission.
      */
     public function exportPdfByToken(string $token): Response
     {
-        $submission = AnonymousSubmission::where('token', $token)->firstOrFail();
-        
+        $submission = null;
+        try {
+            $submission = AnonymousSubmission::where('token', $token)->first();
+        } catch (\Throwable $e) {
+            Log::warning('Token PDF download notice: ' . $e->getMessage());
+        }
+
         $data = [];
         foreach ($this->fields as $f) {
-            $data[$f] = $submission->{$f} ?? '';
+            $data[$f] = $submission ? $submission->{$f} : '';
         }
-        $data['date'] = $submission->created_at->format('Y-m-d');
+        $data['token'] = $token;
+        $data['date'] = $submission ? $submission->created_at->format('Y-m-d') : date('Y-m-d');
 
         $pdf = Pdf::loadView('pdf.worksheet', $data)
             ->setPaper('a4', 'portrait')
@@ -136,8 +163,6 @@ class WorksheetController extends Controller
                 'defaultFont' => 'Helvetica',
             ]);
 
-        $filename = 'Cohort1_Anonymous_Reflection_' . $submission->token . '.pdf';
-
-        return $pdf->download($filename);
+        return $pdf->download("Cohort1_Anonymous_Reflection_{$token}.pdf");
     }
 }

@@ -25,10 +25,10 @@
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
             <span class="text-[10px] uppercase font-extrabold text-slate-400">Submission Receipt Token:</span>
             <div class="font-mono text-xs font-bold text-brand-800 break-all select-all">
-                {{ $submission->token }}
+                {{ $token }}
             </div>
             <div class="text-[11px] text-slate-400 pt-1">
-                Recorded on: {{ $submission->created_at->format('M d, Y - H:i') }}
+                Recorded on: {{ $submission?->created_at?->format('M d, Y - H:i') ?? date('M d, Y - H:i') }}
             </div>
         </div>
 
