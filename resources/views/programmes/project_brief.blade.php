@@ -57,16 +57,16 @@
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label for="project_name" class="block text-xs font-semibold text-slate-700 mb-1">
-                            Project Name <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="project_name" name="project_name" required placeholder="e.g. Football for Health" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition">
-                    </div>
-                    <div>
                         <label for="officer_name" class="block text-xs font-semibold text-slate-700 mb-1">
-                            Project Officer / Lead <span class="text-rose-500">*</span>
+                            Project Officer / Lead (Full Name) <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" id="officer_name" name="officer_name" required placeholder="e.g. Mwila Tembo" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition">
+                    </div>
+                    <div>
+                        <label for="project_name" class="block text-xs font-semibold text-slate-700 mb-1">
+                            Project Title / Name <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="project_name" name="project_name" required placeholder="e.g. Football for Health" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition">
                     </div>
                     <div>
                         <label for="reporting_period" class="block text-xs font-semibold text-slate-700 mb-1">

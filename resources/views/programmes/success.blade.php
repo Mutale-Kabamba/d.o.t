@@ -23,12 +23,12 @@
         <!-- Project Summary Card -->
         <div class="mt-6 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 text-left space-y-2.5 text-xs">
             <div class="flex justify-between border-b border-slate-200/60 pb-2">
-                <span class="text-slate-500 font-medium">Project:</span>
-                <span class="font-bold text-slate-900">{{ $submission->project_name }}</span>
-            </div>
-            <div class="flex justify-between border-b border-slate-200/60 pb-2">
                 <span class="text-slate-500 font-medium">Officer / Lead:</span>
                 <span class="font-semibold text-slate-800">{{ $submission->officer_name }}</span>
+            </div>
+            <div class="flex justify-between border-b border-slate-200/60 pb-2">
+                <span class="text-slate-500 font-medium">Project Title:</span>
+                <span class="font-bold text-slate-900">{{ $submission->project_name }}</span>
             </div>
             <div class="flex justify-between pt-0.5">
                 <span class="text-slate-500 font-medium">Receipt Token:</span>
