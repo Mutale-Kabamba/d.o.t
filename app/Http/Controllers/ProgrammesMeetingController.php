@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProjectSubmission;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -195,7 +196,7 @@ class ProgrammesMeetingController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save submission. Please try again.',
+                'message' => 'Failed to save submission: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -206,8 +207,49 @@ class ProgrammesMeetingController extends Controller
     protected function ensureDatabaseReady(): void
     {
         try {
-            if (!Schema::hasTable('project_submissions') || !Schema::hasTable('users')) {
-                Artisan::call('migrate', ['--force' => true]);
+            if (!Schema::hasTable('project_submissions')) {
+                Schema::create('project_submissions', function (Blueprint $table) {
+                    $table->id();
+                    $table->uuid('token')->unique();
+                    $table->string('project_name');
+                    $table->string('officer_name');
+                    $table->string('location')->nullable();
+                    $table->string('reporting_period')->default('Quarter 2 April, May, June 2026');
+
+                    $table->text('achievements_milestones')->nullable();
+                    $table->text('achievements_impact')->nullable();
+                    $table->text('achievements_stories')->nullable();
+
+                    $table->text('challenges_operational')->nullable();
+                    $table->text('challenges_resources')->nullable();
+                    $table->text('challenges_risks')->nullable();
+
+                    $table->text('learning_lessons')->nullable();
+                    $table->text('learning_feedback')->nullable();
+                    $table->text('learning_innovation')->nullable();
+
+                    $table->text('mne_performance')->nullable();
+                    $table->text('mne_data_quality')->nullable();
+                    $table->text('mne_evaluation_plans')->nullable();
+
+                    $table->text('collab_projects')->nullable();
+                    $table->text('collab_partnerships')->nullable();
+                    $table->text('collab_cross_learning')->nullable();
+
+                    $table->timestamps();
+                });
+            }
+
+            if (!Schema::hasTable('users')) {
+                Schema::create('users', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('name');
+                    $table->string('email')->unique();
+                    $table->timestamp('email_verified_at')->nullable();
+                    $table->string('password');
+                    $table->rememberToken();
+                    $table->timestamps();
+                });
             }
 
             if (Schema::hasTable('users') && User::count() === 0) {

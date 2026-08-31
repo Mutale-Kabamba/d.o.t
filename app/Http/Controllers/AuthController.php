@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -58,12 +59,20 @@ class AuthController extends Controller
     {
         try {
             if (!Schema::hasTable('users')) {
-                Artisan::call('migrate', ['--force' => true]);
+                Schema::create('users', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('name');
+                    $table->string('email')->unique();
+                    $table->timestamp('email_verified_at')->nullable();
+                    $table->string('password');
+                    $table->rememberToken();
+                    $table->timestamps();
+                });
             }
 
             if (Schema::hasTable('users') && User::count() === 0) {
                 User::create([
-                    'name' => 'DOT Administrator',
+                    'name' => 'Supervisor',
                     'email' => 'admin@dot.org',
                     'password' => Hash::make('password'),
                 ]);
