@@ -83,6 +83,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('worksheet.index')->with('success', 'You have been logged out and returned to the app.');
+        return redirect('/')->with('success', 'You have been logged out and returned to the app.');
     }
 }

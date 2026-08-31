@@ -12,7 +12,7 @@ class WorksheetTest extends TestCase
 
     public function test_worksheet_index_page_loads_successfully(): void
     {
-        $response = $this->get('/');
+        $response = $this->get('/worksheet');
 
         $response->assertStatus(200);
         $response->assertSee('Cohort Review &amp; Planning', false);
