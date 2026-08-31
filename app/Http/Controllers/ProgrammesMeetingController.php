@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProjectSubmission;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -135,6 +139,8 @@ class ProgrammesMeetingController extends Controller
      */
     public function index(): View
     {
+        $this->ensureDatabaseReady();
+
         return view('programmes.project_brief', [
             'slidesConfig' => self::$slidesConfig,
             'defaultPeriod' => 'Quarter 2 April, May, June 2026',
@@ -146,6 +152,8 @@ class ProgrammesMeetingController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $this->ensureDatabaseReady();
+
         $validated = $request->validate([
             'project_name' => 'required|string|max:255',
             'officer_name' => 'required|string|max:255',
@@ -173,14 +181,45 @@ class ProgrammesMeetingController extends Controller
             'collab_cross_learning' => 'nullable|string',
         ]);
 
-        $submission = ProjectSubmission::create($validated);
+        try {
+            $submission = ProjectSubmission::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'token' => $submission->token,
-            'message' => 'Project submission saved successfully.',
-            'redirect_url' => route('programmes.success', ['token' => $submission->token]),
-        ]);
+            return response()->json([
+                'success' => true,
+                'token' => $submission->token,
+                'message' => 'Project submission saved successfully.',
+                'redirect_url' => route('programmes.success', ['token' => $submission->token]),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Project submission error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save submission. Please try again.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Ensure database tables and initial user exist without manual CLI commands.
+     */
+    protected function ensureDatabaseReady(): void
+    {
+        try {
+            if (!Schema::hasTable('project_submissions') || !Schema::hasTable('users')) {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+
+            if (Schema::hasTable('users') && User::count() === 0) {
+                User::create([
+                    'name' => 'Supervisor',
+                    'email' => 'admin@dot.org',
+                    'password' => Hash::make('password'),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Database auto-initialization note: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -201,6 +240,8 @@ class ProgrammesMeetingController extends Controller
      */
     public function hub(Request $request): View
     {
+        $this->ensureDatabaseReady();
+
         $query = ProjectSubmission::latest();
 
         if ($search = $request->input('q')) {
@@ -518,6 +559,7 @@ class ProgrammesMeetingController extends Controller
      */
     public function seedSample(): RedirectResponse
     {
+        $this->ensureDatabaseReady();
         $this->seedSampleProjectsData();
 
         return redirect()->route('programmes.hub')->with('success', 'Sample project submissions seeded successfully for preview.');
