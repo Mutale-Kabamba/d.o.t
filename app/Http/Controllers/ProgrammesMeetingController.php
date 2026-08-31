@@ -207,6 +207,17 @@ class ProgrammesMeetingController extends Controller
     protected function ensureDatabaseReady(): void
     {
         try {
+            if (config('database.default') === 'sqlite') {
+                $dbPath = config('database.connections.sqlite.database');
+                if ($dbPath && $dbPath !== ':memory:' && !file_exists($dbPath)) {
+                    $dbDir = dirname($dbPath);
+                    if (!is_dir($dbDir)) {
+                        @mkdir($dbDir, 0755, true);
+                    }
+                    @touch($dbPath);
+                }
+            }
+
             if (!Schema::hasTable('project_submissions')) {
                 Schema::create('project_submissions', function (Blueprint $table) {
                     $table->id();
