@@ -39,7 +39,7 @@ class AdminTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect('/admin/submissions');
+        $response->assertRedirect(route('programmes.hub'));
         $this->assertAuthenticatedAs($this->admin);
     }
 

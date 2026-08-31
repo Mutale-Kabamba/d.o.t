@@ -40,7 +40,7 @@ class AuthController extends Controller
             if (Auth::attempt($credentials, $request->boolean('remember'))) {
                 $request->session()->regenerate();
 
-                return redirect()->intended(route('admin.submissions.index'));
+                return redirect()->intended(route('programmes.hub'));
             }
         } catch (\Throwable $e) {
             Log::error('Admin login error: ' . $e->getMessage());

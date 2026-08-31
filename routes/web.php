@@ -6,18 +6,22 @@ use App\Http\Controllers\ProgrammesMeetingController;
 use App\Http\Controllers\WorksheetController;
 use Illuminate\Support\Facades\Route;
 
-// Play It Forward Zambia: Programmes Meeting Presentation Hub & Project Brief
+// Play It Forward Zambia: Public Project Officer Brief Routes
 Route::get('/', [ProgrammesMeetingController::class, 'index'])->name('programmes.index');
 Route::post('/programmes-meeting/submit', [ProgrammesMeetingController::class, 'store'])->name('programmes.store');
 Route::get('/programmes-meeting/success/{token}', [ProgrammesMeetingController::class, 'success'])->name('programmes.success');
-Route::get('/programmes-meeting/hub', [ProgrammesMeetingController::class, 'hub'])->name('programmes.hub');
-Route::get('/programmes-meeting/export-consolidated-pdf', [ProgrammesMeetingController::class, 'exportConsolidatedPresentation'])->name('programmes.export_consolidated_pdf');
-Route::get('/programmes-meeting/export-consolidated-pptx', [ProgrammesMeetingController::class, 'exportConsolidatedPptx'])->name('programmes.export_consolidated_pptx');
-Route::get('/programmes-meeting/projector', [ProgrammesMeetingController::class, 'projector'])->name('programmes.projector');
-Route::get('/programmes-meeting/present', [ProgrammesMeetingController::class, 'projector'])->name('programmes.present');
 Route::get('/programmes-meeting/download-pdf/{token}', [ProgrammesMeetingController::class, 'exportSinglePdfByToken'])->name('programmes.download_single_pdf');
-Route::delete('/programmes-meeting/submissions/{token}', [ProgrammesMeetingController::class, 'destroy'])->name('programmes.destroy');
-Route::post('/programmes-meeting/seed', [ProgrammesMeetingController::class, 'seedSample'])->name('programmes.seed');
+
+// Play It Forward Zambia: Password-Protected Supervisor Hub & Presentation Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/programmes-meeting/hub', [ProgrammesMeetingController::class, 'hub'])->name('programmes.hub');
+    Route::get('/programmes-meeting/export-consolidated-pdf', [ProgrammesMeetingController::class, 'exportConsolidatedPresentation'])->name('programmes.export_consolidated_pdf');
+    Route::get('/programmes-meeting/export-consolidated-pptx', [ProgrammesMeetingController::class, 'exportConsolidatedPptx'])->name('programmes.export_consolidated_pptx');
+    Route::get('/programmes-meeting/projector', [ProgrammesMeetingController::class, 'projector'])->name('programmes.projector');
+    Route::get('/programmes-meeting/present', [ProgrammesMeetingController::class, 'projector'])->name('programmes.present');
+    Route::delete('/programmes-meeting/submissions/{token}', [ProgrammesMeetingController::class, 'destroy'])->name('programmes.destroy');
+    Route::post('/programmes-meeting/seed', [ProgrammesMeetingController::class, 'seedSample'])->name('programmes.seed');
+});
 
 // Legacy/Cohort Reflection Worksheet Routes
 Route::get('/worksheet', [WorksheetController::class, 'index'])->name('worksheet.index');

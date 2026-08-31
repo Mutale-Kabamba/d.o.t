@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ProjectSubmission;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -28,7 +29,6 @@ class ProgrammesMeetingTest extends TestCase
         $payload = [
             'project_name' => 'Football for Health & Life Skills',
             'officer_name' => 'Mwila Tembo',
-            'location' => 'Livingstone Urban',
             'reporting_period' => 'Quarter 2 April, May, June 2026',
             'achievements_milestones' => '• Reached 1,200 participants\n• Hosted tournament',
             'achievements_impact' => '• 84% improved life skills',
@@ -73,24 +73,32 @@ class ProgrammesMeetingTest extends TestCase
         $response->assertSee('Faith Musonda');
     }
 
-    public function test_supervisor_hub_loads_and_displays_submissions(): void
+    public function test_unauthenticated_user_is_redirected_to_login_when_accessing_supervisor_hub(): void
     {
+        $response = $this->get(route('programmes.hub'));
+
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_supervisor_hub_loads_and_displays_submissions(): void
+    {
+        $user = User::factory()->create();
+
         ProjectSubmission::create([
             'project_name' => 'Youth Leadership Incubator',
             'officer_name' => 'Kelvin Phiri',
-            'location' => 'Zambezi Hub',
             'reporting_period' => 'Quarter 2 April, May, June 2026',
             'achievements_milestones' => '• 65 youth graduated',
         ]);
 
-        $response = $this->get(route('programmes.hub'));
+        $response = $this->actingAs($user)->get(route('programmes.hub'));
 
         $response->assertStatus(200);
         $response->assertSee('Youth Leadership Incubator');
         $response->assertSee('Kelvin Phiri');
     }
 
-    public function test_single_project_presentation_pdf_export(): void
+    public function test_single_project_presentation_pdf_export_is_public(): void
     {
         $submission = ProjectSubmission::create([
             'project_name' => 'Community Coaching Academy',
@@ -105,8 +113,10 @@ class ProgrammesMeetingTest extends TestCase
         $response->assertHeader('content-type', 'application/pdf');
     }
 
-    public function test_consolidated_powerpoint_pdf_export(): void
+    public function test_consolidated_powerpoint_pdf_export_requires_auth(): void
     {
+        $user = User::factory()->create();
+
         ProjectSubmission::create([
             'project_name' => 'Project Alpha',
             'officer_name' => 'Officer 1',
@@ -114,14 +124,7 @@ class ProgrammesMeetingTest extends TestCase
             'achievements_milestones' => '• Alpha milestone',
         ]);
 
-        ProjectSubmission::create([
-            'project_name' => 'Project Beta',
-            'officer_name' => 'Officer 2',
-            'reporting_period' => 'Quarter 2 April, May, June 2026',
-            'achievements_milestones' => '• Beta milestone',
-        ]);
-
-        $response = $this->get(route('programmes.export_consolidated_pdf'));
+        $response = $this->actingAs($user)->get(route('programmes.export_consolidated_pdf'));
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/pdf');
@@ -129,7 +132,9 @@ class ProgrammesMeetingTest extends TestCase
 
     public function test_sample_seeding_action(): void
     {
-        $response = $this->post(route('programmes.seed'));
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('programmes.seed'));
 
         $response->assertRedirect(route('programmes.hub'));
         $this->assertGreaterThan(0, ProjectSubmission::count());
@@ -137,6 +142,8 @@ class ProgrammesMeetingTest extends TestCase
 
     public function test_consolidated_powerpoint_pptx_export(): void
     {
+        $user = User::factory()->create();
+
         ProjectSubmission::create([
             'project_name' => 'Project Alpha',
             'officer_name' => 'Officer 1',
@@ -144,14 +151,16 @@ class ProgrammesMeetingTest extends TestCase
             'achievements_milestones' => '• Alpha milestone',
         ]);
 
-        $response = $this->get(route('programmes.export_consolidated_pptx'));
+        $response = $this->actingAs($user)->get(route('programmes.export_consolidated_pptx'));
 
         $response->assertStatus(200);
         $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
     }
 
-    public function test_live_projector_mode_loads(): void
+    public function test_live_projector_mode_loads_for_authenticated_supervisor(): void
     {
+        $user = User::factory()->create();
+
         ProjectSubmission::create([
             'project_name' => 'Project Alpha',
             'officer_name' => 'Officer 1',
@@ -159,7 +168,7 @@ class ProgrammesMeetingTest extends TestCase
             'achievements_milestones' => '• Alpha milestone',
         ]);
 
-        $response = $this->get(route('programmes.projector'));
+        $response = $this->actingAs($user)->get(route('programmes.projector'));
 
         $response->assertStatus(200);
         $response->assertSee('Play It Forward Zambia');
