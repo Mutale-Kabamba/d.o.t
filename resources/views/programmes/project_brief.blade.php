@@ -41,8 +41,50 @@
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Programmes Meeting — Project Brief</h1>
             <p class="text-sm text-slate-600 mt-1">
-                Enter your project's key presentation points below. All submissions will be compiled into the supervisor's master slide deck for the meeting.
+                Enter your project's key presentation points below or import directly from a PowerPoint (.pptx) slide deck. All submissions will be compiled into the supervisor's master slide deck for the meeting.
             </p>
+        </div>
+
+        <!-- PowerPoint Import Quick-Fill Banner -->
+        <div class="bg-linear-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-5 mb-8 shadow-xs">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-purple-950">Auto-fill from PowerPoint (.pptx)</h3>
+                        <p class="text-xs text-purple-700/90 mt-0.5">Upload your project slide deck to automatically populate all sections below.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                    <input type="file" id="brief-pptx-file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" class="hidden" onchange="handlePptxUpload(this)">
+                    <button type="button" id="upload-pptx-btn" onclick="document.getElementById('brief-pptx-file').click()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span id="upload-pptx-text">Import PowerPoint (.pptx)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Project Selector Dropdown if multiple projects found in PPTX -->
+            <div id="pptx-project-selector-wrapper" class="hidden mt-4 pt-3 border-t border-purple-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="text-xs font-bold text-purple-900">
+                    Multiple projects found in presentation:
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="pptx-project-select" class="text-xs font-semibold bg-white border border-purple-300 rounded-lg px-3 py-1.5 text-purple-900 focus:outline-none focus:ring-1 focus:ring-purple-500" onchange="switchParsedProject(this.value)">
+                    </select>
+                    <span class="text-[11px] text-purple-600 font-medium">Auto-populating selected project</span>
+                </div>
+            </div>
+
+            <!-- Status Banner -->
+            <div id="pptx-status-banner" class="hidden mt-3 text-xs p-2.5 rounded-lg flex items-center gap-2 font-medium"></div>
         </div>
 
         <!-- Submission Form -->
@@ -328,6 +370,108 @@ form.addEventListener('submit', async (e) => {
         submitBtn.innerHTML = origHtml;
     }
 });
+
+// PowerPoint Upload & Autofill Handler
+let parsedPptxProjects = [];
+
+async function handlePptxUpload(input) {
+    if (!input.files || !input.files[0]) return;
+
+    const file = input.files[0];
+    const btnText = document.getElementById('upload-pptx-text');
+    const statusBanner = document.getElementById('pptx-status-banner');
+    const projectSelector = document.getElementById('pptx-project-selector-wrapper');
+    const selectEl = document.getElementById('pptx-project-select');
+
+    btnText.innerHTML = `
+        <span class="inline-flex items-center gap-1.5">
+            <svg class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Parsing PowerPoint...
+        </span>
+    `;
+
+    statusBanner.className = 'hidden';
+
+    try {
+        const formData = new FormData();
+        formData.append('pptx_file', file);
+        formData.append('_token', '{{ csrf_token() }}');
+
+        const response = await fetch("{{ route('programmes.parse_pptx') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+
+        const res = await response.json();
+
+        if (response.ok && res.success && res.all_projects && res.all_projects.length > 0) {
+            parsedPptxProjects = res.all_projects;
+
+            if (parsedPptxProjects.length > 1) {
+                selectEl.innerHTML = '';
+                parsedPptxProjects.forEach((proj, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.innerText = `${proj.project_name} (${proj.officer_name || 'Lead'})`;
+                    selectEl.appendChild(opt);
+                });
+                projectSelector.classList.remove('hidden');
+            } else {
+                projectSelector.classList.add('hidden');
+            }
+
+            populateFormWithProject(parsedPptxProjects[0]);
+
+            statusBanner.className = 'mt-3 text-xs p-2.5 rounded-lg flex items-center gap-2 font-medium bg-emerald-100/80 text-emerald-800 border border-emerald-300';
+            statusBanner.innerHTML = `
+                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span><strong>Success!</strong> All 15 slide items auto-filled from <em>${file.name}</em>. Review and adjust any points as needed.</span>
+            `;
+        } else {
+            statusBanner.className = 'mt-3 text-xs p-2.5 rounded-lg flex items-center gap-2 font-medium bg-rose-100 text-rose-800 border border-rose-300';
+            statusBanner.innerHTML = `<span><strong>Notice:</strong> ${res.message || 'Could not parse slides from this PowerPoint.'}</span>`;
+        }
+    } catch (err) {
+        console.error(err);
+        statusBanner.className = 'mt-3 text-xs p-2.5 rounded-lg flex items-center gap-2 font-medium bg-rose-100 text-rose-800 border border-rose-300';
+        statusBanner.innerHTML = `<span><strong>Error:</strong> Failed to upload and parse PowerPoint file. Please check the file and try again.</span>`;
+    } finally {
+        btnText.innerHTML = 'Import PowerPoint (.pptx)';
+        input.value = '';
+    }
+}
+
+function switchParsedProject(index) {
+    const proj = parsedPptxProjects[parseInt(index, 10)];
+    if (proj) {
+        populateFormWithProject(proj);
+    }
+}
+
+function populateFormWithProject(data) {
+    if (!data) return;
+
+    for (let k in data) {
+        const el = form.querySelector(`[name="${k}"]`);
+        if (el && data[k]) {
+            el.value = data[k];
+            // Brief visual highlight
+            el.classList.add('ring-2', 'ring-purple-400');
+            setTimeout(() => el.classList.remove('ring-2', 'ring-purple-400'), 1500);
+        }
+    }
+
+    saveDraft();
+}
 
 document.addEventListener('DOMContentLoaded', loadDraft);
 </script>

@@ -20,23 +20,13 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2.5">
-                <form action="{{ route('programmes.seed') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition shadow-xs">
-                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        Seed Sample Projects
-                    </button>
-                </form>
-
-                <a href="{{ route('programmes.index') }}" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition shadow-xs">
-                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="document.getElementById('import-pptx-modal').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition shadow-xs cursor-pointer">
+                    <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
-                    + Submit Brief
-                </a>
+                    Import PPTX
+                </button>
 
                 <a href="{{ route('programmes.projector') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,6 +69,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 {{ session('success') }}
+            </span>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-xl text-xs flex items-center justify-between shadow-sm">
+            <span class="flex items-center gap-2 font-medium">
+                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                {{ session('error') }}
             </span>
         </div>
         @endif
@@ -195,6 +196,101 @@
             </div>
             @endif
         </div>
+
+        <!-- Footer & Quick Actions -->
+        <footer class="mt-12 pt-8 border-t border-slate-200 space-y-6">
+            <div class="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center sm:text-left">
+                    <h4 class="text-sm font-bold text-slate-900">Manage Project Briefs</h4>
+                    <p class="text-xs text-slate-500">Submit a new project report or generate sample data for meeting preparation.</p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <form action="{{ route('programmes.seed') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition shadow-xs cursor-pointer">
+                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                            Seed Sample Projects
+                        </button>
+                    </form>
+
+                    <a href="{{ route('programmes.index') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        + Submit Brief
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 pb-6 px-1">
+                <div>
+                    &copy; {{ date('Y') }} <span class="font-semibold text-slate-600">Play It Forward Zambia</span>. All rights reserved.
+                </div>
+                <div class="flex items-center gap-4">
+                    <span>Programmes Meeting Hub</span>
+                    <span>•</span>
+                    <a href="{{ route('programmes.projector') }}" class="hover:text-slate-600 transition">Presentation Screen</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- ==================== IMPORT PPTX MODAL ==================== -->
+<div id="import-pptx-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in duration-150">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Import from PowerPoint (.pptx)</h3>
+                    <p class="text-xs text-slate-500">Upload a single project deck or master meeting PPTX.</p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('import-pptx-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form action="{{ route('programmes.import_pptx') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-2">Select PowerPoint File (.pptx)</label>
+                <div class="border-2 border-dashed border-slate-300 hover:border-purple-400 rounded-xl p-6 text-center bg-slate-50/70 hover:bg-purple-50/30 transition cursor-pointer" onclick="document.getElementById('pptx_file_input').click()">
+                    <svg class="w-8 h-8 text-purple-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <div class="text-xs font-bold text-slate-700" id="file_chosen_label">Click to browse or drop PowerPoint (.pptx) here</div>
+                    <div class="text-[11px] text-slate-400 mt-1">Supports consolidated slide decks or individual project briefs (Max 50MB)</div>
+                    <input type="file" id="pptx_file_input" name="pptx_file" accept=".pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation" required class="hidden" onchange="if(this.files[0]) document.getElementById('file_chosen_label').innerHTML = '📄 ' + this.files[0].name;">
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-800 flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="leading-relaxed">The parser will automatically map project titles, officer names, and all 15 slide items (Milestones, Impact, Challenges, Learning, M&E, Collaboration) directly into your database.</span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('import-pptx-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition">
+                    Cancel
+                </button>
+                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition">
+                    Start Import
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

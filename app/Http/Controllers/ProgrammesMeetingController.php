@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProjectSubmission;
 use App\Models\User;
+use App\Services\PptxParserService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
@@ -354,6 +355,83 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'quarter' => 'Quarter 2 April, May, June 2026',
         ]);
+    }
+
+    /**
+     * Parse PowerPoint file and return JSON to autofill the project brief form.
+     */
+    public function parsePptx(Request $request, PptxParserService $parser): JsonResponse
+    {
+        $request->validate([
+            'pptx_file' => 'required|file|max:51200',
+        ]);
+
+        try {
+            $file = $request->file('pptx_file');
+            $parsedProjects = $parser->parse($file->getRealPath());
+
+            if (empty($parsedProjects)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No matching project slide data could be parsed from the uploaded PowerPoint file.',
+                ], 422);
+            }
+
+            return response()->json([
+                'success' => true,
+                'project' => $parsedProjects[0],
+                'all_projects' => $parsedProjects,
+                'message' => 'PowerPoint parsed successfully! Form fields populated.',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('PPTX Parse Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to parse PowerPoint file: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Import PowerPoint presentation into Supervisor Hub (creates or updates submissions).
+     */
+    public function importPptx(Request $request, PptxParserService $parser): RedirectResponse
+    {
+        $request->validate([
+            'pptx_file' => 'required|file|max:51200',
+        ]);
+
+        $this->ensureDatabaseReady();
+
+        try {
+            $file = $request->file('pptx_file');
+            $parsedProjects = $parser->parse($file->getRealPath());
+
+            if (empty($parsedProjects)) {
+                return redirect()->route('programmes.hub')->with('error', 'No project slide data could be parsed from the uploaded PowerPoint file.');
+            }
+
+            $importedCount = 0;
+            foreach ($parsedProjects as $data) {
+                if (empty($data['project_name'])) {
+                    continue;
+                }
+
+                $submission = ProjectSubmission::where('project_name', $data['project_name'])->first();
+
+                if ($submission) {
+                    $submission->update($data);
+                } else {
+                    ProjectSubmission::create($data);
+                }
+                $importedCount++;
+            }
+
+            return redirect()->route('programmes.hub')->with('success', "Successfully imported {$importedCount} project submission(s) from PowerPoint presentation.");
+        } catch (\Throwable $e) {
+            Log::error('PPTX Import Error: ' . $e->getMessage());
+            return redirect()->route('programmes.hub')->with('error', 'Failed to import PowerPoint file: ' . $e->getMessage());
+        }
     }
 
     /**
