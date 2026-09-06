@@ -6,7 +6,7 @@
     <style>
         @page {
             size: 297mm 210mm landscape;
-            margin: 10mm 14mm 10mm 16mm;
+            margin: 7mm 10mm 7mm 14mm;
         }
         * {
             box-sizing: border-box;
@@ -18,8 +18,8 @@
             padding: 0;
             background-color: #ffffff;
             color: #0f172a;
-            font-size: 12.5px;
-            line-height: 1.45;
+            font-size: 10px;
+            line-height: 1.35;
         }
 
         .slide {
@@ -28,7 +28,7 @@
             page-break-inside: avoid;
             position: relative;
             background-color: #ffffff;
-            padding-bottom: 14px;
+            padding-bottom: 6px;
         }
         .slide:last-child {
             page-break-after: avoid;
@@ -37,117 +37,117 @@
         /* Left Branding Color Bar */
         .brand-bar-left {
             position: absolute;
-            left: -16mm;
-            top: -10mm;
-            bottom: -10mm;
-            width: 7mm;
+            left: -14mm;
+            top: -7mm;
+            bottom: -7mm;
+            width: 5mm;
             background-color: #2563eb;
         }
 
         /* Cover Slide */
         .cover-slide {
-            padding-top: 16mm;
-            padding-left: 10mm;
+            padding-top: 12mm;
+            padding-left: 6mm;
         }
         .cover-logo {
-            height: 52px;
-            margin-bottom: 12px;
+            height: 42px;
+            margin-bottom: 8px;
         }
         .cover-title {
-            font-size: 42px;
+            font-size: 32px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             letter-spacing: -0.5px;
         }
         .cover-subtitle {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             color: #2563eb;
-            margin: 0 0 14px 0;
+            margin: 0 0 10px 0;
         }
         .cover-badge {
             background-color: #eff6ff;
             color: #1d4ed8;
-            border: 1.5px solid #bfdbfe;
-            border-radius: 20px;
-            padding: 6px 18px;
-            font-size: 13.5px;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 4px 14px;
+            font-size: 11px;
             font-weight: 700;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .cover-projects-box {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 14px 20px;
-            width: 95%;
+            border-radius: 10px;
+            padding: 10px 16px;
+            width: 96%;
         }
         .cover-projects-title {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 800;
             color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .project-tag {
             display: inline-block;
             background-color: #ffffff;
             color: #1e293b;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 5px 12px;
-            font-size: 13px;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 10.5px;
             font-weight: 700;
-            margin-right: 8px;
-            margin-bottom: 8px;
+            margin-right: 6px;
+            margin-bottom: 6px;
         }
 
         /* Slide Header */
         .slide-header {
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             position: relative;
-            padding-right: 150px; /* Space for larger logo3 */
+            padding-right: 120px;
         }
         .header-logo3 {
             position: absolute;
             right: 0;
-            top: -3px;
-            height: 44px;
+            top: -2px;
+            height: 32px;
         }
         .slide-meta {
-            font-size: 13px;
+            font-size: 9.5px;
             font-weight: 800;
             color: #2563eb;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .slide-title {
-            font-size: 30px;
+            font-size: 20px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             letter-spacing: -0.5px;
         }
         .header-rule {
-            width: 52px;
-            height: 4px;
+            width: 38px;
+            height: 2.5px;
             background-color: #2563eb;
             border-radius: 2px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         /* Synchronized Table Layout for 3 Items across Projects */
         .items-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 12px 10px;
+            border-spacing: 6px 4.5px;
             table-layout: fixed;
-            margin-left: -6px;
-            margin-right: -6px;
+            margin-left: -3px;
+            margin-right: -3px;
         }
 
         .col-header {
@@ -155,28 +155,28 @@
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 10px 14px;
+            border-radius: 6px;
+            padding: 4px 7px;
             text-align: left;
         }
         .col-bar {
-            width: 32px;
-            height: 3.5px;
+            width: 20px;
+            height: 2.5px;
             background-color: #2563eb;
-            border-radius: 2px;
-            margin-bottom: 6px;
+            border-radius: 1px;
+            margin-bottom: 2px;
         }
         .col-title {
-            font-size: 16.5px;
+            font-size: 11px;
             font-weight: 800;
             color: #0f172a;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
         .col-prompt {
-            font-size: 10.5px;
+            font-size: 8px;
             color: #64748b;
             font-style: italic;
-            line-height: 1.35;
+            line-height: 1.2;
         }
 
         /* Project Cells in the Synchronized Row */
@@ -185,70 +185,74 @@
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 12px;
+            border-radius: 6px;
+            padding: 4.5px 6.5px;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .project-badge {
-            font-size: 12px;
+            font-size: 8.5px;
             font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 5px;
+            padding: 1.5px 4.5px;
+            border-radius: 3.5px;
             display: inline-block;
-            margin-bottom: 6px;
+            margin-bottom: 2.5px;
         }
         .officer-text {
-            font-size: 11px;
+            font-size: 7.5px;
             font-weight: 600;
             color: #64748b;
-            margin-left: 5px;
+            margin-left: 3px;
         }
 
         .bullet-list {
             margin: 0;
-            padding-left: 14px;
+            padding-left: 10px;
         }
         .bullet-list li {
-            font-size: 12px;
+            font-size: 8.2px;
             color: #1e293b;
-            margin-bottom: 4px;
-            line-height: 1.45;
+            margin-bottom: 1.8px;
+            line-height: 1.3;
             font-weight: 500;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Thank You Slide */
         .thank-you-slide {
-            padding-top: 30mm;
+            padding-top: 18mm;
             text-align: center;
         }
         .thank-you-title {
-            font-size: 46px;
+            font-size: 34px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 8px 0;
-            letter-spacing: -1px;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.5px;
         }
         .thank-you-subtitle {
-            font-size: 26px;
+            font-size: 18px;
             font-weight: 800;
             color: #2563eb;
-            margin: 0 0 14px 0;
+            margin: 0 0 10px 0;
         }
         .thank-you-text {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 600;
             color: #475569;
-            max-width: 650px;
-            margin: 0 auto 20px auto;
-            line-height: 1.5;
+            max-width: 550px;
+            margin: 0 auto 14px auto;
+            line-height: 1.4;
         }
 
         /* Slide Footer */
         .slide-footer {
-            margin-top: 8px;
+            margin-top: 4px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 4px;
-            font-size: 8.5px;
+            padding-top: 2.5px;
+            font-size: 7.5px;
             color: #94a3b8;
         }
         .footer-table {
@@ -334,7 +338,7 @@
                     @php
                         $color = $projectColors[$projIndex % count($projectColors)];
                     @endphp
-                    <span class="project-tag" style="border-left: 3.5px solid {{ $color['border'] }};">
+                    <span class="project-tag" style="border-left: 3px solid {{ $color['border'] }};">
                         <strong style="color: {{ $color['badge_text'] }};">{{ $sub->project_name }}</strong> 
                         <span style="color: #64748b; font-weight: normal;">({{ $sub->officer_name }})</span>
                     </span>
@@ -342,7 +346,7 @@
             </div>
         </div>
 
-        <div class="slide-footer" style="margin-top: 18mm;">
+        <div class="slide-footer" style="margin-top: 10mm;">
             <table class="footer-table">
                 <tr>
                     <td class="footer-left">Play It Forward Zambia • Consolidated Programmes Meeting</td>
@@ -387,7 +391,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Synchronized Project Rows: the cell with most details sets the demarcation baseline! -->
+                <!-- Synchronized Project Rows -->
                 @foreach($submissions as $projIndex => $sub)
                     @php
                         $color = $projectColors[$projIndex % count($projectColors)];
@@ -397,7 +401,7 @@
                         @php
                             $points = $sub->getPoints($itemKey);
                         @endphp
-                        <td class="project-cell" style="border-left: 4px solid {{ $color['border'] }};">
+                        <td class="project-cell" style="border-left: 3.5px solid {{ $color['border'] }};">
                             <!-- Project Badge with Distinct Color -->
                             <div>
                                 <span class="project-badge" style="background-color: {{ $color['badge_bg'] }}; color: {{ $color['badge_text'] }}; border: 1px solid {{ $color['badge_border'] }};">
@@ -410,11 +414,11 @@
                             @if(!empty($points))
                                 <ul class="bullet-list">
                                     @foreach($points as $pt)
-                                        <li>{{ $pt }}</li>
+                                        <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
                                     @endforeach
                                 </ul>
                             @else
-                                <div style="font-size: 9px; color: #94a3b8; font-style: italic; padding-left: 2px;">No key points submitted.</div>
+                                <div style="font-size: 7.5px; color: #94a3b8; font-style: italic; padding-left: 2px;">No key points submitted.</div>
                             @endif
                         </td>
                         @endforeach
@@ -427,7 +431,7 @@
         <div class="slide-footer">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-left">Play It Forward Zambia • Programmes Meeting</td>
+                    <td class="footer-left">Play It Forward Zambia • Consolidated Programmes Meeting</td>
                     <td class="footer-right">Slide {{ $slideIndex }} of {{ $totalPdfSlides }}</td>
                 </tr>
             </table>

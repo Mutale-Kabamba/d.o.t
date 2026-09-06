@@ -166,7 +166,7 @@
                         <!-- Key Milestones Snippet -->
                         <div class="space-y-1.5 mb-4">
                             <div class="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Key Milestones:</div>
-                            <div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-3 leading-relaxed whitespace-pre-line">
+                            <div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 line-clamp-3 leading-relaxed whitespace-pre-line break-words overflow-hidden">
                                 {{ $sub->achievements_milestones ?: 'No milestones listed' }}
                             </div>
                         </div>

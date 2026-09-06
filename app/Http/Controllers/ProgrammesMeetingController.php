@@ -499,7 +499,8 @@ class ProgrammesMeetingController extends Controller
 
                     if (!empty($pts)) {
                         foreach ($pts as $pt) {
-                            $ptRun = $cell->createTextRun("• {$pt}\n");
+                            $cleanPt = ProjectSubmission::formatPointText($pt);
+                            $ptRun = $cell->createTextRun("• {$cleanPt}\n");
                             $ptRun->getFont()->setSize(9)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
                         }
                     } else {

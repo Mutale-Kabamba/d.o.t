@@ -27,7 +27,7 @@
             left: 0;
             top: 0;
             bottom: 0;
-            width: 28px;
+            width: 16px;
             background-color: #2563eb;
             z-index: 40;
         }
@@ -46,7 +46,7 @@
 
         /* Cover Slide Layout */
         .cover-layout {
-            padding: 50px 70px 40px 90px;
+            padding: 36px 50px 30px 60px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -55,21 +55,22 @@
 
         /* Thematic Slide Layout */
         .thematic-layout {
-            padding: 30px 50px 20px 80px;
+            padding: 20px 36px 14px 44px;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             position: relative;
+            box-sizing: border-box;
         }
 
         /* Top Right Logo 3 */
         .top-right-logo {
             position: absolute;
-            top: 18px;
-            right: 45px;
-            height: 78px;
-            max-width: 250px;
+            top: 14px;
+            right: 36px;
+            height: 52px;
+            max-width: 180px;
             object-fit: contain;
             z-index: 30;
         }
@@ -77,16 +78,16 @@
         /* Bottom PowerPoint-style HUD */
         .powerpoint-hud {
             position: fixed;
-            bottom: 16px;
-            left: 42px;
+            bottom: 12px;
+            left: 30px;
             z-index: 50;
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(15, 23, 42, 0.85);
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.88);
             backdrop-filter: blur(10px);
-            padding: 6px 12px;
-            border-radius: 24px;
+            padding: 4px 10px;
+            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             opacity: 0.25;
             transition: opacity 0.25s ease-in-out;
@@ -98,14 +99,14 @@
             background: transparent;
             border: none;
             color: #ffffff;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             transition: background-color 0.15s;
             text-decoration: none;
         }
@@ -115,11 +116,11 @@
 
         /* Custom Scrollbar for Projector Tables */
         .slide-scroll::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
         .slide-scroll::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 6px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -132,28 +133,28 @@
     <div id="slide-0" class="slide-screen">
         <div class="cover-layout">
             <div>
-                <!-- Logo 2 above the name (Enlarged) -->
-                <div style="margin-bottom: 24px;">
-                    <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia Logo" style="height: 110px; max-width: 320px; object-fit: contain;">
+                <!-- Logo 2 above the name -->
+                <div style="margin-bottom: 16px;">
+                    <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia Logo" style="height: 75px; max-width: 240px; object-fit: contain;">
                 </div>
 
-                <h1 style="font-size: 64px; font-weight: 900; color: #0f172a; margin: 0 0 8px 0; letter-spacing: -1.5px; line-height: 1.05;">
+                <h1 style="font-size: 46px; font-weight: 900; color: #0f172a; margin: 0 0 6px 0; letter-spacing: -1px; line-height: 1.08;">
                     Play It Forward Zambia
                 </h1>
-                <h2 style="font-size: 40px; font-weight: 800; color: #2563eb; margin: 0 0 14px 0; letter-spacing: -0.5px;">
+                <h2 style="font-size: 28px; font-weight: 800; color: #2563eb; margin: 0 0 10px 0; letter-spacing: -0.5px;">
                     Programmes Meeting
                 </h2>
-                <div style="font-size: 24px; font-weight: 700; color: #1d4ed8; margin-bottom: 32px;">
+                <div style="font-size: 18px; font-weight: 700; color: #1d4ed8; margin-bottom: 22px;">
                     {{ $quarter }}
                 </div>
 
-                <div style="background-color: #f8fafc; border: 2px solid #e2e8f0; border-radius: 18px; padding: 24px 36px; width: 92%; max-width: 1500px;">
-                    <div style="font-size: 18px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 14px;">
+                <div style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px 26px; width: 92%; max-width: 1400px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;">
                         Compiled Project Submissions ({{ $submissions->count() }} Active Projects):
                     </div>
-                    <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 26px; display: flex; flex-direction: column; gap: 10px;">
+                    <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
                         @foreach($submissions as $sub)
-                            <li style="list-style-type: disc !important; font-size: 22px; color: #1e293b; font-weight: 700; line-height: 1.4;">
+                            <li style="list-style-type: disc !important; font-size: 16px; color: #1e293b; font-weight: 700; line-height: 1.35;">
                                 {{ $sub->project_name }} <span style="color: #64748b; font-weight: 600;">({{ $sub->officer_name }})</span>
                             </li>
                         @endforeach
@@ -213,27 +214,27 @@
             <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward" class="top-right-logo">
 
             <!-- Header -->
-            <div>
-                <div style="font-size: 15px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;">
+            <div style="margin-bottom: 6px;">
+                <div style="font-size: 11.5px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 2px;">
                     SLIDE {{ $slide['number'] }} OF 5 • {{ $quarter }}
                 </div>
-                <h2 style="font-size: 44px; font-weight: 900; color: #0f172a; margin: 0 0 4px 0; letter-spacing: -1px; max-width: 80%;">
+                <h2 style="font-size: 26px; font-weight: 900; color: #0f172a; margin: 0 0 3px 0; letter-spacing: -0.5px; max-width: 80%;">
                     {{ $slide['title'] }}
                 </h2>
-                <div style="width: 70px; height: 5px; background-color: #2563eb; border-radius: 3px; margin-bottom: 14px;"></div>
+                <div style="width: 44px; height: 3.5px; background-color: #2563eb; border-radius: 2px;"></div>
             </div>
 
             <!-- Synchronized Table (3 Columns, Row per Project) -->
-            <div class="slide-scroll" style="flex: 1; overflow-y: auto; padding-right: 10px;">
-                <table style="width: 100%; border-collapse: separate; border-spacing: 18px 12px; table-layout: fixed; margin-left: -9px; margin-right: -9px;">
+            <div class="slide-scroll" style="flex: 1; overflow-y: auto; padding-right: 6px;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 10px 8px; table-layout: fixed; margin-left: -5px; margin-right: -5px;">
                     <!-- Column Header Cards -->
                     <thead>
                         <tr>
                             @foreach($slide['items'] as $itemKey => $item)
-                            <th style="width: 33.33%; vertical-align: top; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 14px; padding: 12px 18px; text-align: left;">
-                                <div style="width: 40px; height: 4px; background: #2563eb; border-radius: 2px; margin-bottom: 6px;"></div>
-                                <div style="font-size: 20px; font-weight: 900; color: #0f172a; margin-bottom: 3px;">{{ $item['title'] }}</div>
-                                <div style="font-size: 13px; color: #64748b; font-style: italic; font-weight: 500; line-height: 1.35;">{{ $item['prompt'] }}</div>
+                            <th style="width: 33.33%; vertical-align: top; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 8px 12px; text-align: left; box-sizing: border-box;">
+                                <div style="width: 26px; height: 3px; background: #2563eb; border-radius: 1.5px; margin-bottom: 4px;"></div>
+                                <div style="font-size: 15px; font-weight: 900; color: #0f172a; margin-bottom: 2px;">{{ $item['title'] }}</div>
+                                <div style="font-size: 11px; color: #64748b; font-style: italic; font-weight: 500; line-height: 1.3;">{{ $item['prompt'] }}</div>
                             </th>
                             @endforeach
                         </tr>
@@ -249,22 +250,24 @@
                                 @php
                                     $points = $sub->getPoints($itemKey);
                                 @endphp
-                                <td style="width: 33.33%; vertical-align: top; background: #ffffff; border: 1.5px solid #e2e8f0; border-left: 7px solid {{ $color['border'] }}; border-radius: 12px; padding: 14px 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
-                                    <div style="margin-bottom: 10px;">
-                                        <span style="font-size: 15px; font-weight: 800; background-color: {{ $color['badge_bg'] }}; color: {{ $color['badge_text'] }}; border: 1.5px solid {{ $color['badge_border'] }}; padding: 4px 10px; border-radius: 8px; display: inline-block;">
+                                <td style="width: 33.33%; vertical-align: top; background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid {{ $color['border'] }}; border-radius: 9px; padding: 8px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); box-sizing: border-box; word-break: break-word; overflow-wrap: anywhere;">
+                                    <div style="margin-bottom: 6px;">
+                                        <span style="font-size: 12px; font-weight: 800; background-color: {{ $color['badge_bg'] }}; color: {{ $color['badge_text'] }}; border: 1px solid {{ $color['badge_border'] }}; padding: 2px 7px; border-radius: 6px; display: inline-block;">
                                             {{ $sub->project_name }}
                                         </span>
-                                        <span style="font-size: 13px; color: #64748b; font-weight: 700; margin-left: 8px;">• {{ $sub->officer_name }}</span>
+                                        <span style="font-size: 11px; color: #64748b; font-weight: 700; margin-left: 6px;">• {{ $sub->officer_name }}</span>
                                     </div>
 
                                     @if(!empty($points))
-                                        <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 22px;">
+                                        <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 17px;">
                                             @foreach($points as $pt)
-                                                <li style="list-style-type: disc !important; font-size: 16px; color: #0f172a; font-weight: 600; margin-bottom: 6px; line-height: 1.45;">{{ $pt }}</li>
+                                                <li style="list-style-type: disc !important; font-size: 13px; color: #1e293b; font-weight: 500; margin-bottom: 3.5px; line-height: 1.38; word-break: break-word; overflow-wrap: anywhere;">
+                                                    {!! \App\Models\ProjectSubmission::formatPointHtml($pt, false) !!}
+                                                </li>
                                             @endforeach
                                         </ul>
                                     @else
-                                        <div style="font-size: 13px; color: #94a3b8; font-style: italic; padding-left: 4px;">No key points submitted.</div>
+                                        <div style="font-size: 11px; color: #94a3b8; font-style: italic; padding-left: 2px;">No key points submitted.</div>
                                     @endif
                                 </td>
                                 @endforeach
@@ -275,7 +278,7 @@
             </div>
 
             <!-- Footer -->
-            <div style="padding-top: 12px; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: #64748b;">
+            <div style="padding-top: 6px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; color: #64748b;">
                 <span>Play It Forward Zambia • Programmes Meeting</span>
                 <span>Slide {{ $slideIndex + 1 }} of 7</span>
             </div>
@@ -286,20 +289,20 @@
 
     <!-- ==================== SLIDE 6: THANK YOU ENDING SLIDE ==================== -->
     <div id="slide-6" class="slide-screen" style="display: none; align-items: center; justify-content: center;">
-        <div style="width: 100%; max-width: 1100px; padding: 40px 60px; margin: auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="width: 100%; max-width: 900px; padding: 30px 40px; margin: auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <!-- Logo 2 (Centered) -->
-            <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia" style="height: 110px; max-width: 320px; object-fit: contain; margin: 0 auto 32px auto; display: block;">
+            <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia" style="height: 80px; max-width: 260px; object-fit: contain; margin: 0 auto 20px auto; display: block;">
 
-            <h1 style="font-size: 72px; font-weight: 900; color: #0f172a; margin: 0 auto 12px auto; letter-spacing: -1.5px; line-height: 1.05; text-align: center;">
+            <h1 style="font-size: 52px; font-weight: 900; color: #0f172a; margin: 0 auto 8px auto; letter-spacing: -1px; line-height: 1.05; text-align: center;">
                 Thank You!
             </h1>
-            <h2 style="font-size: 38px; font-weight: 800; color: #2563eb; margin: 0 auto 16px auto; text-align: center;">
+            <h2 style="font-size: 26px; font-weight: 800; color: #2563eb; margin: 0 auto 12px auto; text-align: center;">
                 Play It Forward Zambia
             </h2>
-            <p style="font-size: 24px; font-weight: 600; color: #475569; max-width: 900px; margin: 0 auto 36px auto; line-height: 1.5; text-align: center;">
+            <p style="font-size: 17px; font-weight: 500; color: #475569; max-width: 750px; margin: 0 auto 24px auto; line-height: 1.45; text-align: center;">
                 Inspiring and empowering young people and their communities through the power of education, health, and sport.
             </p>
-            <div style="font-size: 20px; font-weight: 700; color: #1d4ed8; background-color: #eff6ff; border: 1.5px solid #bfdbfe; padding: 8px 26px; border-radius: 30px; display: inline-block; margin: 0 auto;">
+            <div style="font-size: 15px; font-weight: 700; color: #1d4ed8; background-color: #eff6ff; border: 1.5px solid #bfdbfe; padding: 6px 20px; border-radius: 20px; display: inline-block; margin: 0 auto;">
                 {{ $quarter }}
             </div>
         </div>

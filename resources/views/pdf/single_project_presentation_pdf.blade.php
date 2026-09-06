@@ -6,7 +6,7 @@
     <style>
         @page {
             size: 297mm 210mm landscape;
-            margin: 10mm 14mm 10mm 16mm;
+            margin: 8mm 12mm 8mm 14mm;
         }
         * {
             box-sizing: border-box;
@@ -18,8 +18,8 @@
             padding: 0;
             background-color: #ffffff;
             color: #0f172a;
-            font-size: 12.5px;
-            line-height: 1.45;
+            font-size: 10.5px;
+            line-height: 1.38;
         }
 
         .slide {
@@ -28,7 +28,7 @@
             page-break-inside: avoid;
             position: relative;
             background-color: #ffffff;
-            padding-bottom: 14px;
+            padding-bottom: 8px;
         }
         .slide:last-child {
             page-break-after: avoid;
@@ -37,65 +37,65 @@
         /* Left Branding Color Bar */
         .brand-bar-left {
             position: absolute;
-            left: -16mm;
-            top: -10mm;
-            bottom: -10mm;
-            width: 7mm;
+            left: -14mm;
+            top: -8mm;
+            bottom: -8mm;
+            width: 5mm;
             background-color: #2563eb;
         }
 
         /* Cover Slide */
         .cover-slide {
-            padding-top: 16mm;
-            padding-left: 8mm;
+            padding-top: 14mm;
+            padding-left: 6mm;
         }
         .cover-logo {
-            height: 52px;
-            margin-bottom: 12px;
+            height: 44px;
+            margin-bottom: 10px;
         }
         .cover-title {
-            font-size: 40px;
+            font-size: 34px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 6px 0;
+            margin: 0 0 5px 0;
             letter-spacing: -0.5px;
         }
         .cover-subtitle {
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 700;
             color: #2563eb;
-            margin: 0 0 14px 0;
+            margin: 0 0 12px 0;
         }
         .cover-badge {
             background-color: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
-            border-radius: 16px;
-            padding: 6px 18px;
-            font-size: 13.5px;
+            border-radius: 14px;
+            padding: 5px 16px;
+            font-size: 11.5px;
             font-weight: 700;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .project-meta-box {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-left: 5px solid #2563eb;
-            border-radius: 10px;
-            padding: 18px 24px;
+            border-left: 4px solid #2563eb;
+            border-radius: 8px;
+            padding: 14px 20px;
             width: 90%;
         }
         .meta-row {
-            margin-bottom: 9px;
-            font-size: 13px;
+            margin-bottom: 6px;
+            font-size: 11.5px;
         }
         .meta-label {
             font-weight: 800;
             color: #475569;
-            width: 150px;
+            width: 140px;
             display: inline-block;
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 9.5px;
             letter-spacing: 0.5px;
         }
         .meta-val {
@@ -105,123 +105,127 @@
 
         /* Slide Header */
         .slide-header {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             position: relative;
-            padding-right: 150px;
+            padding-right: 120px;
         }
         .header-logo3 {
             position: absolute;
             right: 0;
-            top: -3px;
-            height: 44px;
+            top: -2px;
+            height: 34px;
         }
         .slide-meta {
-            font-size: 13px;
+            font-size: 10px;
             font-weight: 800;
             color: #2563eb;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .slide-title {
-            font-size: 30px;
+            font-size: 22px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             letter-spacing: -0.5px;
         }
         .header-rule {
-            width: 52px;
-            height: 4px;
+            width: 42px;
+            height: 3px;
             background-color: #2563eb;
             border-radius: 2px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         /* 3-Column Items Grid */
         .items-grid {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 14px 0;
+            border-spacing: 10px 0;
             table-layout: fixed;
-            margin-left: -7px;
-            margin-right: -7px;
+            margin-left: -5px;
+            margin-right: -5px;
         }
         .item-card {
             width: 33.33%;
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 16px 18px;
+            border-radius: 8px;
+            padding: 12px 14px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
         .item-bar {
-            width: 32px;
-            height: 3.5px;
+            width: 24px;
+            height: 3px;
             background-color: #2563eb;
-            border-radius: 2px;
-            margin-bottom: 6px;
-        }
-        .item-title {
-            font-size: 16.5px;
-            font-weight: 800;
-            color: #0f172a;
+            border-radius: 1.5px;
             margin-bottom: 4px;
         }
+        .item-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
         .item-prompt {
-            font-size: 10.5px;
+            font-size: 9px;
             color: #64748b;
             font-style: italic;
-            margin-bottom: 12px;
-            line-height: 1.35;
+            margin-bottom: 8px;
+            line-height: 1.3;
         }
 
         .bullet-list {
             margin: 0;
-            padding-left: 16px;
+            padding-left: 12px;
         }
         .bullet-list li {
-            font-size: 12px;
+            font-size: 9.5px;
             color: #1e293b;
-            margin-bottom: 6px;
-            line-height: 1.45;
+            margin-bottom: 3.5px;
+            line-height: 1.4;
             font-weight: 500;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Thank You Slide */
         .thank-you-slide {
-            padding-top: 30mm;
+            padding-top: 22mm;
             text-align: center;
         }
         .thank-you-title {
-            font-size: 46px;
+            font-size: 38px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 8px 0;
-            letter-spacing: -1px;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.5px;
         }
         .thank-you-subtitle {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: 800;
             color: #2563eb;
-            margin: 0 0 14px 0;
+            margin: 0 0 10px 0;
         }
         .thank-you-text {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: #475569;
-            max-width: 650px;
-            margin: 0 auto 20px auto;
-            line-height: 1.5;
+            max-width: 550px;
+            margin: 0 auto 16px auto;
+            line-height: 1.4;
         }
 
         /* Slide Footer */
         .slide-footer {
-            margin-top: 10px;
+            margin-top: 6px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 4px;
-            font-size: 8.5px;
+            padding-top: 3px;
+            font-size: 8px;
             color: #94a3b8;
         }
         .footer-table {
@@ -277,7 +281,7 @@
             </div>
         </div>
 
-        <div class="slide-footer" style="margin-top: 20mm;">
+        <div class="slide-footer" style="margin-top: 14mm;">
             <table class="footer-table">
                 <tr>
                     <td class="footer-left">Play It Forward Zambia • Programmes Meeting</td>
@@ -322,11 +326,11 @@
                     @if(!empty($points))
                         <ul class="bullet-list">
                             @foreach($points as $pt)
-                                <li>{{ $pt }}</li>
+                                <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
                             @endforeach
                         </ul>
                     @else
-                        <div style="font-size: 9.5px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
+                        <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
                     @endif
                 </td>
                 @endforeach
