@@ -10,44 +10,25 @@ class WorksheetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_worksheet_index_page_loads_successfully(): void
+    public function test_worksheet_index_page_is_disabled(): void
     {
         $response = $this->get('/worksheet');
 
-        $response->assertStatus(200);
-        $response->assertSee('Cohort Review &amp; Planning', false);
-        $response->assertSee('100% Anonymous');
-        $response->assertSee('Journey Mapping');
-        $response->assertSee('PACRA');
+        $response->assertStatus(404);
     }
 
-    public function test_anonymous_submission_can_be_stored(): void
+    public function test_anonymous_submission_endpoint_is_disabled(): void
     {
         $payload = [
             's1_recruitment_high' => 'Great mobilization across centers',
-            's1_recruitment_challenges' => 'Transport issues in remote zones',
-            's4_safeguarding_accessible' => 'Yes, completely clear',
-            's8_one_word' => 'Empowered',
-            's8_change_one_thing' => 'More market walk sessions',
         ];
 
         $response = $this->postJson('/submit', $payload);
 
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'token',
-            'message',
-            'redirect_url'
-        ]);
-
-        $this->assertDatabaseHas('anonymous_submissions', [
-            's8_one_word' => 'Empowered',
-            's4_safeguarding_accessible' => 'Yes, completely clear',
-        ]);
+        $response->assertStatus(404);
     }
 
-    public function test_success_page_renders_with_valid_token(): void
+    public function test_legacy_success_page_is_disabled(): void
     {
         $submission = AnonymousSubmission::create([
             's8_one_word' => 'Inspired',
@@ -55,21 +36,17 @@ class WorksheetTest extends TestCase
 
         $response = $this->get('/success/' . $submission->token);
 
-        $response->assertStatus(200);
-        $response->assertSee('Worksheet Submitted!');
-        $response->assertSee($submission->token);
+        $response->assertStatus(404);
     }
 
-    public function test_pdf_export_downloads_valid_pdf_stream(): void
+    public function test_legacy_pdf_export_is_disabled(): void
     {
         $payload = [
             's1_recruitment_high' => 'Great mobilization',
-            's8_one_word' => 'Empowered',
         ];
 
         $response = $this->post('/export-pdf', $payload);
 
-        $response->assertStatus(200);
-        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertStatus(404);
     }
 }

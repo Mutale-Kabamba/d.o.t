@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $submission->project_name }} - Programmes Meeting Presentation (Q2 2026)</title>
+    <title>{{ $project->name ?? $submission->project_name ?? 'Project' }} - Programmes Meeting Presentation</title>
     <style>
         @page {
             size: 297mm 210mm landscape;
@@ -148,7 +148,6 @@
             margin-right: -5px;
         }
         .item-card {
-            width: 33.33%;
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
@@ -249,6 +248,13 @@
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
 
+        $pName = $project->name ?? $submission->project_name ?? 'Project';
+        $oName = $project->lead_officer_name ?? $submission->officer_name ?? 'Project Officer';
+        $loc = $project->location ?? $submission->location ?? 'Livingstone, Zambia';
+        $period = $periodTitle ?? $submission->reporting_period ?? 'Quarter 2 April, May, June 2026';
+
+        $pData = !empty($projectDataList) ? $projectDataList[0] : null;
+
         $slideIndex = 1;
         $totalPdfSlides = 7;
     @endphp
@@ -257,34 +263,37 @@
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
 
-        <!-- Logo 2 -->
         @if($logo2Base64)
             <img src="{{ $logo2Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
         @endif
 
-        <h1 class="cover-title">{{ $submission->project_name }}</h1>
-        <h2 class="cover-subtitle">Programmes Meeting Presentation</h2>
-        <div class="cover-badge">{{ $submission->reporting_period ?? 'Quarter 2 April, May, June 2026' }}</div>
+        <h1 class="cover-title">{{ $pName }}</h1>
+        <h2 class="cover-subtitle">Isolated Project Presentation</h2>
+        <div class="cover-badge">{{ $period }}</div>
 
         <div class="project-meta-box">
             <div class="meta-row">
                 <span class="meta-label">Project:</span>
-                <span class="meta-val">{{ $submission->project_name }}</span>
+                <span class="meta-val">{{ $pName }}</span>
             </div>
             <div class="meta-row">
-                <span class="meta-label">Project Officer:</span>
-                <span class="meta-val">{{ $submission->officer_name }}</span>
+                <span class="meta-label">Lead Officer:</span>
+                <span class="meta-val">{{ $oName }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Location:</span>
+                <span class="meta-val">{{ $loc }}</span>
             </div>
             <div class="meta-row" style="margin-bottom: 0;">
-                <span class="meta-label">Submitted:</span>
-                <span class="meta-val">{{ $submission->created_at ? $submission->created_at->format('d M Y, H:i') : 'Draft' }}</span>
+                <span class="meta-label">Generated:</span>
+                <span class="meta-val">{{ $generatedDate }}</span>
             </div>
         </div>
 
         <div class="slide-footer" style="margin-top: 14mm;">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-left">Play It Forward Zambia • Programmes Meeting</td>
+                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
                     <td class="footer-right">Cover Slide • Generated {{ $generatedDate }}</td>
                 </tr>
             </table>
@@ -295,45 +304,62 @@
     @foreach($slidesConfig as $slideKey => $slide)
     @php
         $slideIndex++;
+        $themePts = $pData['theme_points'][$slideKey] ?? [];
     @endphp
     <div class="slide">
         <div class="brand-bar-left"></div>
 
         <!-- Slide Header -->
         <div class="slide-header">
-            <!-- Top Right Logo 3 -->
             @if($logo3Base64)
                 <img src="{{ $logo3Base64 }}" alt="Play It Forward" class="header-logo3">
             @endif
 
-            <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ $submission->reporting_period ?? 'Quarter 2 2026' }}</div>
+            <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ strtoupper($period) }}</div>
             <h2 class="slide-title">{{ $slide['title'] }}</h2>
             <div class="header-rule"></div>
         </div>
 
-        <!-- 3 Items for this Project -->
+        <!-- Single Project Theme Points -->
         <table class="items-grid">
             <tr>
-                @foreach($slide['items'] as $itemKey => $item)
-                @php
-                    $points = $submission->getPoints($itemKey);
-                @endphp
-                <td class="item-card">
-                    <div class="item-bar"></div>
-                    <div class="item-title">{{ $item['title'] }}</div>
-                    <div class="item-prompt">{{ $item['prompt'] }}</div>
-
-                    @if(!empty($points))
-                        <ul class="bullet-list">
-                            @foreach($points as $pt)
-                                <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
+                @if(!empty($themePts))
+                    <td class="item-card" style="width: 100%; border-left: 4px solid #2563eb;">
+                        <div class="item-title" style="margin-bottom: 8px;">Key Presentation Points</div>
+                        <ul class="bullet-list" style="padding-left: 16px;">
+                            @foreach($themePts as $pt)
+                                <li style="font-size: 10.5px; margin-bottom: 6px; line-height: 1.45;">
+                                    {!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}
+                                </li>
                             @endforeach
                         </ul>
-                    @else
-                        <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
-                    @endif
-                </td>
-                @endforeach
+                    </td>
+                @elseif(isset($submission))
+                    @foreach($slide['items'] as $itemKey => $item)
+                    @php
+                        $points = $submission->getPoints($itemKey);
+                    @endphp
+                    <td class="item-card" style="width: 33.33%;">
+                        <div class="item-bar"></div>
+                        <div class="item-title">{{ $item['title'] }}</div>
+                        <div class="item-prompt">{{ $item['prompt'] }}</div>
+
+                        @if(!empty($points))
+                            <ul class="bullet-list">
+                                @foreach($points as $pt)
+                                    <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
+                        @endif
+                    </td>
+                    @endforeach
+                @else
+                    <td class="item-card" style="width: 100%;">
+                        <div style="font-size: 9px; color: #94a3b8; font-style: italic;">No specific points entered for this period.</div>
+                    </td>
+                @endif
             </tr>
         </table>
 
@@ -341,7 +367,7 @@
         <div class="slide-footer">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-left">{{ $submission->project_name }} • {{ $submission->officer_name }}</td>
+                    <td class="footer-left">{{ $pName }} • {{ $oName }}</td>
                     <td class="footer-right">Slide {{ $slideIndex }} of {{ $totalPdfSlides }}</td>
                 </tr>
             </table>
@@ -358,16 +384,16 @@
         @endif
 
         <h1 class="thank-you-title">Thank You!</h1>
-        <h2 class="thank-you-subtitle">{{ $submission->project_name }}</h2>
+        <h2 class="thank-you-subtitle">{{ $pName }}</h2>
         <p class="thank-you-text">
-            Play It Forward Zambia • {{ $submission->officer_name }}
+            Play It Forward Zambia • {{ $oName }}
         </p>
-        <div class="cover-badge" style="margin-bottom: 24px;">{{ $submission->reporting_period ?? 'Quarter 2 April, May, June 2026' }}</div>
+        <div class="cover-badge" style="margin-bottom: 24px;">{{ $period }}</div>
 
         <div class="slide-footer" style="margin-top: 15mm;">
             <table class="footer-table">
                 <tr>
-                    <td class="footer-left">Play It Forward Zambia • Programmes Meeting</td>
+                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
                     <td class="footer-right">Slide {{ $totalPdfSlides }} of {{ $totalPdfSlides }}</td>
                 </tr>
             </table>

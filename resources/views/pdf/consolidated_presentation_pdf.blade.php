@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Play It Forward Zambia - Consolidated Programmes Meeting (Q2 2026)</title>
+    <title>Play It Forward Zambia - Consolidated Programmes Meeting Presentation</title>
     <style>
         @page {
             size: 297mm 210mm landscape;
@@ -107,7 +107,7 @@
 
         /* Slide Header */
         .slide-header {
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             position: relative;
             padding-right: 120px;
         }
@@ -115,10 +115,10 @@
             position: absolute;
             right: 0;
             top: -2px;
-            height: 32px;
+            height: 30px;
         }
         .slide-meta {
-            font-size: 9.5px;
+            font-size: 9px;
             font-weight: 800;
             color: #2563eb;
             text-transform: uppercase;
@@ -126,341 +126,241 @@
             margin-bottom: 2px;
         }
         .slide-title {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 3px 0;
+            margin: 0 0 2px 0;
             letter-spacing: -0.5px;
         }
         .header-rule {
-            width: 38px;
+            width: 36px;
             height: 2.5px;
             background-color: #2563eb;
             border-radius: 2px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
-        /* Synchronized Table Layout for 3 Items across Projects */
+        /* TRANSPOSED TABLE LAYOUT (Columns = Projects, Rows = Content) */
         .items-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 6px 4.5px;
+            border-spacing: 8px 0;
             table-layout: fixed;
-            margin-left: -3px;
-            margin-right: -3px;
+            margin-left: -4px;
+            margin-right: -4px;
         }
 
         .col-header {
-            width: 33.33%;
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 4px 7px;
+            padding: 6px 9px;
             text-align: left;
         }
-        .col-bar {
-            width: 20px;
-            height: 2.5px;
-            background-color: #2563eb;
-            border-radius: 1px;
-            margin-bottom: 2px;
-        }
-        .col-title {
-            font-size: 11px;
+        .proj-name {
+            font-size: 12px;
             font-weight: 800;
             color: #0f172a;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
-        .col-prompt {
-            font-size: 8px;
-            color: #64748b;
-            font-style: italic;
-            line-height: 1.2;
+        .proj-officer {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #2563eb;
         }
 
-        /* Project Cells in the Synchronized Row */
-        .project-cell {
-            width: 33.33%;
+        .item-cell {
             vertical-align: top;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 4.5px 6.5px;
+            padding: 8px 10px;
+            font-size: 9.5px;
             word-break: break-word;
-            overflow-wrap: break-word;
         }
 
-        .project-badge {
-            font-size: 8.5px;
-            font-weight: 800;
-            padding: 1.5px 4.5px;
-            border-radius: 3.5px;
-            display: inline-block;
-            margin-bottom: 2.5px;
-        }
-        .officer-text {
-            font-size: 7.5px;
-            font-weight: 600;
-            color: #64748b;
-            margin-left: 3px;
-        }
-
-        .bullet-list {
+        .points-list {
             margin: 0;
-            padding-left: 10px;
+            padding-left: 14px;
         }
-        .bullet-list li {
-            font-size: 8.2px;
+        .points-list li {
+            margin-bottom: 4px;
             color: #1e293b;
-            margin-bottom: 1.8px;
-            line-height: 1.3;
-            font-weight: 500;
-            word-break: break-word;
-            overflow-wrap: break-word;
+            line-height: 1.35;
         }
-
-        /* Thank You Slide */
-        .thank-you-slide {
-            padding-top: 18mm;
-            text-align: center;
-        }
-        .thank-you-title {
-            font-size: 34px;
-            font-weight: 900;
-            color: #0f172a;
-            margin: 0 0 6px 0;
-            letter-spacing: -0.5px;
-        }
-        .thank-you-subtitle {
-            font-size: 18px;
-            font-weight: 800;
-            color: #2563eb;
-            margin: 0 0 10px 0;
-        }
-        .thank-you-text {
-            font-size: 11px;
-            font-weight: 600;
-            color: #475569;
-            max-width: 550px;
-            margin: 0 auto 14px auto;
-            line-height: 1.4;
+        .empty-points {
+            font-size: 9px;
+            color: #94a3b8;
+            font-style: italic;
         }
 
         /* Slide Footer */
         .slide-footer {
-            margin-top: 4px;
+            margin-top: 6px;
+            padding-top: 4px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 2.5px;
-            font-size: 7.5px;
-            color: #94a3b8;
-        }
-        .footer-table {
+            font-size: 8.5px;
+            color: #64748b;
+            font-weight: 600;
+            display: table;
             width: 100%;
         }
         .footer-left {
+            display: table-cell;
             text-align: left;
-            font-weight: 600;
         }
         .footer-right {
+            display: table-cell;
             text-align: right;
+        }
+
+        /* Thank You Slide */
+        .thank-you-slide {
+            padding-top: 25mm;
+            text-align: center;
+        }
+        .ty-title {
+            font-size: 38px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 6px 0;
+        }
+        .ty-sub {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 0 0 12px 0;
+        }
+        .ty-quote {
+            font-size: 11px;
+            color: #475569;
+            max-width: 600px;
+            margin: 0 auto 16px auto;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-    @php
-        $logo2Path = public_path('logos/logo2.png');
-        $logo2Base64 = file_exists($logo2Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo2Path)) : '';
-
-        $logo3Path = public_path('logos/logo3.png');
-        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
-
-        $projectColors = [
-            [
-                'border' => '#2563eb', // Royal Blue
-                'badge_bg' => '#eff6ff',
-                'badge_text' => '#1d4ed8',
-                'badge_border' => '#bfdbfe',
-            ],
-            [
-                'border' => '#059669', // Emerald Green
-                'badge_bg' => '#ecfdf5',
-                'badge_text' => '#047857',
-                'badge_border' => '#a7f3d0',
-            ],
-            [
-                'border' => '#7c3aed', // Purple / Violet
-                'badge_bg' => '#f5f3ff',
-                'badge_text' => '#6d28d9',
-                'badge_border' => '#ddd6fe',
-            ],
-            [
-                'border' => '#d97706', // Amber / Orange
-                'badge_bg' => '#fffbeb',
-                'badge_text' => '#b45309',
-                'badge_border' => '#fde68a',
-            ],
-            [
-                'border' => '#0891b2', // Teal / Cyan
-                'badge_bg' => '#ecfeff',
-                'badge_text' => '#0e7490',
-                'badge_border' => '#a5f3fc',
-            ],
-            [
-                'border' => '#e11d48', // Rose / Red
-                'badge_bg' => '#fff1f2',
-                'badge_text' => '#be123c',
-                'badge_border' => '#fecdd3',
-            ],
-        ];
-        $slideIndex = 1;
-        $totalPdfSlides = 7;
-    @endphp
-
-    <!-- ==================== SLIDE 1: COVER SLIDE ==================== -->
+    <!-- ==================== SLIDE 0: COVER SLIDE ==================== -->
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
-        
-        <!-- Logo 2 above the name -->
-        @if($logo2Base64)
-            <img src="{{ $logo2Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
+
+        @if(file_exists(public_path('logos/logo2.png')))
+            <img src="{{ public_path('logos/logo2.png') }}" class="cover-logo" alt="Logo">
         @endif
 
-        <h1 class="cover-title">{{ $meetingTitle }}</h1>
-        <h2 class="cover-subtitle">{{ $meetingSubtitle }}</h2>
+        <div class="cover-title">{{ $meetingTitle ?? 'Play It Forward Zambia' }}</div>
+        <div class="cover-subtitle">{{ $meetingSubtitle ?? 'Programmes Meeting' }}</div>
         <div class="cover-badge">{{ $quarter }}</div>
 
         <div class="cover-projects-box">
-            <div class="cover-projects-title">Compiled Project Submissions ({{ $submissions->count() }} Active Projects)</div>
+            <div class="cover-projects-title">Active Projects Compiled ({{ count($projectDataList) }} Active Projects):</div>
             <div>
-                @foreach($submissions as $projIndex => $sub)
-                    @php
-                        $color = $projectColors[$projIndex % count($projectColors)];
-                    @endphp
-                    <span class="project-tag" style="border-left: 3px solid {{ $color['border'] }};">
-                        <strong style="color: {{ $color['badge_text'] }};">{{ $sub->project_name }}</strong> 
-                        <span style="color: #64748b; font-weight: normal;">({{ $sub->officer_name }})</span>
-                    </span>
+                @foreach($projectDataList as $pData)
+                    <div class="project-tag">
+                        <strong>{{ $pData['project_name'] }}</strong> ({{ $pData['officer_name'] }})
+                    </div>
                 @endforeach
             </div>
         </div>
 
-        <div class="slide-footer" style="margin-top: 10mm;">
-            <table class="footer-table">
-                <tr>
-                    <td class="footer-left">Play It Forward Zambia • Consolidated Programmes Meeting</td>
-                    <td class="footer-right">Cover Slide • Generated {{ $generatedDate }}</td>
-                </tr>
-            </table>
+        <div class="slide-footer" style="margin-top: 20mm;">
+            <div class="footer-left">Play It Forward Zambia • Programmes Meeting</div>
+            <div class="footer-right">Generated: {{ $generatedDate }} • Slide 1 of 7</div>
         </div>
     </div>
 
-    <!-- ==================== 5 CONSOLIDATED THEMATIC SLIDES ==================== -->
-    @foreach($slidesConfig as $slideKey => $slide)
+    <!-- ==================== SLIDES 1 to 5: 5 THEMATIC SLIDES (TRANSPOSED MATRIX) ==================== -->
     @php
-        $slideIndex++;
+        $slideNum = 1;
+        $borderColors = ['#2563eb', '#059669', '#7c3aed', '#d97706', '#0891b2', '#e11d48'];
+        $projCount = max(1, count($projectDataList));
+        $colWidthPct = floor(100 / $projCount) . '%';
     @endphp
+
+    @foreach($slidesConfig as $slideKey => $slide)
     <div class="slide">
         <div class="brand-bar-left"></div>
 
-        <!-- Slide Header -->
+        <!-- Header -->
         <div class="slide-header">
-            <!-- Top Right Logo 3 -->
-            @if($logo3Base64)
-                <img src="{{ $logo3Base64 }}" alt="Play It Forward" class="header-logo3">
+            @if(file_exists(public_path('logos/logo3.png')))
+                <img src="{{ public_path('logos/logo3.png') }}" class="header-logo3" alt="Logo">
             @endif
-
-            <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ $quarter }}</div>
-            <h2 class="slide-title">{{ $slide['title'] }}</h2>
+            <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ strtoupper($quarter) }}</div>
+            <div class="slide-title">{{ $slide['title'] }}</div>
             <div class="header-rule"></div>
         </div>
 
-        <!-- Synchronized Table across 3 Items and all Projects -->
+        <!-- TRANSPOSED TABLE: Columns = Projects (X-axis), Rows = Points -->
         <table class="items-table">
-            <!-- 3 Column Headers matching the slide items -->
             <thead>
                 <tr>
-                    @foreach($slide['items'] as $itemKey => $item)
-                    <th class="col-header">
-                        <div class="col-bar"></div>
-                        <div class="col-title">{{ $item['title'] }}</div>
-                        <div class="col-prompt">{{ $item['prompt'] }}</div>
+                    @foreach($projectDataList as $pIdx => $pData)
+                    @php
+                        $bColor = $borderColors[$pIdx % count($borderColors)];
+                    @endphp
+                    <th class="col-header" style="width: {{ $colWidthPct }}; border-top: 4px solid {{ $bColor }};">
+                        <div class="proj-name">{{ $pData['project_name'] }}</div>
+                        <div class="proj-officer">Lead: {{ $pData['officer_name'] }}</div>
                     </th>
                     @endforeach
                 </tr>
             </thead>
             <tbody>
-                <!-- Synchronized Project Rows -->
-                @foreach($submissions as $projIndex => $sub)
+                <tr>
+                    @foreach($projectDataList as $pIdx => $pData)
                     @php
-                        $color = $projectColors[$projIndex % count($projectColors)];
+                        $bColor = $borderColors[$pIdx % count($borderColors)];
+                        $points = $pData['theme_points'][$slideKey] ?? [];
                     @endphp
-                    <tr>
-                        @foreach($slide['items'] as $itemKey => $item)
-                        @php
-                            $points = $sub->getPoints($itemKey);
-                        @endphp
-                        <td class="project-cell" style="border-left: 3.5px solid {{ $color['border'] }};">
-                            <!-- Project Badge with Distinct Color -->
-                            <div>
-                                <span class="project-badge" style="background-color: {{ $color['badge_bg'] }}; color: {{ $color['badge_text'] }}; border: 1px solid {{ $color['badge_border'] }};">
-                                    {{ $sub->project_name }}
-                                </span>
-                                <span class="officer-text">• {{ $sub->officer_name }}</span>
-                            </div>
-
-                            <!-- Item Points for this Project -->
-                            @if(!empty($points))
-                                <ul class="bullet-list">
-                                    @foreach($points as $pt)
-                                        <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <div style="font-size: 7.5px; color: #94a3b8; font-style: italic; padding-left: 2px;">No key points submitted.</div>
-                            @endif
-                        </td>
-                        @endforeach
-                    </tr>
-                @endforeach
+                    <td class="item-cell" style="width: {{ $colWidthPct }}; border-left: 3.5px solid {{ $bColor }};">
+                        @if(!empty($points))
+                            <ul class="points-list">
+                                @foreach($points as $pt)
+                                    <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="empty-points">No key presentation points recorded.</div>
+                        @endif
+                    </td>
+                    @endforeach
+                </tr>
             </tbody>
         </table>
 
-        <!-- Slide Footer -->
+        <!-- Footer -->
         <div class="slide-footer">
-            <table class="footer-table">
-                <tr>
-                    <td class="footer-left">Play It Forward Zambia • Consolidated Programmes Meeting</td>
-                    <td class="footer-right">Slide {{ $slideIndex }} of {{ $totalPdfSlides }}</td>
-                </tr>
-            </table>
+            <div class="footer-left">Play It Forward Zambia • Programmes Meeting</div>
+            <div class="footer-right">Slide {{ $slideNum + 1 }} of 7</div>
         </div>
     </div>
+    @php $slideNum++; @endphp
     @endforeach
 
-    <!-- ==================== SLIDE 7: THANK YOU ENDING SLIDE ==================== -->
+    <!-- ==================== SLIDE 6: THANK YOU SLIDE ==================== -->
     <div class="slide thank-you-slide">
         <div class="brand-bar-left"></div>
 
-        @if($logo2Base64)
-            <img src="{{ $logo2Base64 }}" alt="Play It Forward Zambia" style="height: 56px; margin-bottom: 16px;">
+        @if(file_exists(public_path('logos/logo2.png')))
+            <img src="{{ public_path('logos/logo2.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
         @endif
 
-        <h1 class="thank-you-title">Thank You!</h1>
-        <h2 class="thank-you-subtitle">Play It Forward Zambia</h2>
-        <p class="thank-you-text">
+        <div class="ty-title">Thank You!</div>
+        <div class="ty-sub">Play It Forward Zambia</div>
+        <div class="ty-quote">
             Inspiring and empowering young people and their communities through the power of education, health, and sport.
-        </p>
-        <div class="cover-badge" style="margin-bottom: 24px;">{{ $quarter }}</div>
+        </div>
+        <div style="font-size: 11px; font-weight: 800; color: #1d4ed8;">
+            {{ $quarter }}
+        </div>
 
-        <div class="slide-footer" style="margin-top: 15mm;">
-            <table class="footer-table">
-                <tr>
-                    <td class="footer-left">Play It Forward Zambia • Consolidated Programmes Meeting</td>
-                    <td class="footer-right">Slide {{ $totalPdfSlides }} of {{ $totalPdfSlides }}</td>
-                </tr>
-            </table>
+        <div class="slide-footer" style="margin-top: 25mm;">
+            <div class="footer-left">Play It Forward Zambia • Programmes Meeting</div>
+            <div class="footer-right">Slide 7 of 7</div>
         </div>
     </div>
 

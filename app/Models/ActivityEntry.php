@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-class ProjectSubmission extends Model
+class ActivityEntry extends Model
 {
     use HasFactory;
 
@@ -14,15 +17,61 @@ class ProjectSubmission extends Model
 
     protected static function booted(): void
     {
-        static::creating(function ($submission) {
-            if (empty($submission->token)) {
-                $submission->token = (string) Str::uuid();
+        static::creating(function ($entry) {
+            if (empty($entry->token)) {
+                $entry->token = (string) Str::uuid();
+            }
+            if (empty($entry->reporting_period) && !empty($entry->activity_date)) {
+                $date = Carbon::parse($entry->activity_date);
+                $quarter = ceil($date->month / 3);
+                $entry->reporting_period = "Quarter {$quarter} " . $date->format('F Y');
+            }
+        });
+
+        static::saving(function ($entry) {
+            $pillarMapping = [
+                'achievements_points' => ['achievements_milestones', 'achievements_impact', 'achievements_stories'],
+                'challenges_points' => ['challenges_operational', 'challenges_resources', 'challenges_risks'],
+                'learning_points' => ['learning_lessons', 'learning_feedback', 'learning_innovation'],
+                'mne_points' => ['mne_performance', 'mne_data_quality', 'mne_evaluation_plans'],
+                'collab_points' => ['collab_projects', 'collab_partnerships', 'collab_cross_learning'],
+            ];
+
+            foreach ($pillarMapping as $pointsCol => $subFields) {
+                $subContent = [];
+                foreach ($subFields as $sf) {
+                    $val = trim($entry->{$sf} ?? '');
+                    if (!empty($val)) {
+                        $subContent[] = $val;
+                    }
+                }
+
+                if (!empty($subContent)) {
+                    // Sync combined sub-fields into points column if not manually overridden or to keep in sync
+                    $entry->{$pointsCol} = implode("\n", $subContent);
+                }
             }
         });
     }
 
     /**
-     * Helper to get bullet points array from multiline text field.
+     * Project this activity entry belongs to.
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * User who logged this activity entry.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Helper to get bullet points array from a thematic presentation points or sub-section field.
      * Preserves leading numbers, percentages, and metrics (e.g. "98% of girls passed", "100+ participants", "1 in 4").
      */
     public function getPoints(string $field): array
@@ -166,5 +215,45 @@ class ProjectSubmission extends Model
 
         $cleanHost = preg_replace('/^www\./i', '', $host);
         return !empty($cleanHost) ? '🔗 ' . $cleanHost : '🔗 View Attachment';
+    }
+
+    /**
+     * Scope for User access (scoped to user's assigned projects unless super admin).
+     */
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        if ($user->isSuperAdmin()) {
+            return $query;
+        }
+
+        return $query->whereHas('project.users', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        });
+    }
+
+    /**
+     * Filter by interval (day, month, quarter, year, or custom range).
+     */
+    public function scopeFilterInterval(Builder $query, string $interval, array $params = []): Builder
+    {
+        return match ($interval) {
+            'day' => $query->whereDate('activity_date', $params['date'] ?? now()->toDateString()),
+            'month' => $query->whereMonth('activity_date', $params['month'] ?? now()->month)
+                             ->whereYear('activity_date', $params['year'] ?? now()->year),
+            'quarter' => (function () use ($query, $params) {
+                $qNum = (int) ($params['quarter'] ?? ceil(now()->month / 3));
+                $year = (int) ($params['year'] ?? now()->year);
+                $startMonth = (($qNum - 1) * 3) + 1;
+                $endMonth = $startMonth + 2;
+                $startDate = Carbon::create($year, $startMonth, 1)->startOfMonth();
+                $endDate = Carbon::create($year, $endMonth, 1)->endOfMonth();
+                return $query->whereBetween('activity_date', [$startDate->toDateString(), $endDate->toDateString()]);
+            })(),
+            'year' => $query->whereYear('activity_date', $params['year'] ?? now()->year),
+            'custom' => !empty($params['from_date']) && !empty($params['to_date'])
+                ? $query->whereBetween('activity_date', [$params['from_date'], $params['to_date']])
+                : $query,
+            default => $query,
+        };
     }
 }

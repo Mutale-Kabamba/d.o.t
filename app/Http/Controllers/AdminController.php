@@ -97,6 +97,28 @@ class AdminController extends Controller
     }
 
     /**
+     * Export single submission to PDF.
+     */
+    public function exportSinglePdf(string $token): Response
+    {
+        $submission = AnonymousSubmission::where('token', $token)->firstOrFail();
+
+        $data = $submission->toArray();
+        $data['token'] = $submission->token;
+        $data['date'] = $submission->created_at->format('Y-m-d');
+
+        $pdf = Pdf::loadView('pdf.worksheet', $data)
+            ->setPaper('a4', 'portrait')
+            ->setOption([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'Helvetica',
+            ]);
+
+        return $pdf->download("DOT_Submission_{$token}.pdf");
+    }
+
+    /**
      * Export all submissions to CSV.
      */
     public function exportCsv(): StreamedResponse

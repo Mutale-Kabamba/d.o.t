@@ -22,7 +22,35 @@
     <!-- html2pdf for high quality client-side PDF rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Vite Assets -->
+    <!-- Tailwind CSS (Play CDN for instant utility compiling) & Vite Assets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#082f49',
+                            950: '#041c2d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>

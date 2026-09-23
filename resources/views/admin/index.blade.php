@@ -23,11 +23,11 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('worksheet.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition shadow-sm">
+            <a href="{{ route('programmes.hub') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition shadow-sm">
                 <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                <span>Participant App</span>
+                <span>Project Hub</span>
             </a>
 
             <!-- Full Master PDF Report Export -->
@@ -180,7 +180,7 @@
                                 {{ $s->s8_change_one_thing ?: ($s->s1_recruitment_high ?: '--') }}
                             </td>
                             <td class="py-3.5 px-4 text-right whitespace-nowrap space-x-1">
-                                <a href="{{ route('worksheet.download_pdf', $s->token) }}" title="Download Individual PDF" class="inline-flex items-center p-1.5 rounded-lg bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-600 transition">
+                                <a href="{{ route('admin.submissions.download_pdf', $s->token) }}" title="Download Individual PDF" class="inline-flex items-center p-1.5 rounded-lg bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-600 transition">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
