@@ -1020,19 +1020,28 @@
                                         {{ $staff->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="py-3.5 px-4 text-right whitespace-nowrap">
-                                        @if(Auth::id() !== $staff->id)
-                                        <form action="{{ route('programmes.users.destroy', $staff->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete staff account for {{ addslashes($staff->name) }}?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Delete Account">
+                                        <div class="inline-flex items-center gap-1.5">
+                                            <!-- Edit Staff -->
+                                            <button type="button" onclick="openEditUserModal({{ $staff->id }}, '{{ addslashes($staff->name) }}', '{{ addslashes($staff->email) }}', '{{ $staff->role }}', {{ json_encode($staff->projects->pluck('id')) }})" class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer" title="Edit Staff Member">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </button>
-                                        </form>
-                                        @else
-                                        <span class="text-[10px] text-slate-400 font-medium italic">Current Account</span>
-                                        @endif
+
+                                            @if(Auth::id() !== $staff->id)
+                                            <form action="{{ route('programmes.users.destroy', $staff->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete staff account for {{ addslashes($staff->name) }}?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Delete Account">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            @else
+                                            <span class="text-[10px] text-slate-400 font-medium italic">Active</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -1276,6 +1285,66 @@
     </div>
 </div>
 
+<!-- Edit User Account Modal (Super Admin) -->
+<div id="edit-user-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-4 border border-slate-200">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                Edit Staff Account
+            </h3>
+            <button type="button" onclick="document.getElementById('edit-user-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-sm cursor-pointer">✕</button>
+        </div>
+
+        <form id="edit-user-form" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT')
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Full Name <span class="text-rose-500">*</span></label>
+                <input type="text" id="edit-u-name" name="name" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Email Address <span class="text-rose-500">*</span></label>
+                <input type="email" id="edit-u-email" name="email" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">New Password</label>
+                    <input type="password" id="edit-u-password" name="password" placeholder="Leave blank to keep" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Assigned Role <span class="text-rose-500">*</span></label>
+                    <select id="edit-u-role" name="role" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="project_officer">Project Officer</option>
+                        <option value="project_assistant">Project Assistant</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Assign to Projects</label>
+                <div class="max-h-32 overflow-y-auto p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5" id="edit-u-projects-container">
+                    @foreach($projects as $proj)
+                        <label class="flex items-center gap-2 text-xs font-medium text-slate-800 cursor-pointer">
+                            <input type="checkbox" name="project_ids[]" value="{{ $proj->id }}" id="edit-u-proj-{{ $proj->id }}" class="rounded text-blue-600 focus:ring-blue-500">
+                            <span>{{ $proj->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onclick="document.getElementById('edit-user-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Cancel</button>
+                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs cursor-pointer">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openEditProjectModal(id, name, code, location, description, status, userIds) {
     document.getElementById('edit-project-form').action = '/programmes-meeting/projects/' + id;
@@ -1299,6 +1368,21 @@ function openEditProjectModal(id, name, code, location, description, status, use
     });
 
     document.getElementById('edit-project-modal').classList.remove('hidden');
+}
+
+function openEditUserModal(id, name, email, role, projectIds) {
+    document.getElementById('edit-user-form').action = '/programmes-meeting/users/' + id;
+    document.getElementById('edit-u-name').value = name || '';
+    document.getElementById('edit-u-email').value = email || '';
+    document.getElementById('edit-u-password').value = '';
+    document.getElementById('edit-u-role').value = role || 'project_officer';
+
+    const allCbs = document.querySelectorAll('#edit-u-projects-container input[type="checkbox"]');
+    allCbs.forEach(cb => {
+        cb.checked = projectIds && projectIds.includes(parseInt(cb.value));
+    });
+
+    document.getElementById('edit-user-modal').classList.remove('hidden');
 }
 </script>
 @endif

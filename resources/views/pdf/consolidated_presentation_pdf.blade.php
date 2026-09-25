@@ -185,14 +185,50 @@
             padding-left: 14px;
         }
         .points-list li {
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             color: #1e293b;
-            line-height: 1.35;
+            line-height: 1.3;
         }
         .empty-points {
-            font-size: 9px;
+            font-size: 8.5px;
             color: #94a3b8;
             font-style: italic;
+        }
+
+        .section-block {
+            margin-bottom: 5px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 4px 6px;
+        }
+        .section-title {
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .narrative-box {
+            margin-top: 5px;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 3px solid #2563eb;
+            border-radius: 4px;
+            padding: 4px 6px;
+        }
+        .narrative-title {
+            font-size: 8px;
+            font-weight: 800;
+            color: #1e40af;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .narrative-text {
+            font-size: 8px;
+            color: #1e293b;
+            line-height: 1.3;
         }
 
         /* Slide Footer */
@@ -314,10 +350,31 @@
                     @foreach($projectDataList as $pIdx => $pData)
                     @php
                         $bColor = $borderColors[$pIdx % count($borderColors)];
+                        $sections = $pData['theme_sections'][$slideKey] ?? [];
                         $points = $pData['theme_points'][$slideKey] ?? [];
+                        $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
+                        $hasSections = false;
+                        foreach($sections as $s) {
+                            if (!empty($s['points'])) { $hasSections = true; break; }
+                        }
                     @endphp
                     <td class="item-cell" style="width: {{ $colWidthPct }}; border-left: 3.5px solid {{ $bColor }};">
-                        @if(!empty($points))
+                        @if($hasSections)
+                            @foreach($sections as $itemKey => $sec)
+                                <div class="section-block">
+                                    <div class="section-title" style="color: {{ $bColor }};">• {{ $sec['title'] }}</div>
+                                    @if(!empty($sec['points']))
+                                        <ul class="points-list">
+                                            @foreach($sec['points'] as $pt)
+                                                <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <div class="empty-points">No entries.</div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @elseif(!empty($points))
                             <ul class="points-list">
                                 @foreach($points as $pt)
                                     <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
@@ -325,6 +382,13 @@
                             </ul>
                         @else
                             <div class="empty-points">No key presentation points recorded.</div>
+                        @endif
+
+                        @if(!empty($narrativeText))
+                            <div class="narrative-box">
+                                <div class="narrative-title">Detailed Qualitative Narrative</div>
+                                <div class="narrative-text">{{ $narrativeText }}</div>
+                            </div>
                         @endif
                     </td>
                     @endforeach

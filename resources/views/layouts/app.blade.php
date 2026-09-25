@@ -22,6 +22,14 @@
     <!-- html2pdf for high quality client-side PDF rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+    <!-- Alpine.js cloak helper style -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
+    <!-- Alpine.js Core (deferred) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
     <!-- Tailwind CSS (Play CDN for instant utility compiling) & Vite Assets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>

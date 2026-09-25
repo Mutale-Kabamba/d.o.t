@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -103,6 +104,33 @@ class User extends Authenticatable
 
         $projectId = is_object($project) ? $project->id : (int) $project;
         return $this->projects()->where('projects.id', $projectId)->exists();
+    }
+
+    /**
+     * Scope query to search by name or email.
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (empty($term)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($term) {
+            $q->where('name', 'like', "%{$term}%")
+              ->orWhere('email', 'like', "%{$term}%");
+        });
+    }
+
+    /**
+     * Scope query to filter by role.
+     */
+    public function scopeRole(Builder $query, ?string $role): Builder
+    {
+        if (empty($role) || $role === 'all') {
+            return $query;
+        }
+
+        return $query->where('role', $role);
     }
 
     /**

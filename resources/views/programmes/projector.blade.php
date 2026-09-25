@@ -251,18 +251,48 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Transposed Content Row: Each project's presentation points side by side -->
+                        <!-- Transposed Content Row: Each project's discrete sections & qualitative narrative side by side -->
                         <tr>
                             @foreach($projectDataList as $pIdx => $pData)
                             @php
                                 $color = $projectColors[$pIdx % count($projectColors)];
+                                $sections = $pData['theme_sections'][$slideKey] ?? [];
                                 $points = $pData['theme_points'][$slideKey] ?? [];
+                                $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
+                                $hasSections = false;
+                                foreach($sections as $s) {
+                                    if (!empty($s['points'])) { $hasSections = true; break; }
+                                }
                             @endphp
                             <td style="vertical-align: top; background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid {{ $color['border'] }}; border-radius: 9px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); box-sizing: border-box; word-break: break-word; overflow-wrap: anywhere;">
-                                @if(!empty($points))
+                                @if($hasSections)
+                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                        @foreach($sections as $itemKey => $sec)
+                                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 10px;">
+                                                <div style="font-size: 12.5px; font-weight: 800; color: {{ $color['border'] }}; margin-bottom: 4px; display: flex; align-items: center; gap: 5px;">
+                                                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: {{ $color['border'] }};"></span>
+                                                    <span>{{ $sec['title'] }}</span>
+                                                </div>
+                                                @if(!empty($sec['points']))
+                                                    <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px;">
+                                                        @foreach($sec['points'] as $pt)
+                                                            <li style="list-style-type: disc !important; font-size: 12px; color: #1e293b; font-weight: 500; line-height: 1.35;">
+                                                                {!! \App\Models\ActivityEntry::formatPointHtml($pt, false) !!}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @else
+                                                    <div style="font-size: 11px; color: #94a3b8; font-style: italic;">
+                                                        No points recorded for {{ strtolower($sec['title']) }}.
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @elseif(!empty($points))
                                     <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
                                         @foreach($points as $pt)
-                                            <li style="list-style-type: disc !important; font-size: 13.5px; color: #1e293b; font-weight: 500; line-height: 1.4; word-break: break-word; overflow-wrap: anywhere;">
+                                            <li style="list-style-type: disc !important; font-size: 13px; color: #1e293b; font-weight: 500; line-height: 1.4; word-break: break-word; overflow-wrap: anywhere;">
                                                 {!! \App\Models\ActivityEntry::formatPointHtml($pt, false) !!}
                                             </li>
                                         @endforeach

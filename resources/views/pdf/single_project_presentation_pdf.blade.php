@@ -320,15 +320,42 @@
             <div class="header-rule"></div>
         </div>
 
-        <!-- Single Project Theme Points -->
+        <!-- Single Project 3 Focus Sections Grid -->
+        @php
+            $sections = $pData['theme_sections'][$slideKey] ?? [];
+            $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
+            $hasSections = false;
+            foreach($sections as $s) {
+                if (!empty($s['points'])) { $hasSections = true; break; }
+            }
+        @endphp
+
         <table class="items-grid">
             <tr>
-                @if(!empty($themePts))
+                @if($hasSections)
+                    @foreach($sections as $itemKey => $sec)
+                    <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
+                        <div class="item-bar"></div>
+                        <div class="item-title">{{ $sec['title'] }}</div>
+                        <div class="item-prompt">{{ $sec['prompt'] }}</div>
+
+                        @if(!empty($sec['points']))
+                            <ul class="bullet-list">
+                                @foreach($sec['points'] as $pt)
+                                    <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div style="font-size: 8.5px; color: #94a3b8; font-style: italic;">No specific entries recorded.</div>
+                        @endif
+                    </td>
+                    @endforeach
+                @elseif(!empty($themePts))
                     <td class="item-card" style="width: 100%; border-left: 4px solid #2563eb;">
                         <div class="item-title" style="margin-bottom: 8px;">Key Presentation Points</div>
                         <ul class="bullet-list" style="padding-left: 16px;">
                             @foreach($themePts as $pt)
-                                <li style="font-size: 10.5px; margin-bottom: 6px; line-height: 1.45;">
+                                <li style="font-size: 10px; margin-bottom: 5px; line-height: 1.4;">
                                     {!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}
                                 </li>
                             @endforeach
@@ -339,7 +366,7 @@
                     @php
                         $points = $submission->getPoints($itemKey);
                     @endphp
-                    <td class="item-card" style="width: 33.33%;">
+                    <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
                         <div class="item-bar"></div>
                         <div class="item-title">{{ $item['title'] }}</div>
                         <div class="item-prompt">{{ $item['prompt'] }}</div>
@@ -351,7 +378,7 @@
                                 @endforeach
                             </ul>
                         @else
-                            <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
+                            <div style="font-size: 8.5px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
                         @endif
                     </td>
                     @endforeach
@@ -362,6 +389,18 @@
                 @endif
             </tr>
         </table>
+
+        <!-- Detailed Qualitative Narrative Block -->
+        @if(!empty($narrativeText))
+            <div style="margin-top: 8px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 3.5px solid #2563eb; border-radius: 6px; padding: 7px 12px;">
+                <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    📝 Detailed Qualitative Narrative
+                </div>
+                <div style="font-size: 9px; color: #1e293b; line-height: 1.35;">
+                    {{ $narrativeText }}
+                </div>
+            </div>
+        @endif
 
         <!-- Slide Footer -->
         <div class="slide-footer">

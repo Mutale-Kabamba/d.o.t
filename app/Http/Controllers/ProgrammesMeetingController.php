@@ -247,16 +247,36 @@ class ProgrammesMeetingController extends Controller
                 'activity_date' => now()->toDateString(),
                 'location' => $validated['location'] ?? $project->location,
                 'reporting_period' => $validated['reporting_period'],
+
+                'achievements_milestones' => $validated['achievements_milestones'] ?? null,
+                'achievements_impact' => $validated['achievements_impact'] ?? null,
+                'achievements_stories' => $validated['achievements_stories'] ?? null,
                 'achievements_points' => implode("\n", $achievements),
-                'achievements_narrative' => implode("\n\n", $achievements),
+                'achievements_narrative' => $request->input('achievements_narrative') ?: implode("\n\n", $achievements),
+
+                'challenges_operational' => $validated['challenges_operational'] ?? null,
+                'challenges_resources' => $validated['challenges_resources'] ?? null,
+                'challenges_risks' => $validated['challenges_risks'] ?? null,
                 'challenges_points' => implode("\n", $challenges),
-                'challenges_narrative' => implode("\n\n", $challenges),
+                'challenges_narrative' => $request->input('challenges_narrative') ?: implode("\n\n", $challenges),
+
+                'learning_lessons' => $validated['learning_lessons'] ?? null,
+                'learning_feedback' => $validated['learning_feedback'] ?? null,
+                'learning_innovation' => $validated['learning_innovation'] ?? null,
                 'learning_points' => implode("\n", $learning),
-                'learning_narrative' => implode("\n\n", $learning),
+                'learning_narrative' => $request->input('learning_narrative') ?: implode("\n\n", $learning),
+
+                'mne_performance' => $validated['mne_performance'] ?? null,
+                'mne_data_quality' => $validated['mne_data_quality'] ?? null,
+                'mne_evaluation_plans' => $validated['mne_evaluation_plans'] ?? null,
                 'mne_points' => implode("\n", $mne),
-                'mne_narrative' => implode("\n\n", $mne),
+                'mne_narrative' => $request->input('mne_narrative') ?: implode("\n\n", $mne),
+
+                'collab_projects' => $validated['collab_projects'] ?? null,
+                'collab_partnerships' => $validated['collab_partnerships'] ?? null,
+                'collab_cross_learning' => $validated['collab_cross_learning'] ?? null,
                 'collab_points' => implode("\n", $collab),
-                'collab_narrative' => implode("\n\n", $collab),
+                'collab_narrative' => $request->input('collab_narrative') ?: implode("\n\n", $collab),
             ]);
 
             return response()->json([
@@ -415,13 +435,47 @@ class ProgrammesMeetingController extends Controller
             ? $projects->firstWhere('id', $request->query('project_id'))
             : $projects->first();
 
-        return view('programmes.activity_entry_form', [
+        return view('projects.entries.form', [
             'projects' => $projects,
             'preselectedProject' => $preselectedProject,
             'slidesConfig' => self::$slidesConfig,
             'activity' => null,
             'isEdit' => false,
         ]);
+    }
+
+    /**
+     * Show entry form pre-scoped for a specific project.
+     */
+    public function createActivityForProject(Request $request, Project $project): View
+    {
+        $this->ensureDatabaseReady();
+        $user = Auth::user();
+
+        if ($user && !$user->canAccessProject($project->id)) {
+            abort(403, 'Unauthorized. You are not assigned to this project.');
+        }
+
+        $projects = $user->isSuperAdmin()
+            ? Project::active()->orderBy('name')->get()
+            : $user->projects()->where('status', 'active')->orderBy('name')->get();
+
+        return view('projects.entries.form', [
+            'projects' => $projects,
+            'preselectedProject' => $project,
+            'slidesConfig' => self::$slidesConfig,
+            'activity' => null,
+            'isEdit' => false,
+        ]);
+    }
+
+    /**
+     * Store new continuous activity entry scoped to a specific project.
+     */
+    public function storeActivityForProject(Request $request, Project $project): RedirectResponse
+    {
+        $request->merge(['project_id' => $project->id]);
+        return $this->storeActivity($request);
     }
 
     /**
@@ -438,6 +492,19 @@ class ProgrammesMeetingController extends Controller
             'activity_date' => 'required|date',
             'location' => 'nullable|string|max:255',
             'reporting_period' => 'nullable|string|max:255',
+            'period_granularity' => 'nullable|string|in:day,month,quarter,year',
+
+            // Structured JSON Pillar Arrays
+            'pillar_1_achievements' => 'nullable|array',
+            'pillar_1_narrative' => 'nullable|string',
+            'pillar_2_challenges' => 'nullable|array',
+            'pillar_2_narrative' => 'nullable|string',
+            'pillar_3_learning' => 'nullable|array',
+            'pillar_3_narrative' => 'nullable|string',
+            'pillar_4_monitoring' => 'nullable|array',
+            'pillar_4_narrative' => 'nullable|string',
+            'pillar_5_collaboration' => 'nullable|array',
+            'pillar_5_narrative' => 'nullable|string',
 
             // 1. Project Achievements (3 respective sections)
             'achievements_milestones' => 'nullable|string',
@@ -548,6 +615,19 @@ class ProgrammesMeetingController extends Controller
             'activity_date' => 'required|date',
             'location' => 'nullable|string|max:255',
             'reporting_period' => 'nullable|string|max:255',
+            'period_granularity' => 'nullable|in:day,month,quarter,year',
+
+            // Structured Pillars (JSON format)
+            'pillar_1_achievements' => 'nullable|array',
+            'pillar_1_narrative' => 'nullable|string',
+            'pillar_2_challenges' => 'nullable|array',
+            'pillar_2_narrative' => 'nullable|string',
+            'pillar_3_learning' => 'nullable|array',
+            'pillar_3_narrative' => 'nullable|string',
+            'pillar_4_monitoring' => 'nullable|array',
+            'pillar_4_narrative' => 'nullable|string',
+            'pillar_5_collaboration' => 'nullable|array',
+            'pillar_5_narrative' => 'nullable|string',
 
             // 1. Project Achievements (3 respective sections)
             'achievements_milestones' => 'nullable|string',
@@ -705,6 +785,7 @@ class ProgrammesMeetingController extends Controller
         }
 
         $name = $project->name;
+        $project->users()->detach();
         $project->delete();
 
         return redirect()->route('programmes.hub')->with('success', "Project '{$name}' deleted.");
@@ -769,6 +850,40 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
+     * Super Admin: Update existing user account details, credentials, and project assignments.
+     */
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = Auth::user();
+        if (!$currentUser || !$currentUser->isSuperAdmin()) {
+            abort(403, 'Only Super Admins can edit user accounts.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:6',
+            'role' => 'required|in:super_admin,project_officer,project_assistant',
+            'project_ids' => 'nullable|array',
+            'project_ids.*' => 'exists:projects,id',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->role = $validated['role'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        $user->projects()->sync($validated['project_ids'] ?? []);
+
+        return redirect()->route('programmes.hub')->with('success', "User account for '{$user->name}' updated successfully.");
+    }
+
+    /**
      * Super Admin: Delete user account.
      */
     public function destroyUser(User $user): RedirectResponse
@@ -783,6 +898,7 @@ class ProgrammesMeetingController extends Controller
         }
 
         $name = $user->name;
+        $user->projects()->detach();
         $user->delete();
 
         return redirect()->route('programmes.hub')->with('success', "User account for '{$name}' removed.");
@@ -838,7 +954,7 @@ class ProgrammesMeetingController extends Controller
             }
             $entries = $entriesQuery->get();
 
-            // Structure to hold aggregated bullet points and narrative per theme
+            // Structure to hold aggregated bullet points, 3 sub-sections, and narrative per theme
             $themePoints = [
                 'achievements' => [],
                 'challenges' => [],
@@ -846,6 +962,7 @@ class ProgrammesMeetingController extends Controller
                 'mne' => [],
                 'collab' => [],
             ];
+            $themeSections = [];
             $themeNarratives = [
                 'achievements' => [],
                 'challenges' => [],
@@ -853,30 +970,73 @@ class ProgrammesMeetingController extends Controller
                 'mne' => [],
                 'collab' => [],
             ];
+            $themeNarrativeText = [];
+
+            foreach (self::$slidesConfig as $themeKey => $themeConfig) {
+                $themeSections[$themeKey] = [];
+                foreach ($themeConfig['items'] as $itemKey => $item) {
+                    $themeSections[$themeKey][$itemKey] = [
+                        'title' => $item['title'],
+                        'prompt' => $item['prompt'],
+                        'points' => [],
+                    ];
+                }
+            }
 
             foreach ($entries as $entry) {
+                $actTitle = trim($entry->activity_title ?? '');
+
                 foreach (self::$slidesConfig as $themeKey => $themeConfig) {
                     $pField = $themeConfig['points_field'];
                     $nField = $themeConfig['narrative_field'];
 
+                    // Aggregate per sub-section
+                    foreach ($themeConfig['items'] as $itemKey => $item) {
+                        if (!empty($entry->{$itemKey})) {
+                            $pts = ActivityEntry::extractBulletPoints($entry->{$itemKey});
+                            if (!empty($pts)) {
+                                foreach ($pts as $pt) {
+                                    $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
+                                        ? "{$actTitle}: {$pt}"
+                                        : $pt;
+                                    $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                }
+                            }
+                        }
+                    }
+
+                    // Also aggregate general points
                     $pts = $entry->getPoints($pField);
                     if (!empty($pts)) {
-                        $themePoints[$themeKey] = array_merge($themePoints[$themeKey], $pts);
+                        foreach ($pts as $pt) {
+                            $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
+                                ? "{$actTitle}: {$pt}"
+                                : $pt;
+                            $themePoints[$themeKey][] = $formattedPt;
+                        }
                     }
+
                     if (!empty($entry->{$nField})) {
-                        $themeNarratives[$themeKey][] = $entry->{$nField};
+                        $narrativeVal = trim($entry->{$nField});
+                        if (!empty($narrativeVal) && !in_array($narrativeVal, $themeNarratives[$themeKey])) {
+                            $themeNarratives[$themeKey][] = $narrativeVal;
+                        }
                     }
                 }
             }
 
             // Fallback to legacy project_submission if no continuous entries found yet
-            if (empty(array_filter($themePoints))) {
+            if (empty(array_filter($themePoints)) && empty(array_filter(array_map(fn($t) => array_filter(array_column($t, 'points')), $themeSections)))) {
                 $legacy = ProjectSubmission::where('project_name', $project->name)->first();
                 if ($legacy) {
                     foreach (self::$slidesConfig as $themeKey => $themeConfig) {
                         foreach ($themeConfig['items'] as $itemKey => $item) {
                             $pts = $legacy->getPoints($itemKey);
                             if (!empty($pts)) {
+                                $themeSections[$themeKey][$itemKey]['points'] = array_merge(
+                                    $themeSections[$themeKey][$itemKey]['points'],
+                                    $pts
+                                );
                                 $themePoints[$themeKey] = array_merge($themePoints[$themeKey], $pts);
                             }
                         }
@@ -884,9 +1044,13 @@ class ProgrammesMeetingController extends Controller
                 }
             }
 
-            // De-duplicate points preserving order and metrics
-            foreach ($themePoints as $themeKey => $pts) {
-                $themePoints[$themeKey] = array_values(array_unique($pts));
+            // De-duplicate points preserving order and compile narrative texts
+            foreach (self::$slidesConfig as $themeKey => $themeConfig) {
+                $themePoints[$themeKey] = array_values(array_unique($themePoints[$themeKey]));
+                foreach ($themeConfig['items'] as $itemKey => $item) {
+                    $themeSections[$themeKey][$itemKey]['points'] = array_values(array_unique($themeSections[$themeKey][$itemKey]['points']));
+                }
+                $themeNarrativeText[$themeKey] = implode("\n\n", array_unique(array_filter($themeNarratives[$themeKey])));
             }
 
             $projectDataList[] = [
@@ -895,7 +1059,9 @@ class ProgrammesMeetingController extends Controller
                 'officer_name' => $project->lead_officer_name,
                 'location' => $project->location ?? 'Zambia',
                 'theme_points' => $themePoints,
+                'theme_sections' => $themeSections,
                 'theme_narratives' => $themeNarratives,
+                'theme_narrative_text' => $themeNarrativeText,
                 'entries_count' => $entries->count(),
             ];
         }
@@ -1109,18 +1275,47 @@ class ProgrammesMeetingController extends Controller
                 $cell->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FFFFFFFF'));
                 $cell->getBorder()->setColor(new \PhpOffice\PhpPresentation\Style\Color('FFE2E8F0'))->setLineStyle(\PhpOffice\PhpPresentation\Style\Border::LINE_SINGLE);
 
-                $pts = $pData['theme_points'][$slideKey] ?? [];
+                $sections = $pData['theme_sections'][$slideKey] ?? [];
+                $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
+                $hasAnySectionPoints = false;
 
-                if (!empty($pts)) {
-                    foreach ($pts as $pt) {
-                        // Clean URLs into neat label text while strictly preserving numbers and percentages
-                        $cleanPt = ActivityEntry::formatPointText($pt);
-                        $ptRun = $cell->createTextRun("• {$cleanPt}\n\n");
-                        $ptRun->getFont()->setSize(9.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
+                foreach ($sections as $itemKey => $section) {
+                    if (!empty($section['points'])) {
+                        $hasAnySectionPoints = true;
+                        $sTitleRun = $cell->createTextRun("▶ {$section['title']}\n");
+                        $sTitleRun->getFont()->setBold(true)->setSize(9.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
+
+                        foreach ($section['points'] as $pt) {
+                            $cleanPt = ActivityEntry::formatPointText($pt);
+                            $ptRun = $cell->createTextRun("  • {$cleanPt}\n");
+                            $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
+                        }
+                        $cell->createTextRun("\n");
                     }
-                } else {
-                    $emptyRun = $cell->createTextRun("No key presentation points recorded for this period.\n");
-                    $emptyRun->getFont()->setItalic(true)->setSize(9)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF94A3B8'));
+                }
+
+                // Fallback to theme_points if sections were empty
+                if (!$hasAnySectionPoints) {
+                    $pts = $pData['theme_points'][$slideKey] ?? [];
+                    if (!empty($pts)) {
+                        foreach ($pts as $pt) {
+                            $cleanPt = ActivityEntry::formatPointText($pt);
+                            $ptRun = $cell->createTextRun("• {$cleanPt}\n\n");
+                            $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
+                        }
+                    } else {
+                        $emptyRun = $cell->createTextRun("No key presentation points recorded for this period.\n\n");
+                        $emptyRun->getFont()->setItalic(true)->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF94A3B8'));
+                    }
+                }
+
+                // Detailed Qualitative Narrative
+                if (!empty($narrativeText)) {
+                    $nHeaderRun = $cell->createTextRun("📝 Qualitative Narrative:\n");
+                    $nHeaderRun->getFont()->setBold(true)->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
+
+                    $nTextRun = $cell->createTextRun("{$narrativeText}\n");
+                    $nTextRun->getFont()->setItalic(true)->setSize(8)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF475569'));
                 }
             }
         }
