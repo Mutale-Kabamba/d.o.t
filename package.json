@@ -14,6 +14,7 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "alpinejs": "^3.17.4",
         "html2pdf.js": "^0.14.0"
     }
 }

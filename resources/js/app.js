@@ -1,11 +1,14 @@
 import './bootstrap';
 import { initWorksheet } from './worksheet';
 
-// Execute immediately if DOM is already ready, or listen to DOMContentLoaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+function runWorksheetIfPresent() {
+    if (document.getElementById('worksheet-form') || document.getElementById('stepper-list')) {
         initWorksheet();
-    });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runWorksheetIfPresent);
 } else {
-    initWorksheet();
+    runWorksheetIfPresent();
 }

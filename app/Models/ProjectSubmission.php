@@ -23,10 +23,20 @@ class ProjectSubmission extends Model
 
     /**
      * Helper to get bullet points array from multiline text field.
+     * Preserves leading numbers, percentages, and metrics (e.g. "98% of girls passed", "100+ participants", "1 in 4").
      */
     public function getPoints(string $field): array
     {
         $text = trim($this->{$field} ?? '');
+        return self::extractBulletPoints($text);
+    }
+
+    /**
+     * Static helper to extract bullet points from text without destroying metrics.
+     */
+    public static function extractBulletPoints(?string $text): array
+    {
+        $text = trim($text ?? '');
         if (empty($text)) {
             return [];
         }
@@ -35,7 +45,21 @@ class ProjectSubmission extends Model
         $points = [];
 
         foreach ($lines as $line) {
-            $cleaned = trim(preg_replace('/^[\s\-\*\•\d+\.\)]+/', '', $line));
+            $line = trim($line);
+            if (empty($line)) {
+                continue;
+            }
+
+            // 1. Strip true bullet symbols, dashes, and list markers (•, -, *, –, —, >)
+            $cleaned = preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $line);
+
+            // 2. Strip standard ordered list numbering (e.g., "1. ", "1) ", "(1) ", "1: ", "1 - ")
+            // Crucially: only when a number is followed by a punctuation separator (. ) : - ) and whitespace,
+            // NOT when followed by % or letters (e.g. "98%", "100+", "1 in 4" remain untouched).
+            $cleaned = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $cleaned);
+
+            $cleaned = trim($cleaned);
+
             if (!empty($cleaned)) {
                 $points[] = $cleaned;
             }
@@ -55,7 +79,9 @@ class ProjectSubmission extends Model
         }
 
         // Clean up common bullet artifacts at the beginning if any remained
-        $text = preg_replace('/^[\s\-\*\•\d+\.\)]+/', '', $text);
+        $text = preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $text);
+        $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
+        $text = trim($text);
 
         // Regex pattern for URLs
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
@@ -96,7 +122,10 @@ class ProjectSubmission extends Model
             return '';
         }
 
-        $text = preg_replace('/^[\s\-\*\•\d+\.\)]+/', '', $text);
+        $text = preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $text);
+        $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
+        $text = trim($text);
+
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 
         return preg_replace_callback($pattern, function ($matches) {
