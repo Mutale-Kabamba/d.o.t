@@ -1238,114 +1238,111 @@ class ProgrammesMeetingController extends Controller
         }
 
         $projectColors = ['FF2563EB', 'FF059669', 'FF7C3AED', 'FFD97706', 'FF0891B2', 'FFE11D48'];
+        $projectChunks = !empty($projectDataList) ? array_chunk($projectDataList, 2) : [[]];
+        $totalChunks = count($projectChunks);
 
-        // Slides 2 to 6: 5 Thematic Slides (Transposed Matrix: Columns = Projects, Rows = Thematic Sub-items/Points)
+        // Slides: 5 Thematic Pillars (2 Projects Per Slide)
         foreach ($slidesConfig as $slideKey => $slideConfig) {
-            $slide = $ppt->createSlide();
+            foreach ($projectChunks as $chunkIdx => $chunkProjects) {
+                $slide = $ppt->createSlide();
 
-            // Left Bar
-            $sBar = $slide->createRichTextShape();
-            $sBar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
-            $sBar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
+                // Left Bar
+                $sBar = $slide->createRichTextShape();
+                $sBar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
+                $sBar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
 
-            // Top Right Logo 3
-            if (file_exists(public_path('logos/logo3.png'))) {
-                $logo3Shape = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
-                $logo3Shape->setName('Logo 3')
-                           ->setPath(public_path('logos/logo3.png'))
-                           ->setHeight(32)
-                           ->setOffsetX(800)
-                           ->setOffsetY(18);
-                $slide->addShape($logo3Shape);
-            }
-
-            // Slide Header
-            $hShape = $slide->createRichTextShape();
-            $hShape->setOffsetX(45)->setOffsetY(18)->setWidth(740)->setHeight(65);
-            $metaRun = $hShape->createTextRun("SLIDE {$slideConfig['number']} OF 5 • " . strtoupper($periodTitle) . "\n");
-            $metaRun->getFont()->setBold(true)->setSize(9)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
-            $titleRun = $hShape->createTextRun($slideConfig['title']);
-            $titleRun->getFont()->setBold(true)->setSize(20)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF0F172A'));
-
-            // Dynamic Transposed Layout:
-            // Calculate column coordinates for each Project (Columns = X-axis)
-            $projCount = max(1, count($projectDataList));
-            $availableWidth = 880;
-            $startX = 45;
-            $gap = 12;
-            $colWidth = ($availableWidth - ($gap * ($projCount - 1))) / $projCount;
-
-            // Project Column Headers (X-Axis: Project Names)
-            foreach ($projectDataList as $pIdx => $pData) {
-                $pColor = $projectColors[$pIdx % count($projectColors)];
-                $curX = $startX + ($pIdx * ($colWidth + $gap));
-
-                $colHeader = $slide->createRichTextShape();
-                $colHeader->setOffsetX($curX)->setOffsetY(85)->setWidth($colWidth)->setHeight(45);
-                $colHeader->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FFF8FAFC'));
-                $colHeader->getBorder()->setColor(new \PhpOffice\PhpPresentation\Style\Color('FFCBD5E1'))->setLineStyle(\PhpOffice\PhpPresentation\Style\Border::LINE_SINGLE);
-
-                $projTitleRun = $colHeader->createTextRun($pData['project_name'] . "\n");
-                $projTitleRun->getFont()->setBold(true)->setSize(11)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
-
-                $officerRun = $colHeader->createTextRun("Lead: " . $pData['officer_name']);
-                $officerRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF64748B'));
-            }
-
-            // Project Content Cells (Rows = Content / Presentation Points per project)
-            $currY = 138;
-            $cellHeight = 360;
-
-            foreach ($projectDataList as $pIdx => $pData) {
-                $pColor = $projectColors[$pIdx % count($projectColors)];
-                $curX = $startX + ($pIdx * ($colWidth + $gap));
-
-                $cell = $slide->createRichTextShape();
-                $cell->setOffsetX($curX)->setOffsetY($currY)->setWidth($colWidth)->setHeight($cellHeight);
-                $cell->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FFFFFFFF'));
-                $cell->getBorder()->setColor(new \PhpOffice\PhpPresentation\Style\Color('FFE2E8F0'))->setLineStyle(\PhpOffice\PhpPresentation\Style\Border::LINE_SINGLE);
-
-                $sections = $pData['theme_sections'][$slideKey] ?? [];
-                $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
-                $hasAnySectionPoints = false;
-
-                foreach ($sections as $itemKey => $section) {
-                    if (!empty($section['points'])) {
-                        $hasAnySectionPoints = true;
-                        $sTitleRun = $cell->createTextRun("▶ {$section['title']}\n");
-                        $sTitleRun->getFont()->setBold(true)->setSize(9.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
-
-                        foreach ($section['points'] as $pt) {
-                            $cleanPt = ActivityEntry::formatPointText($pt);
-                            $ptRun = $cell->createTextRun("  • {$cleanPt}\n");
-                            $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
-                        }
-                        $cell->createTextRun("\n");
-                    }
+                // Top Right Logo 3
+                if (file_exists(public_path('logos/logo3.png'))) {
+                    $logo3Shape = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
+                    $logo3Shape->setName('Logo 3')
+                               ->setPath(public_path('logos/logo3.png'))
+                               ->setHeight(32)
+                               ->setOffsetX(800)
+                               ->setOffsetY(18);
+                    $slide->addShape($logo3Shape);
                 }
 
-                // Fallback to theme_points if sections were empty
-                if (!$hasAnySectionPoints) {
-                    $pts = $pData['theme_points'][$slideKey] ?? [];
-                    if (!empty($pts)) {
-                        foreach ($pts as $pt) {
-                            $cleanPt = ActivityEntry::formatPointText($pt);
-                            $ptRun = $cell->createTextRun("• {$cleanPt}\n\n");
-                            $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
-                        }
-                    } else {
-                        $emptyRun = $cell->createTextRun("No key presentation points recorded for this period.\n\n");
-                        $emptyRun->getFont()->setItalic(true)->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF94A3B8'));
-                    }
+                // Slide Header
+                $hShape = $slide->createRichTextShape();
+                $hShape->setOffsetX(45)->setOffsetY(18)->setWidth(740)->setHeight(65);
+                $partSuffix = $totalChunks > 1 ? " • PART " . ($chunkIdx + 1) . " OF {$totalChunks}" : "";
+                $metaRun = $hShape->createTextRun("PILLAR {$slideConfig['number']} OF 5 • " . strtoupper($periodTitle) . "{$partSuffix}\n");
+                $metaRun->getFont()->setBold(true)->setSize(9)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
+                $titleRun = $hShape->createTextRun($slideConfig['title']);
+                $titleRun->getFont()->setBold(true)->setSize(20)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF0F172A'));
+
+                // Dynamic 2-Column Transposed Layout:
+                $chunkCount = max(1, count($chunkProjects));
+                $availableWidth = 880;
+                $startX = 45;
+                $gap = 16;
+                $colWidth = ($chunkCount === 1) ? 880 : ($availableWidth - $gap) / 2;
+
+                // Project Column Headers (2 Projects Per Slide)
+                foreach ($chunkProjects as $pIdx => $pData) {
+                    $globalIdx = ($chunkIdx * 2) + $pIdx;
+                    $pColor = $projectColors[$globalIdx % count($projectColors)];
+                    $curX = $startX + ($pIdx * ($colWidth + $gap));
+
+                    $colHeader = $slide->createRichTextShape();
+                    $colHeader->setOffsetX($curX)->setOffsetY(85)->setWidth($colWidth)->setHeight(45);
+                    $colHeader->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FFF8FAFC'));
+                    $colHeader->getBorder()->setColor(new \PhpOffice\PhpPresentation\Style\Color('FFCBD5E1'))->setLineStyle(\PhpOffice\PhpPresentation\Style\Border::LINE_SINGLE);
+
+                    $projTitleRun = $colHeader->createTextRun($pData['project_name'] . "\n");
+                    $projTitleRun->getFont()->setBold(true)->setSize(11.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
+
+                    $officerText = "Lead: " . $pData['officer_name'] . (!empty($pData['location']) ? " • " . $pData['location'] : "");
+                    $officerRun = $colHeader->createTextRun($officerText);
+                    $officerRun->getFont()->setSize(9)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF64748B'));
                 }
 
-                // Detailed Qualitative Narrative
-                if (!empty($narrativeText)) {
-                    $nHeaderRun = $cell->createTextRun("📝 Qualitative Narrative:\n");
-                    $nHeaderRun->getFont()->setBold(true)->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
+                // Project Content Cells (Rows = Content / Presentation Points per project)
+                $currY = 138;
+                $cellHeight = 360;
 
-                    $nTextRun = $cell->createTextRun("{$narrativeText}\n");
-                    $nTextRun->getFont()->setItalic(true)->setSize(8)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF475569'));
+                foreach ($chunkProjects as $pIdx => $pData) {
+                    $globalIdx = ($chunkIdx * 2) + $pIdx;
+                    $pColor = $projectColors[$globalIdx % count($projectColors)];
+                    $curX = $startX + ($pIdx * ($colWidth + $gap));
+
+                    $cell = $slide->createRichTextShape();
+                    $cell->setOffsetX($curX)->setOffsetY($currY)->setWidth($colWidth)->setHeight($cellHeight);
+                    $cell->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FFFFFFFF'));
+                    $cell->getBorder()->setColor(new \PhpOffice\PhpPresentation\Style\Color('FFE2E8F0'))->setLineStyle(\PhpOffice\PhpPresentation\Style\Border::LINE_SINGLE);
+
+                    $sections = $pData['theme_sections'][$slideKey] ?? [];
+                    $hasAnySectionPoints = false;
+
+                    foreach ($sections as $itemKey => $section) {
+                        if (!empty($section['points'])) {
+                            $hasAnySectionPoints = true;
+                            $sTitleRun = $cell->createTextRun("▶ {$section['title']}\n");
+                            $sTitleRun->getFont()->setBold(true)->setSize(9.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
+
+                            foreach ($section['points'] as $pt) {
+                                $cleanPt = ActivityEntry::formatPointText($pt);
+                                $ptRun = $cell->createTextRun("  • {$cleanPt}\n");
+                                $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
+                            }
+                            $cell->createTextRun("\n");
+                        }
+                    }
+
+                    // Fallback to theme_points if sections were empty
+                    if (!$hasAnySectionPoints) {
+                        $pts = $pData['theme_points'][$slideKey] ?? [];
+                        if (!empty($pts)) {
+                            foreach ($pts as $pt) {
+                                $cleanPt = ActivityEntry::formatPointText($pt);
+                                $ptRun = $cell->createTextRun("• {$cleanPt}\n\n");
+                                $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
+                            }
+                        } else {
+                            $emptyRun = $cell->createTextRun("No key presentation points recorded for this period.\n\n");
+                            $emptyRun->getFont()->setItalic(true)->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF94A3B8'));
+                        }
+                    }
                 }
             }
         }
