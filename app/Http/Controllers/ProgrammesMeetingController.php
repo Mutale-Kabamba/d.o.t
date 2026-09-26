@@ -387,10 +387,40 @@ class ProgrammesMeetingController extends Controller
         }
         $filteredActivities = $allActivitiesInScope->get();
 
+        $activeProjectsList = $projects->where('status', 'active');
+        $totalActiveProjects = $activeProjectsList->count();
+        $fullyReportedProjects = 0;
+        $totalPillarsPossible = $totalActiveProjects * 5;
+        $totalPillarsReported = 0;
+
+        foreach ($activeProjectsList as $proj) {
+            $projActivities = $filteredActivities->where('project_id', $proj->id);
+
+            $p1 = $projActivities->sum(fn($a) => count($a->getPoints('achievements_points'))) > 0;
+            $p2 = $projActivities->sum(fn($a) => count($a->getPoints('challenges_points'))) > 0;
+            $p3 = $projActivities->sum(fn($a) => count($a->getPoints('learning_points'))) > 0;
+            $p4 = $projActivities->sum(fn($a) => count($a->getPoints('mne_points'))) > 0;
+            $p5 = $projActivities->sum(fn($a) => count($a->getPoints('collab_points'))) > 0;
+
+            $pillarsCovered = ($p1 ? 1 : 0) + ($p2 ? 1 : 0) + ($p3 ? 1 : 0) + ($p4 ? 1 : 0) + ($p5 ? 1 : 0);
+            $totalPillarsReported += $pillarsCovered;
+            if ($pillarsCovered === 5) {
+                $fullyReportedProjects++;
+            }
+        }
+
+        $reportingCoverageRate = $totalPillarsPossible > 0 
+            ? (int) round(($totalPillarsReported / $totalPillarsPossible) * 100) 
+            : 0;
+
         $metrics = [
             'total_activities' => $filteredActivities->count(),
             'total_projects' => $projects->count(),
-            'active_projects' => $projects->where('status', 'active')->count(),
+            'active_projects' => $totalActiveProjects,
+            'reporting_coverage_rate' => $reportingCoverageRate,
+            'fully_reported_projects' => $fullyReportedProjects,
+            'total_pillars_reported' => $totalPillarsReported,
+            'total_pillars_possible' => $totalPillarsPossible,
             'total_staff' => $allUsers->count(),
             'total_officers' => $allUsers->where('role', User::ROLE_PROJECT_OFFICER)->count(),
             'total_achievements' => $filteredActivities->sum(fn($a) => count($a->getPoints('achievements_points'))),

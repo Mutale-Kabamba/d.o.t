@@ -356,22 +356,30 @@
                         </a>
                     </div>
 
-                    <!-- Metric Card 3: Thematic Highlights -->
+                    <!-- Metric Card 3: Pillar Reporting Health / Coverage -->
                     <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between hover:shadow-md transition">
                         <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Thematic Points</span>
-                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">🏆</div>
+                            <span class="text-[11px] font-black uppercase tracking-wider text-slate-400">Pillar Coverage</span>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">📊</div>
                         </div>
                         <div class="my-3">
-                            @php
-                                $totalPoints = $metrics['total_achievements'] + $metrics['total_challenges'] + $metrics['total_learning'] + $metrics['total_mne'] + $metrics['total_collab'];
-                            @endphp
-                            <div class="text-3xl font-black text-slate-900 tracking-tight">{{ $totalPoints }}</div>
+                            <div class="flex items-baseline gap-2">
+                                <div class="text-3xl font-black text-slate-900 tracking-tight">{{ $metrics['reporting_coverage_rate'] }}%</div>
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full {{ $metrics['reporting_coverage_rate'] >= 80 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ($metrics['reporting_coverage_rate'] >= 50 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-rose-50 text-rose-700 border border-rose-200') }}">
+                                    @if($metrics['reporting_coverage_rate'] >= 80)
+                                        Healthy
+                                    @elseif($metrics['reporting_coverage_rate'] >= 50)
+                                        In Progress
+                                    @else
+                                        Needs Update
+                                    @endif
+                                </span>
+                            </div>
                             <div class="text-xs text-slate-500 font-medium mt-1">
-                                Points across 5 Pillars
+                                {{ $metrics['fully_reported_projects'] }} of {{ $metrics['active_projects'] }} projects fully updated (5/5)
                             </div>
                         </div>
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="pt-3 border-t border-slate-100 text-xs font-bold text-amber-600 hover:text-amber-800 flex items-center justify-between">
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="pt-3 border-t border-slate-100 text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center justify-between">
                             <span>Explore 5 Pillars Matrix</span>
                             <span>→</span>
                         </a>
