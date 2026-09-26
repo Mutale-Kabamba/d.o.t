@@ -239,7 +239,7 @@ class AdminTeamStaffCrudTest extends TestCase
             'project_ids' => [$this->project->id],
         ]);
 
-        $response->assertRedirect(route('programmes.hub'));
+        $response->assertRedirect(route('programmes.hub', ['tab' => 'staff']));
         $this->officer->refresh();
         $this->assertEquals('Mwila Hub Edit', $this->officer->name);
         $this->assertEquals('mwila.hub@dot.org', $this->officer->email);

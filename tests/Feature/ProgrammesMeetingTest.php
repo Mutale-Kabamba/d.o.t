@@ -96,7 +96,7 @@ class ProgrammesMeetingTest extends TestCase
             'code' => 'NSP',
             'user_ids' => [$officer->id],
         ]);
-        $response->assertRedirect(route('programmes.hub'));
+        $response->assertRedirect(route('programmes.hub', ['tab' => 'projects']));
         $this->assertDatabaseHas('projects', ['name' => 'New Super Project']);
 
         // Project Officer CANNOT create projects (403)
@@ -141,7 +141,7 @@ class ProgrammesMeetingTest extends TestCase
             'project_ids' => [$project->id],
         ]);
 
-        $res->assertRedirect(route('programmes.hub'));
+        $res->assertRedirect(route('programmes.hub', ['tab' => 'staff']));
         $this->assertDatabaseHas('users', [
             'email' => 'chanda@pifzambia.org',
             'role' => User::ROLE_PROJECT_OFFICER,

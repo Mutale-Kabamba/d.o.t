@@ -688,7 +688,7 @@ class ProgrammesMeetingController extends Controller
 
         $activity->delete();
 
-        return redirect()->route('programmes.hub')->with('success', 'Activity entry deleted successfully.');
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'activities']))->with('success', 'Activity entry deleted successfully.');
     }
 
     /**
@@ -722,7 +722,7 @@ class ProgrammesMeetingController extends Controller
             $project->users()->sync($validated['user_ids']);
         }
 
-        return redirect()->route('programmes.hub')->with('success', "Project '{$project->name}' created successfully.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'projects']))->with('success', "Project '{$project->name}' created successfully.");
     }
 
     /**
@@ -755,7 +755,7 @@ class ProgrammesMeetingController extends Controller
 
         $project->users()->sync($validated['user_ids'] ?? []);
 
-        return redirect()->route('programmes.hub')->with('success', "Project '{$project->name}' updated successfully.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'projects']))->with('success', "Project '{$project->name}' updated successfully.");
     }
 
     /**
@@ -771,7 +771,7 @@ class ProgrammesMeetingController extends Controller
         $newStatus = $project->status === 'active' ? 'archived' : 'active';
         $project->update(['status' => $newStatus]);
 
-        return redirect()->route('programmes.hub')->with('success', "Project '{$project->name}' marked as {$newStatus}.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'projects']))->with('success', "Project '{$project->name}' marked as {$newStatus}.");
     }
 
     /**
@@ -788,7 +788,7 @@ class ProgrammesMeetingController extends Controller
         $project->users()->detach();
         $project->delete();
 
-        return redirect()->route('programmes.hub')->with('success', "Project '{$name}' deleted.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'projects']))->with('success', "Project '{$name}' deleted.");
     }
 
     /**
@@ -846,7 +846,7 @@ class ProgrammesMeetingController extends Controller
             $newUser->projects()->sync($validated['project_ids']);
         }
 
-        return redirect()->route('programmes.hub')->with('success', "User account for '{$newUser->name}' ({$newUser->role_label}) created successfully.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'staff']))->with('success', "User account for '{$newUser->name}' ({$newUser->role_label}) created successfully.");
     }
 
     /**
@@ -880,7 +880,7 @@ class ProgrammesMeetingController extends Controller
 
         $user->projects()->sync($validated['project_ids'] ?? []);
 
-        return redirect()->route('programmes.hub')->with('success', "User account for '{$user->name}' updated successfully.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'staff']))->with('success', "User account for '{$user->name}' updated successfully.");
     }
 
     /**
@@ -894,14 +894,14 @@ class ProgrammesMeetingController extends Controller
         }
 
         if ($user->id === $currentUser->id) {
-            return redirect()->route('programmes.hub')->with('error', 'You cannot delete your own account.');
+            return redirect()->back(fallback: route('programmes.hub', ['tab' => 'staff']))->with('error', 'You cannot delete your own account.');
         }
 
         $name = $user->name;
         $user->projects()->detach();
         $user->delete();
 
-        return redirect()->route('programmes.hub')->with('success', "User account for '{$name}' removed.");
+        return redirect()->back(fallback: route('programmes.hub', ['tab' => 'staff']))->with('success', "User account for '{$name}' removed.");
     }
 
     /**

@@ -362,14 +362,14 @@ class AdminController extends Controller
     public function staffDestroy(User $user): RedirectResponse
     {
         if (Auth::id() === $user->id) {
-            return redirect()->route('admin.staff.index')->with('error', 'You cannot delete your own active administrator account.');
+            return redirect()->back(fallback: route('admin.staff.index'))->with('error', 'You cannot delete your own active administrator account.');
         }
 
         $name = $user->name;
         $user->projects()->detach();
         $user->delete();
 
-        return redirect()->route('admin.staff.index')->with('success', "Staff account for '{$name}' deleted successfully.");
+        return redirect()->back(fallback: route('admin.staff.index'))->with('success', "Staff account for '{$name}' deleted successfully.");
     }
 
     /* =========================================================================
@@ -445,7 +445,7 @@ class AdminController extends Controller
             $project->users()->sync($validated['user_ids']);
         }
 
-        return redirect()->route('admin.teams.index')->with('success', "Team/Project '{$project->name}' created successfully.");
+        return redirect()->back(fallback: route('admin.teams.index'))->with('success', "Team/Project '{$project->name}' created successfully.");
     }
 
     /**
@@ -473,7 +473,7 @@ class AdminController extends Controller
 
         $project->users()->sync($validated['user_ids'] ?? []);
 
-        return redirect()->route('admin.teams.index')->with('success', "Team/Project '{$project->name}' updated successfully.");
+        return redirect()->back(fallback: route('admin.teams.index'))->with('success', "Team/Project '{$project->name}' updated successfully.");
     }
 
     /**
@@ -484,7 +484,7 @@ class AdminController extends Controller
         $newStatus = $project->status === 'active' ? 'archived' : 'active';
         $project->update(['status' => $newStatus]);
 
-        return redirect()->route('admin.teams.index')->with('success', "Team/Project '{$project->name}' marked as {$newStatus}.");
+        return redirect()->back(fallback: route('admin.teams.index'))->with('success', "Team/Project '{$project->name}' marked as {$newStatus}.");
     }
 
     /**
@@ -496,7 +496,7 @@ class AdminController extends Controller
         $project->users()->detach();
         $project->delete();
 
-        return redirect()->route('admin.teams.index')->with('success', "Team/Project '{$name}' deleted successfully.");
+        return redirect()->back(fallback: route('admin.teams.index'))->with('success', "Team/Project '{$name}' deleted successfully.");
     }
 }
 
