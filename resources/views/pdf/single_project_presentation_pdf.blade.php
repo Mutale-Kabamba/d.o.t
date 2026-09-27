@@ -127,15 +127,8 @@
             font-size: 22px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 3px 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.5px;
-        }
-        .header-rule {
-            width: 42px;
-            height: 3px;
-            background-color: #2563eb;
-            border-radius: 2px;
-            margin-bottom: 8px;
         }
 
         /* 3-Column Items Grid */
@@ -317,7 +310,6 @@
 
             <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ strtoupper($period) }}</div>
             <h2 class="slide-title">{{ $slide['title'] }}</h2>
-            <div class="header-rule"></div>
         </div>
 
         <!-- Single Project 3 Focus Sections Grid -->

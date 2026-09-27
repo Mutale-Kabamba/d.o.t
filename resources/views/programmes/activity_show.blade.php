@@ -162,22 +162,22 @@
                         }
                         $subNarrative = $activity->getSubPillarNarrative($theme['number'], $subKey);
                     @endphp
-                    <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                    <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3 min-w-0 overflow-hidden">
+                        <div class="space-y-2 min-w-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 font-bold text-slate-900 text-xs truncate">
                                     <span class="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
-                                    <span>{{ $item['title'] }}</span>
+                                    <span class="truncate">{{ $item['title'] }}</span>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-400">{{ count($subPoints) }} points</span>
+                                <span class="text-[10px] font-bold text-slate-400 shrink-0">{{ count($subPoints) }} points</span>
                             </div>
-                            <p class="text-[11px] text-slate-500 leading-snug">{{ $item['prompt'] }}</p>
+                            <p class="text-[11px] text-slate-500 leading-snug break-words [overflow-wrap:anywhere]">{{ $item['prompt'] }}</p>
 
-                            <div class="pt-2 border-t border-slate-200/60">
+                            <div class="pt-2 border-t border-slate-200/60 min-w-0">
                                 @if(!empty($subPoints))
                                     <ul class="space-y-1.5 list-disc list-inside text-xs text-slate-800 font-medium">
                                         @foreach($subPoints as $pt)
-                                            <li class="leading-relaxed">
+                                            <li class="leading-relaxed break-words [overflow-wrap:anywhere]">
                                                 {!! \App\Models\ActivityEntry::formatPointHtml($pt) !!}
                                             </li>
                                         @endforeach
@@ -189,27 +189,27 @@
                         </div>
 
                         @if(!empty($subNarrative))
-                        <div class="pt-2.5 border-t border-slate-200/80 bg-white/70 p-2.5 rounded-lg border border-slate-200/60 space-y-1">
+                        <div class="pt-2.5 border-t border-slate-200/80 bg-white/70 p-2.5 rounded-lg border border-slate-200/60 space-y-1 min-w-0 overflow-hidden">
                             <div class="flex items-center gap-1 text-[10.5px] font-bold text-blue-900 uppercase tracking-wider">
                                 <svg class="w-3 h-3 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                                 </svg>
                                 <span>Narrative &amp; Qualitative Summary</span>
                             </div>
-                            <p class="text-[11.5px] text-slate-700 leading-relaxed whitespace-pre-line">{{ $subNarrative }}</p>
+                            <p class="text-[11.5px] text-slate-700 leading-relaxed whitespace-pre-line break-words [overflow-wrap:anywhere]">{{ $subNarrative }}</p>
                         </div>
                         @endif
                     </div>
                     @endforeach
                 </div>
                 @elseif(!empty($points))
-                <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-2">
+                <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-2 min-w-0 overflow-hidden">
                     <div class="text-xs font-bold text-blue-900 uppercase tracking-wider">
                         Key Presentation Points
                     </div>
                     <ul class="space-y-1.5 list-disc list-inside text-xs text-slate-800 font-medium">
                         @foreach($points as $pt)
-                            <li class="leading-relaxed">
+                            <li class="leading-relaxed break-words [overflow-wrap:anywhere]">
                                 {!! \App\Models\ActivityEntry::formatPointHtml($pt) !!}
                             </li>
                         @endforeach
@@ -219,14 +219,14 @@
 
                 <!-- Comprehensive Narrative -->
                 @if(!empty($narrative))
-                <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-1.5">
+                <div class="bg-blue-50/40 p-4 rounded-xl border border-blue-100 space-y-1.5 min-w-0 overflow-hidden">
                     <div class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <span>Detailed Qualitative Narrative</span>
                     </div>
-                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">{{ $narrative }}</p>
+                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line break-words [overflow-wrap:anywhere]">{{ $narrative }}</p>
                 </div>
                 @endif
             </div>

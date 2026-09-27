@@ -18,8 +18,8 @@
             padding: 0;
             background-color: #ffffff;
             color: #0f172a;
-            font-size: 9.5px;
-            line-height: 1.35;
+            font-size: 10px;
+            line-height: 1.38;
         }
 
         .slide {
@@ -50,47 +50,47 @@
             padding-left: 4mm;
         }
         .cover-logo {
-            height: 44px;
-            margin-bottom: 8px;
+            height: 48px;
+            margin-bottom: 10px;
         }
         .cover-title {
-            font-size: 32px;
+            font-size: 34px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 3px 0;
+            margin: 0 0 4px 0;
             letter-spacing: -0.5px;
         }
         .cover-subtitle {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #2563eb;
-            margin: 0 0 8px 0;
+            margin: 0 0 10px 0;
         }
         .cover-badge {
             background-color: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
             border-radius: 12px;
-            padding: 3px 12px;
-            font-size: 11px;
+            padding: 4px 14px;
+            font-size: 11.5px;
             font-weight: 700;
             display: inline-block;
             margin-bottom: 14px;
         }
         .cover-projects-box {
             background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             width: 98%;
         }
         .cover-projects-title {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 800;
-            color: #64748b;
+            color: #475569;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .project-tag {
             display: inline-block;
@@ -98,16 +98,16 @@
             color: #1e293b;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            padding: 2.5px 7px;
-            font-size: 10px;
+            padding: 3px 8px;
+            font-size: 10.5px;
             font-weight: 700;
-            margin-right: 5px;
-            margin-bottom: 5px;
+            margin-right: 6px;
+            margin-bottom: 6px;
         }
 
         /* Slide Header */
         .slide-header {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             position: relative;
             padding-right: 110px;
         }
@@ -115,29 +115,22 @@
             position: absolute;
             right: 0;
             top: -2px;
-            height: 28px;
+            height: 30px;
         }
         .slide-meta {
-            font-size: 8.5px;
+            font-size: 9.5px;
             font-weight: 800;
             color: #2563eb;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
         .slide-title {
-            font-size: 17px;
+            font-size: 20px;
             font-weight: 900;
             color: #0f172a;
-            margin: 0 0 2px 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.5px;
-        }
-        .header-rule {
-            width: 32px;
-            height: 2px;
-            background-color: #2563eb;
-            border-radius: 2px;
-            margin-bottom: 5px;
         }
 
         /* 2-PROJECT COMPACT TABLE LAYOUT (Columns = 2 Projects Max) */
@@ -150,63 +143,58 @@
             margin-right: -4px;
         }
 
-        .col-header {
-            vertical-align: top;
+        .col-header-box {
             background-color: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 5px 8px;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
             text-align: left;
         }
         .proj-name {
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
         .proj-officer {
-            font-size: 9px;
-            font-weight: 700;
-            color: #2563eb;
+            font-size: 9.5px;
+            font-weight: 500;
+            color: #475569;
         }
 
-        .item-cell {
-            vertical-align: top;
+        .item-box {
             background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 6px 8px;
-            font-size: 9px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 9.5px;
             word-break: break-word;
+            min-height: 105mm;
         }
 
         .points-list {
             margin: 0;
-            padding-left: 12px;
+            padding-left: 14px;
         }
         .points-list li {
-            margin-bottom: 2.5px;
+            margin-bottom: 3px;
             color: #1e293b;
-            line-height: 1.3;
-            font-size: 9px;
+            line-height: 1.35;
+            font-size: 9.5px;
         }
         .empty-points {
-            font-size: 8.5px;
-            color: #94a3b8;
+            font-size: 9.5px;
+            color: #64748b;
             font-style: italic;
         }
 
         .section-block {
-            margin-bottom: 4px;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 4px 6px;
+            margin-bottom: 6px;
         }
         .section-title {
-            font-size: 8.5px;
+            font-size: 9px;
             font-weight: 800;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
@@ -312,15 +300,11 @@
                     <img src="{{ public_path('logos/logo3.png') }}" class="header-logo3" alt="Logo">
                 @endif
                 <div class="slide-meta">
-                    SLIDE {{ $slideNum + 1 }} OF {{ $totalSlides }} • PILLAR {{ $slide['number'] }} OF 5 • {{ strtoupper($quarter) }}
-                    @if($totalChunks > 1)
-                        • PART {{ $chunkIdx + 1 }} OF {{ $totalChunks }}
-                    @endif
+                    PILLAR {{ $slide['number'] }} OF 5 • {{ strtoupper($quarter) }}@if($totalChunks > 1) • PART {{ $chunkIdx + 1 }} OF {{ $totalChunks }}@endif
                 </div>
                 <div class="slide-title">
                     {{ $slide['title'] }}
                 </div>
-                <div class="header-rule"></div>
             </div>
 
             <!-- COMPACT TABLE: 2 Projects Per Slide (50% / 50%) -->
@@ -332,9 +316,11 @@
                             $globalIdx = ($chunkIdx * 2) + $pIdx;
                             $bColor = $borderColors[$globalIdx % count($borderColors)];
                         @endphp
-                        <th class="col-header" style="width: {{ $colWidthPct }}; border-top: 3.5px solid {{ $bColor }};">
-                            <div class="proj-name">{{ $pData['project_name'] }}</div>
-                            <div class="proj-officer">Lead: {{ $pData['officer_name'] }} @if(!empty($pData['location'])) • {{ $pData['location'] }} @endif</div>
+                        <th style="width: {{ $colWidthPct }}; padding: 0 4px 6px 4px; vertical-align: top;">
+                            <div class="col-header-box">
+                                <div class="proj-name" style="color: {{ $bColor }};">{{ $pData['project_name'] }}</div>
+                                <div class="proj-officer">Lead: {{ $pData['officer_name'] }} @if(!empty($pData['location'])) • {{ $pData['location'] }} @endif</div>
+                            </div>
                         </th>
                         @endforeach
                     </tr>
@@ -352,43 +338,45 @@
                                 if (!empty($s['points'])) { $hasSections = true; break; }
                             }
                         @endphp
-                        <td class="item-cell" style="width: {{ $colWidthPct }}; border-left: 3.5px solid {{ $bColor }};">
-                            @if($hasSections)
-                                @foreach($sections as $itemKey => $sec)
-                                    <div class="section-block">
-                                        <div class="section-title" style="color: {{ $bColor }};">• {{ $sec['title'] }}</div>
-                                        @if(!empty($sec['points']))
-                                            <ul class="points-list">
-                                                @foreach($sec['points'] as $pt)
-                                                    <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
-                                                @endforeach
-                                            </ul>
-                                        @endif
+                        <td style="width: {{ $colWidthPct }}; padding: 0 4px; vertical-align: top;">
+                            <div class="item-box">
+                                @if($hasSections)
+                                    @foreach($sections as $itemKey => $sec)
+                                        <div class="section-block">
+                                            <div class="section-title" style="color: {{ $bColor }};">• {{ $sec['title'] }}</div>
+                                            @if(!empty($sec['points']))
+                                                <ul class="points-list">
+                                                    @foreach($sec['points'] as $pt)
+                                                        <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
 
-                                        @if(!empty($sec['narrative']))
-                                            <div style="margin-top: 2px; padding: 2px 4px; background-color: #ffffff; border-left: 2px solid {{ $bColor }}; font-size: 7.5px; color: #475569; line-height: 1.25;">
-                                                <strong style="color: #0f172a; font-size: 7px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
-                                            </div>
-                                        @elseif(empty($sec['points']))
-                                            <div class="empty-points">No entries.</div>
-                                        @endif
-                                    </div>
-                                @endforeach
-
-                                @if(!empty($pData['theme_narrative_text'][$slideKey]))
-                                    <div style="margin-top: 3px; background: #f1f5f9; border-left: 2.5px solid #64748b; border-radius: 3px; padding: 3px 5px; font-size: 7.5px; color: #334155; line-height: 1.25;">
-                                        <strong style="font-size: 7px; color: #475569; text-transform: uppercase;">Executive Synthesis:</strong> {{ $pData['theme_narrative_text'][$slideKey] }}
-                                    </div>
-                                @endif
-                            @elseif(!empty($points))
-                                <ul class="points-list">
-                                    @foreach($points as $pt)
-                                        <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                            @if(!empty($sec['narrative']))
+                                                <div style="margin-top: 2px; padding: 2px 4px; background-color: #f8fafc; border-left: 2px solid {{ $bColor }}; font-size: 7.5px; color: #475569; line-height: 1.25;">
+                                                    <strong style="color: #0f172a; font-size: 7px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
+                                                </div>
+                                            @elseif(empty($sec['points']))
+                                                <div class="empty-points">No entries recorded for {{ strtolower($sec['title']) }}.</div>
+                                            @endif
+                                        </div>
                                     @endforeach
-                                </ul>
-                            @else
-                                <div class="empty-points">No key presentation points recorded.</div>
-                            @endif
+
+                                    @if(!empty($pData['theme_narrative_text'][$slideKey]))
+                                        <div style="margin-top: 3px; background: #f1f5f9; border-left: 2.5px solid #64748b; border-radius: 3px; padding: 3px 5px; font-size: 7.5px; color: #334155; line-height: 1.25;">
+                                            <strong style="font-size: 7px; color: #475569; text-transform: uppercase;">Executive Synthesis:</strong> {{ $pData['theme_narrative_text'][$slideKey] }}
+                                        </div>
+                                    @endif
+                                @elseif(!empty($points))
+                                    <ul class="points-list">
+                                        @foreach($points as $pt)
+                                            <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <div class="empty-points">No key presentation points recorded for this period.</div>
+                                @endif
+                            </div>
                         </td>
                         @endforeach
                     </tr>

@@ -272,19 +272,97 @@ class ActivityEntry extends Model
             default => null,
         };
 
-        if ($pillarColumn && !empty($this->{$pillarColumn}[$subField])) {
-            $data = $this->{$pillarColumn}[$subField];
-            if (is_array($data)) {
-                if (isset($data['points'])) {
-                    return is_array($data['points']) ? $data['points'] : self::extractBulletPoints($data['points']);
+        $pillarData = $pillarColumn ? $this->{$pillarColumn} : null;
+
+        if (is_array($pillarData)) {
+            // 1. Check exact subField key
+            if (!empty($pillarData[$subField])) {
+                $data = $pillarData[$subField];
+                if (is_array($data)) {
+                    if (isset($data['points'])) {
+                        $pts = is_array($data['points']) ? $data['points'] : self::extractBulletPoints($data['points']);
+                        $cleaned = array_values(array_filter(array_map('trim', $pts), fn($p) => $p !== ''));
+                        if (!empty($cleaned)) {
+                            return $cleaned;
+                        }
+                    } else {
+                        $cleaned = array_values(array_filter(array_map('trim', $data), fn($p) => $p !== ''));
+                        if (!empty($cleaned)) {
+                            return $cleaned;
+                        }
+                    }
+                } elseif (is_string($data)) {
+                    $pts = self::extractBulletPoints($data);
+                    if (!empty($pts)) {
+                        return $pts;
+                    }
                 }
-                return $data;
             }
-            return self::extractBulletPoints($data);
+
+            // 2. Check alias for pillar 5 (project_collab vs projects)
+            if ($pillarNumber === 5 && ($subField === 'project_collab' || $subField === 'projects')) {
+                $alt = $subField === 'project_collab' ? 'projects' : 'project_collab';
+                if (!empty($pillarData[$alt])) {
+                    $data = $pillarData[$alt];
+                    if (is_array($data)) {
+                        if (isset($data['points'])) {
+                            $pts = is_array($data['points']) ? $data['points'] : self::extractBulletPoints($data['points']);
+                            $cleaned = array_values(array_filter(array_map('trim', $pts), fn($p) => $p !== ''));
+                            if (!empty($cleaned)) {
+                                return $cleaned;
+                            }
+                        } else {
+                            $cleaned = array_values(array_filter(array_map('trim', $data), fn($p) => $p !== ''));
+                            if (!empty($cleaned)) {
+                                return $cleaned;
+                            }
+                        }
+                    } elseif (is_string($data)) {
+                        $pts = self::extractBulletPoints($data);
+                        if (!empty($pts)) {
+                            return $pts;
+                        }
+                    }
+                }
+            }
         }
 
-        // Fallback to direct sub-column
-        return $this->getPoints($subField);
+        // 3. Fallback to direct dedicated database columns
+        $subFieldToColumn = [
+            1 => [
+                'milestones' => 'achievements_milestones',
+                'impact' => 'achievements_impact',
+                'stories' => 'achievements_stories',
+            ],
+            2 => [
+                'operational' => 'challenges_operational',
+                'resources' => 'challenges_resources',
+                'risks' => 'challenges_risks',
+            ],
+            3 => [
+                'lessons' => 'learning_lessons',
+                'feedback' => 'learning_feedback',
+                'innovation' => 'learning_innovation',
+            ],
+            4 => [
+                'performance' => 'mne_performance',
+                'data_quality' => 'mne_data_quality',
+                'evaluation' => 'mne_evaluation_plans',
+            ],
+            5 => [
+                'project_collab' => 'collab_projects',
+                'projects' => 'collab_projects',
+                'partnerships' => 'collab_partnerships',
+                'cross_learning' => 'collab_cross_learning',
+            ],
+        ];
+
+        $fallbackCol = $subFieldToColumn[$pillarNumber][$subField] ?? $subField;
+        if (!empty($this->{$fallbackCol})) {
+            return $this->getPoints($fallbackCol);
+        }
+
+        return [];
     }
 
     /**
@@ -301,15 +379,26 @@ class ActivityEntry extends Model
             default => null,
         };
 
-        if ($pillarColumn && !empty($this->{$pillarColumn}[$subField])) {
-            $data = $this->{$pillarColumn}[$subField];
-            if (is_array($data) && !empty($data['narrative'])) {
-                return trim((string) $data['narrative']);
-            }
-        }
+        $pillarData = $pillarColumn ? $this->{$pillarColumn} : null;
 
-        if ($pillarColumn && !empty($this->{$pillarColumn}[$subField . '_narrative'])) {
-            return trim((string) $this->{$pillarColumn}[$subField . '_narrative']);
+        if (is_array($pillarData)) {
+            if (!empty($pillarData[$subField])) {
+                $data = $pillarData[$subField];
+                if (is_array($data) && !empty($data['narrative'])) {
+                    return trim((string) $data['narrative']);
+                }
+            }
+
+            if ($pillarNumber === 5 && ($subField === 'project_collab' || $subField === 'projects')) {
+                $alt = $subField === 'project_collab' ? 'projects' : 'project_collab';
+                if (!empty($pillarData[$alt]) && is_array($pillarData[$alt]) && !empty($pillarData[$alt]['narrative'])) {
+                    return trim((string) $pillarData[$alt]['narrative']);
+                }
+            }
+
+            if (!empty($pillarData[$subField . '_narrative'])) {
+                return trim((string) $pillarData[$subField . '_narrative']);
+            }
         }
 
         return '';

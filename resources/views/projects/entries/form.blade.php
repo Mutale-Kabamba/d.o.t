@@ -4,79 +4,110 @@
 
 @section('content')
 @php
+// Helper to resolve initial bullet points and narratives for edit vs new
+$resolvePoints = function(int $pNum, string $subKey, string $oldKey, $activity) {
+    $oldVal = old($oldKey . '.points', old($oldKey));
+    if ($oldVal !== null) {
+        if (is_array($oldVal)) {
+            $filtered = array_values(array_filter(array_map('trim', $oldVal), fn($v) => $v !== ''));
+            return !empty($filtered) ? $filtered : [''];
+        }
+        $pts = \App\Models\ActivityEntry::extractBulletPoints((string)$oldVal);
+        return !empty($pts) ? $pts : [''];
+    }
+    if ($activity) {
+        $pts = $activity->getPillarBullets($pNum, $subKey);
+        if (!empty($pts)) {
+            return $pts;
+        }
+    }
+    return [''];
+};
+
+$resolveNarrative = function(int $pNum, string $subKey, string $oldKey, $activity) {
+    $oldVal = old($oldKey . '.narrative');
+    if ($oldVal !== null) {
+        return (string)$oldVal;
+    }
+    if ($activity) {
+        return $activity->getSubPillarNarrative($pNum, $subKey);
+    }
+    return '';
+};
+
 $initialPillars = [
     1 => [
         'milestones' => [
-            'points' => $activity ? $activity->getPillarBullets(1, 'milestones') : old('pillar_1_achievements.milestones.points', old('pillar_1_achievements.milestones', !empty($activity->achievements_milestones) ? \App\Models\ActivityEntry::extractBulletPoints($activity->achievements_milestones) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(1, 'milestones') : old('pillar_1_achievements.milestones.narrative', ''),
+            'points' => $resolvePoints(1, 'milestones', 'pillar_1_achievements.milestones', $activity),
+            'narrative' => $resolveNarrative(1, 'milestones', 'pillar_1_achievements.milestones', $activity),
         ],
         'impact' => [
-            'points' => $activity ? $activity->getPillarBullets(1, 'impact') : old('pillar_1_achievements.impact.points', old('pillar_1_achievements.impact', !empty($activity->achievements_impact) ? \App\Models\ActivityEntry::extractBulletPoints($activity->achievements_impact) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(1, 'impact') : old('pillar_1_achievements.impact.narrative', ''),
+            'points' => $resolvePoints(1, 'impact', 'pillar_1_achievements.impact', $activity),
+            'narrative' => $resolveNarrative(1, 'impact', 'pillar_1_achievements.impact', $activity),
         ],
         'stories' => [
-            'points' => $activity ? $activity->getPillarBullets(1, 'stories') : old('pillar_1_achievements.stories.points', old('pillar_1_achievements.stories', !empty($activity->achievements_stories) ? \App\Models\ActivityEntry::extractBulletPoints($activity->achievements_stories) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(1, 'stories') : old('pillar_1_achievements.stories.narrative', ''),
+            'points' => $resolvePoints(1, 'stories', 'pillar_1_achievements.stories', $activity),
+            'narrative' => $resolveNarrative(1, 'stories', 'pillar_1_achievements.stories', $activity),
         ],
         'narrative' => old('pillar_1_narrative', $activity->pillar_1_narrative ?? $activity->achievements_narrative ?? ''),
     ],
     2 => [
         'operational' => [
-            'points' => $activity ? $activity->getPillarBullets(2, 'operational') : old('pillar_2_challenges.operational.points', old('pillar_2_challenges.operational', !empty($activity->challenges_operational) ? \App\Models\ActivityEntry::extractBulletPoints($activity->challenges_operational) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(2, 'operational') : old('pillar_2_challenges.operational.narrative', ''),
+            'points' => $resolvePoints(2, 'operational', 'pillar_2_challenges.operational', $activity),
+            'narrative' => $resolveNarrative(2, 'operational', 'pillar_2_challenges.operational', $activity),
         ],
         'resources' => [
-            'points' => $activity ? $activity->getPillarBullets(2, 'resources') : old('pillar_2_challenges.resources.points', old('pillar_2_challenges.resources', !empty($activity->challenges_resources) ? \App\Models\ActivityEntry::extractBulletPoints($activity->challenges_resources) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(2, 'resources') : old('pillar_2_challenges.resources.narrative', ''),
+            'points' => $resolvePoints(2, 'resources', 'pillar_2_challenges.resources', $activity),
+            'narrative' => $resolveNarrative(2, 'resources', 'pillar_2_challenges.resources', $activity),
         ],
         'risks' => [
-            'points' => $activity ? $activity->getPillarBullets(2, 'risks') : old('pillar_2_challenges.risks.points', old('pillar_2_challenges.risks', !empty($activity->challenges_risks) ? \App\Models\ActivityEntry::extractBulletPoints($activity->challenges_risks) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(2, 'risks') : old('pillar_2_challenges.risks.narrative', ''),
+            'points' => $resolvePoints(2, 'risks', 'pillar_2_challenges.risks', $activity),
+            'narrative' => $resolveNarrative(2, 'risks', 'pillar_2_challenges.risks', $activity),
         ],
         'narrative' => old('pillar_2_narrative', $activity->pillar_2_narrative ?? $activity->challenges_narrative ?? ''),
     ],
     3 => [
         'lessons' => [
-            'points' => $activity ? $activity->getPillarBullets(3, 'lessons') : old('pillar_3_learning.lessons.points', old('pillar_3_learning.lessons', !empty($activity->learning_lessons) ? \App\Models\ActivityEntry::extractBulletPoints($activity->learning_lessons) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(3, 'lessons') : old('pillar_3_learning.lessons.narrative', ''),
+            'points' => $resolvePoints(3, 'lessons', 'pillar_3_learning.lessons', $activity),
+            'narrative' => $resolveNarrative(3, 'lessons', 'pillar_3_learning.lessons', $activity),
         ],
         'feedback' => [
-            'points' => $activity ? $activity->getPillarBullets(3, 'feedback') : old('pillar_3_learning.feedback.points', old('pillar_3_learning.feedback', !empty($activity->learning_feedback) ? \App\Models\ActivityEntry::extractBulletPoints($activity->learning_feedback) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(3, 'feedback') : old('pillar_3_learning.feedback.narrative', ''),
+            'points' => $resolvePoints(3, 'feedback', 'pillar_3_learning.feedback', $activity),
+            'narrative' => $resolveNarrative(3, 'feedback', 'pillar_3_learning.feedback', $activity),
         ],
         'innovation' => [
-            'points' => $activity ? $activity->getPillarBullets(3, 'innovation') : old('pillar_3_learning.innovation.points', old('pillar_3_learning.innovation', !empty($activity->learning_innovation) ? \App\Models\ActivityEntry::extractBulletPoints($activity->learning_innovation) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(3, 'innovation') : old('pillar_3_learning.innovation.narrative', ''),
+            'points' => $resolvePoints(3, 'innovation', 'pillar_3_learning.innovation', $activity),
+            'narrative' => $resolveNarrative(3, 'innovation', 'pillar_3_learning.innovation', $activity),
         ],
         'narrative' => old('pillar_3_narrative', $activity->pillar_3_narrative ?? $activity->learning_narrative ?? ''),
     ],
     4 => [
         'performance' => [
-            'points' => $activity ? $activity->getPillarBullets(4, 'performance') : old('pillar_4_monitoring.performance.points', old('pillar_4_monitoring.performance', !empty($activity->mne_performance) ? \App\Models\ActivityEntry::extractBulletPoints($activity->mne_performance) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(4, 'performance') : old('pillar_4_monitoring.performance.narrative', ''),
+            'points' => $resolvePoints(4, 'performance', 'pillar_4_monitoring.performance', $activity),
+            'narrative' => $resolveNarrative(4, 'performance', 'pillar_4_monitoring.performance', $activity),
         ],
         'data_quality' => [
-            'points' => $activity ? $activity->getPillarBullets(4, 'data_quality') : old('pillar_4_monitoring.data_quality.points', old('pillar_4_monitoring.data_quality', !empty($activity->mne_data_quality) ? \App\Models\ActivityEntry::extractBulletPoints($activity->mne_data_quality) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(4, 'data_quality') : old('pillar_4_monitoring.data_quality.narrative', ''),
+            'points' => $resolvePoints(4, 'data_quality', 'pillar_4_monitoring.data_quality', $activity),
+            'narrative' => $resolveNarrative(4, 'data_quality', 'pillar_4_monitoring.data_quality', $activity),
         ],
         'evaluation' => [
-            'points' => $activity ? $activity->getPillarBullets(4, 'evaluation') : old('pillar_4_monitoring.evaluation.points', old('pillar_4_monitoring.evaluation', !empty($activity->mne_evaluation_plans) ? \App\Models\ActivityEntry::extractBulletPoints($activity->mne_evaluation_plans) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(4, 'evaluation') : old('pillar_4_monitoring.evaluation.narrative', ''),
+            'points' => $resolvePoints(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
+            'narrative' => $resolveNarrative(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
         ],
         'narrative' => old('pillar_4_narrative', $activity->pillar_4_narrative ?? $activity->mne_narrative ?? ''),
     ],
     5 => [
         'project_collab' => [
-            'points' => $activity ? $activity->getPillarBullets(5, 'project_collab') : old('pillar_5_collaboration.project_collab.points', old('pillar_5_collaboration.project_collab', !empty($activity->collab_projects) ? \App\Models\ActivityEntry::extractBulletPoints($activity->collab_projects) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(5, 'project_collab') : old('pillar_5_collaboration.project_collab.narrative', ''),
+            'points' => $resolvePoints(5, 'project_collab', 'pillar_5_collaboration.project_collab', $activity),
+            'narrative' => $resolveNarrative(5, 'project_collab', 'pillar_5_collaboration.project_collab', $activity),
         ],
         'partnerships' => [
-            'points' => $activity ? $activity->getPillarBullets(5, 'partnerships') : old('pillar_5_collaboration.partnerships.points', old('pillar_5_collaboration.partnerships', !empty($activity->collab_partnerships) ? \App\Models\ActivityEntry::extractBulletPoints($activity->collab_partnerships) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(5, 'partnerships') : old('pillar_5_collaboration.partnerships.narrative', ''),
+            'points' => $resolvePoints(5, 'partnerships', 'pillar_5_collaboration.partnerships', $activity),
+            'narrative' => $resolveNarrative(5, 'partnerships', 'pillar_5_collaboration.partnerships', $activity),
         ],
         'cross_learning' => [
-            'points' => $activity ? $activity->getPillarBullets(5, 'cross_learning') : old('pillar_5_collaboration.cross_learning.points', old('pillar_5_collaboration.cross_learning', !empty($activity->collab_cross_learning) ? \App\Models\ActivityEntry::extractBulletPoints($activity->collab_cross_learning) : [''])),
-            'narrative' => $activity ? $activity->getSubPillarNarrative(5, 'cross_learning') : old('pillar_5_collaboration.cross_learning.narrative', ''),
+            'points' => $resolvePoints(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
+            'narrative' => $resolveNarrative(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
         ],
         'narrative' => old('pillar_5_narrative', $activity->pillar_5_narrative ?? $activity->collab_narrative ?? ''),
     ],

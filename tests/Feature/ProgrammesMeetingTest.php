@@ -353,7 +353,7 @@ class ProgrammesMeetingTest extends TestCase
             'achievements_narrative' => 'Comprehensive qualitative narrative highlighting the transformative community impact.',
         ]);
 
-        // 1. Live Projector View
+        // 1. Live Projector View (Summaries omitted for clean large-screen presentation)
         $resProjector = $this->actingAs($user)->get(route('programmes.projector'));
         $resProjector->assertStatus(200);
         $resProjector->assertSee('Girls Academy Project');
@@ -363,7 +363,8 @@ class ProgrammesMeetingTest extends TestCase
         $resProjector->assertSee('Quarterly Milestone Review: 92% of schools reported improved attendance');
         $resProjector->assertSee('Success Stories');
         $resProjector->assertSee('Quarterly Milestone Review: Chanda enrolled in university following scholarship');
-        $resProjector->assertSee('Executive Pillar Synthesis');
+        $resProjector->assertDontSee('Executive Pillar Synthesis');
+        $resProjector->assertDontSee('Summary:');
 
         // 2. Consolidated PDF Export
         $resPdf = $this->actingAs($user)->get(route('programmes.export_consolidated_pdf'));
@@ -502,7 +503,21 @@ class ProgrammesMeetingTest extends TestCase
         $this->assertEquals('Pillar 1 full qualitative context with participant quotes and donor reflections.', $entry->achievements_narrative);
         $this->assertEquals('Pillar 2 full qualitative risk analysis.', $entry->challenges_narrative);
 
-        // 4. Test Unassigned Officer cannot access or post to this project
+        // 4. Test Edit Form Pulls and Pre-fills all logged entries
+        $resEditForm = $this->actingAs($officer)->get(route('programmes.activities.edit', $entry->token));
+        $resEditForm->assertStatus(200);
+        $resEditForm->assertSee('Leadership Academy Induction');
+        $resEditForm->assertSee('98% of girls passed entrance assessment');
+        $resEditForm->assertSee('Milestones achieved ahead of schedule.');
+        $resEditForm->assertSee('Rain delay on day 2');
+        $resEditForm->assertSee('Weather mitigation plans activated.');
+        $resEditForm->assertSee('Faith shared inspiring testimony of resilience');
+        $resEditForm->assertSee('Peer coaching increases retention');
+        $resEditForm->assertSee('On track with 95% target achievement');
+        $resEditForm->assertSee('Co-hosted workshop with Sports For Life');
+        $resEditForm->assertSee('MoE signed agreement for facility usage');
+
+        // 5. Test Unassigned Officer cannot access or post to this project
         $otherOfficer = User::factory()->create(['role' => User::ROLE_PROJECT_OFFICER]);
         $resUnauthGet = $this->actingAs($otherOfficer)->get(route('projects.entries.create', $project->id));
         $resUnauthGet->assertStatus(403);
