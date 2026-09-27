@@ -58,9 +58,9 @@
                 Assigned Projects &amp; Initiatives
             </h3>
 
-            @if($staff->isSuperAdmin())
+            @if($staff->hasAdminAccess())
                 <div class="p-3.5 bg-purple-50 border border-purple-200 rounded-xl text-xs text-purple-800 font-medium">
-                    👑 As a Super Administrator, this user has global administrative access to all organizational projects and systems.
+                    👑 As a {{ $staff->role_label }}, this user has global administrative access to all organizational projects and systems.
                 </div>
             @elseif($staff->projects->isNotEmpty())
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

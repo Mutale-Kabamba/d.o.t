@@ -33,7 +33,7 @@ class ActivityEntryPolicy
             return $user->canAccessProject($project);
         }
 
-        return $user->isSuperAdmin() || $user->projects()->exists();
+        return $user->hasAdminAccess() || $user->projects()->exists();
     }
 
     /**

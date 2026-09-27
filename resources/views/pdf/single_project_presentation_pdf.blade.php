@@ -345,7 +345,13 @@
                                     <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
                                 @endforeach
                             </ul>
-                        @else
+                        @endif
+
+                        @if(!empty($sec['narrative']))
+                            <div style="margin-top: 4px; padding: 3px 6px; background-color: #f8fafc; border-left: 2.5px solid #2563eb; border-radius: 4px; font-size: 8px; color: #475569; line-height: 1.3;">
+                                <strong style="color: #0f172a; font-size: 7.5px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
+                            </div>
+                        @elseif(empty($sec['points']))
                             <div style="font-size: 8.5px; color: #94a3b8; font-style: italic;">No specific entries recorded.</div>
                         @endif
                     </td>

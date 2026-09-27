@@ -25,29 +25,29 @@ class ProjectPolicy
 
     /**
      * Determine whether the user can create models.
-     * Strictly restricted to Super Admins.
+     * Restricted to Super Admins & MEAL Officers.
      */
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasAdminAccess();
     }
 
     /**
      * Determine whether the user can update the model.
-     * Strictly restricted to Super Admins.
+     * Restricted to Super Admins & MEAL Officers.
      */
     public function update(User $user, Project $project): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasAdminAccess();
     }
 
     /**
      * Determine whether the user can delete the model.
-     * Strictly restricted to Super Admins.
+     * Restricted to Super Admins & MEAL Officers.
      */
     public function delete(User $user, Project $project): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasAdminAccess();
     }
 
     /**
@@ -55,6 +55,6 @@ class ProjectPolicy
      */
     public function assignUsers(User $user, Project $project): bool
     {
-        return $user->isSuperAdmin();
+        return $user->hasAdminAccess();
     }
 }

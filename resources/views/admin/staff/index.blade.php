@@ -85,10 +85,10 @@
             </div>
         </div>
 
-        <!-- Super Admins -->
+        <!-- System Admins -->
         <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
             <div class="flex items-center justify-between">
-                <span class="text-[11px] font-black uppercase tracking-wider text-purple-600">Super Admins</span>
+                <span class="text-[11px] font-black uppercase tracking-wider text-purple-600">System Admins</span>
                 <span class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs">👑</span>
             </div>
             <div class="my-2">
@@ -124,7 +124,8 @@
             <!-- Role Filter Pills -->
             <select name="role" onchange="this.form.submit()" class="text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <option value="all" {{ $selectedRole === 'all' ? 'selected' : '' }}>All Roles</option>
-                <option value="super_admin" {{ $selectedRole === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                <option value="super_admin" {{ $selectedRole === 'super_admin' ? 'selected' : '' }}>System Admin</option>
+                <option value="meal_officer" {{ $selectedRole === 'meal_officer' ? 'selected' : '' }}>MEAL Officer</option>
                 <option value="project_officer" {{ $selectedRole === 'project_officer' ? 'selected' : '' }}>Project Officer</option>
                 <option value="project_assistant" {{ $selectedRole === 'project_assistant' ? 'selected' : '' }}>Project Assistant</option>
             </select>
@@ -173,7 +174,7 @@
                         <!-- Name & Avatar -->
                         <td class="py-3.5 px-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border-purple-200' : ($staff->role === 'project_officer' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-amber-100 text-amber-800 border-amber-200') }} border font-black text-xs flex items-center justify-center shrink-0">
+                                <div class="w-9 h-9 rounded-xl {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border-purple-200' : ($staff->isMealOfficer() ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : ($staff->role === 'project_officer' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-amber-100 text-amber-800 border-amber-200')) }} border font-black text-xs flex items-center justify-center shrink-0">
                                     {{ strtoupper(substr($staff->name, 0, 1)) }}
                                 </div>
                                 <div class="min-w-0">
@@ -193,7 +194,7 @@
 
                         <!-- Assigned Projects -->
                         <td class="py-3.5 px-4">
-                            @if($staff->isSuperAdmin())
+                            @if($staff->hasAdminAccess())
                                 <span class="text-purple-700 font-bold text-[11px] flex items-center gap-1">
                                     <span>★ Global Access (All Projects)</span>
                                 </span>
@@ -310,7 +311,8 @@
                     <select name="role" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                         <option value="project_officer">Project Officer</option>
                         <option value="project_assistant">Project Assistant</option>
-                        <option value="super_admin">Super Admin</option>
+                        <option value="meal_officer">MEAL Officer</option>
+                        <option value="super_admin">System Admin</option>
                     </select>
                 </div>
             </div>
@@ -370,7 +372,8 @@
                     <select id="edit-staff-role" name="role" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="project_officer">Project Officer</option>
                         <option value="project_assistant">Project Assistant</option>
-                        <option value="super_admin">Super Admin</option>
+                        <option value="meal_officer">MEAL Officer</option>
+                        <option value="super_admin">System Admin</option>
                     </select>
                 </div>
             </div>

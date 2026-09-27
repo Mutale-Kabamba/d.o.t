@@ -941,7 +941,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
-                                👑 Super Admin Only
+                                👑 System Admin & MEAL Officer
                             </span>
                         </div>
                         <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight mt-1">Team &amp; Personnel Directory</h3>
@@ -971,7 +971,7 @@
                     </div>
 
                     <div class="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2 shadow-xs">
-                        <span class="text-xs font-bold uppercase tracking-wider text-purple-600">Super Admins</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-600">System Admins</span>
                         <div class="text-3xl font-black text-slate-900">{{ $allUsers->where('role', 'super_admin')->count() }}</div>
                         <div class="text-[11px] text-slate-500">Full system &amp; org privileges</div>
                     </div>
@@ -1010,7 +1010,7 @@
                                         </span>
                                     </td>
                                     <td class="py-3.5 px-4">
-                                        @if($staff->isSuperAdmin())
+                                        @if($staff->hasAdminAccess())
                                             <span class="text-purple-700 font-semibold text-[11px]">★ Global Access (All Projects)</span>
                                         @elseif($staff->projects->isNotEmpty())
                                             <div class="flex flex-wrap gap-1">
@@ -1268,7 +1268,8 @@
                     <select name="role" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="project_officer">Project Officer</option>
                         <option value="project_assistant">Project Assistant</option>
-                        <option value="super_admin">Super Admin</option>
+                        <option value="meal_officer">MEAL Officer</option>
+                        <option value="super_admin">System Admin</option>
                     </select>
                 </div>
             </div>
@@ -1328,7 +1329,8 @@
                     <select id="edit-u-role" name="role" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="project_officer">Project Officer</option>
                         <option value="project_assistant">Project Assistant</option>
-                        <option value="super_admin">Super Admin</option>
+                        <option value="meal_officer">MEAL Officer</option>
+                        <option value="super_admin">System Admin</option>
                     </select>
                 </div>
             </div>

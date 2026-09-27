@@ -55,11 +55,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Seed Super Admin Accounts
+        // 2. Seed System Admin Accounts
         User::updateOrCreate(
             ['email' => 'admin@pifzambia.org'],
             [
-                'name' => 'Super Administrator',
+                'name' => 'System Administrator',
                 'role' => User::ROLE_SUPER_ADMIN,
                 'password' => Hash::make('password'),
             ]
@@ -74,7 +74,17 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Seed Project Officer
+        // 3. Seed MEAL Officer
+        User::updateOrCreate(
+            ['email' => 'meal@pifzambia.org'],
+            [
+                'name' => 'MEAL Specialist',
+                'role' => User::ROLE_MEAL_OFFICER,
+                'password' => Hash::make('password'),
+            ]
+        );
+
+        // 4. Seed Project Officer
         $officer = User::updateOrCreate(
             ['email' => 'officer@pifzambia.org'],
             [

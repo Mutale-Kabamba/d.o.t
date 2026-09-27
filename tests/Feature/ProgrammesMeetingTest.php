@@ -363,8 +363,7 @@ class ProgrammesMeetingTest extends TestCase
         $resProjector->assertSee('Quarterly Milestone Review: 92% of schools reported improved attendance');
         $resProjector->assertSee('Success Stories');
         $resProjector->assertSee('Quarterly Milestone Review: Chanda enrolled in university following scholarship');
-        $resProjector->assertDontSee('Detailed Qualitative Narrative');
-        $resProjector->assertDontSee('Comprehensive qualitative narrative highlighting the transformative community impact.');
+        $resProjector->assertSee('Executive Pillar Synthesis');
 
         // 2. Consolidated PDF Export
         $resPdf = $this->actingAs($user)->get(route('programmes.export_consolidated_pdf'));
@@ -394,7 +393,7 @@ class ProgrammesMeetingTest extends TestCase
         $resForm->assertSee('Key Milestones');
         $resForm->assertSee('Impact Evidence');
         $resForm->assertSee('Success Stories');
-        $resForm->assertSee('Detailed Narrative &amp; Comprehensive Qualitative Summary', false);
+        $resForm->assertSee('Detailed Summary');
 
         // 2. Submit structured JSON pillar payload
         $postData = [
@@ -404,33 +403,78 @@ class ProgrammesMeetingTest extends TestCase
             'location' => 'Livingstone Hub',
             'period_granularity' => 'quarter',
             'pillar_1_achievements' => [
-                'milestones' => ['• 98% of girls passed entrance assessment', '• 40 leaders inducted'],
-                'impact' => ['• 100% attendance rate in week 1'],
-                'stories' => ['• Faith shared inspiring testimony of resilience'],
+                'milestones' => [
+                    'points' => ['98% of girls passed entrance assessment', '40 leaders inducted'],
+                    'narrative' => 'Milestones achieved ahead of schedule.',
+                ],
+                'impact' => [
+                    'points' => ['100% attendance rate in week 1'],
+                    'narrative' => 'High enthusiasm noted.',
+                ],
+                'stories' => [
+                    'points' => ['Faith shared inspiring testimony of resilience'],
+                    'narrative' => 'Faith joined the peer leadership cohort.',
+                ],
             ],
             'pillar_1_narrative' => 'Pillar 1 full qualitative context with participant quotes and donor reflections.',
             'pillar_2_challenges' => [
-                'operational' => ['• Rain delay on day 2'],
-                'resources' => ['• Needed extra learning modules'],
-                'risks' => ['• Transportation logistical risks mitigated with local bus charter'],
+                'operational' => [
+                    'points' => ['Rain delay on day 2'],
+                    'narrative' => 'Weather mitigation plans activated.',
+                ],
+                'resources' => [
+                    'points' => ['Needed extra learning modules'],
+                    'narrative' => 'Printed extra copies.',
+                ],
+                'risks' => [
+                    'points' => ['Transportation logistical risks mitigated with local bus charter'],
+                    'narrative' => 'Charter worked smoothly.',
+                ],
             ],
             'pillar_2_narrative' => 'Pillar 2 full qualitative risk analysis.',
             'pillar_3_learning' => [
-                'lessons' => ['• Peer coaching increases retention'],
-                'feedback' => ['• Girls requested longer practical sessions'],
-                'innovation' => ['• Introduced digital check-in tablets'],
+                'lessons' => [
+                    'points' => ['Peer coaching increases retention'],
+                    'narrative' => 'Plan to expand peer model.',
+                ],
+                'feedback' => [
+                    'points' => ['Girls requested longer practical sessions'],
+                    'narrative' => 'Extended workshop slots.',
+                ],
+                'innovation' => [
+                    'points' => ['Introduced digital check-in tablets'],
+                    'narrative' => 'Digitization pilot successful.',
+                ],
             ],
             'pillar_3_narrative' => 'Pillar 3 learning synthesis and adaptation plans.',
             'pillar_4_monitoring' => [
-                'performance' => ['• On track with 95% target achievement'],
-                'data_quality' => ['• Double-entry verification completed'],
-                'evaluation' => ['• Mid-term evaluation scheduled for Q3'],
+                'performance' => [
+                    'points' => ['On track with 95% target achievement'],
+                    'narrative' => 'Targets met.',
+                ],
+                'data_quality' => [
+                    'points' => ['Double-entry verification completed'],
+                    'narrative' => 'Zero errors found.',
+                ],
+                'evaluation' => [
+                    'points' => ['Mid-term evaluation scheduled for Q3'],
+                    'narrative' => 'Survey tool drafted.',
+                ],
             ],
             'pillar_4_narrative' => 'Pillar 4 data quality audit notes.',
             'pillar_5_collaboration' => [
-                'project_collab' => ['• Co-hosted workshop with Sports For Life'],
-                'partnerships' => ['• MoE signed agreement for facility usage'],
-                'cross_learning' => ['• Shared safeguarding best practices across cohorts'],
+                'project_collab' => [
+                    'points' => ['Co-hosted workshop with Sports For Life'],
+                    'narrative' => 'Shared field space.',
+                ],
+                'partnerships' => [
+                    'points' => ['MoE signed agreement for facility usage'],
+                    'narrative' => 'MOU finalized.',
+                ],
+                'cross_learning' => [
+                    'points' => ['Shared safeguarding best practices across cohorts'],
+                    'narrative' => 'Joint review held.',
+                ],
             ],
             'pillar_5_narrative' => 'Pillar 5 multi-stakeholder partnership reflections.',
         ];
@@ -447,7 +491,8 @@ class ProgrammesMeetingTest extends TestCase
 
         // JSON Columns
         $this->assertIsArray($entry->pillar_1_achievements);
-        $this->assertContains('• 98% of girls passed entrance assessment', $entry->pillar_1_achievements['milestones']);
+        $this->assertEquals('Milestones achieved ahead of schedule.', $entry->getSubPillarNarrative(1, 'milestones'));
+        $this->assertContains('98% of girls passed entrance assessment', $entry->getPillarBullets(1, 'milestones'));
         $this->assertEquals('Pillar 1 full qualitative context with participant quotes and donor reflections.', $entry->pillar_1_narrative);
 
         // Synchronized Flat Bullet Points

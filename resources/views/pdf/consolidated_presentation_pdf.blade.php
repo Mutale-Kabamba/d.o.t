@@ -363,11 +363,23 @@
                                                     <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
                                                 @endforeach
                                             </ul>
-                                        @else
+                                        @endif
+
+                                        @if(!empty($sec['narrative']))
+                                            <div style="margin-top: 2px; padding: 2px 4px; background-color: #ffffff; border-left: 2px solid {{ $bColor }}; font-size: 7.5px; color: #475569; line-height: 1.25;">
+                                                <strong style="color: #0f172a; font-size: 7px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
+                                            </div>
+                                        @elseif(empty($sec['points']))
                                             <div class="empty-points">No entries.</div>
                                         @endif
                                     </div>
                                 @endforeach
+
+                                @if(!empty($pData['theme_narrative_text'][$slideKey]))
+                                    <div style="margin-top: 3px; background: #f1f5f9; border-left: 2.5px solid #64748b; border-radius: 3px; padding: 3px 5px; font-size: 7.5px; color: #334155; line-height: 1.25;">
+                                        <strong style="font-size: 7px; color: #475569; text-transform: uppercase;">Executive Synthesis:</strong> {{ $pData['theme_narrative_text'][$slideKey] }}
+                                    </div>
+                                @endif
                             @elseif(!empty($points))
                                 <ul class="points-list">
                                     @foreach($points as $pt)

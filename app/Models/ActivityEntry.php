@@ -41,22 +41,71 @@ class ActivityEntry extends Model
         });
 
         static::saving(function ($entry) {
-            // 1. Pillar 1: Achievements
-            if (!empty($entry->pillar_1_achievements) && is_array($entry->pillar_1_achievements)) {
-                $p1 = $entry->pillar_1_achievements;
-                $mList = (array) ($p1['milestones'] ?? []);
-                $iList = (array) ($p1['impact'] ?? []);
-                $sList = (array) ($p1['stories'] ?? []);
+            // Helper to extract points and narrative from sub-pillar input
+            $parseSubPillar = function ($data, $fallbackCol = null) use ($entry) {
+                $points = [];
+                $narrative = '';
 
-                if (!empty($mList)) $entry->achievements_milestones = implode("\n", array_filter(array_map('trim', $mList)));
-                if (!empty($iList)) $entry->achievements_impact = implode("\n", array_filter(array_map('trim', $iList)));
-                if (!empty($sList)) $entry->achievements_stories = implode("\n", array_filter(array_map('trim', $sList)));
-            } else {
-                $entry->pillar_1_achievements = [
-                    'milestones' => self::extractBulletPoints($entry->achievements_milestones ?? ''),
-                    'impact' => self::extractBulletPoints($entry->achievements_impact ?? ''),
-                    'stories' => self::extractBulletPoints($entry->achievements_stories ?? ''),
+                if (is_array($data)) {
+                    if (isset($data['points'])) {
+                        $points = is_array($data['points']) ? $data['points'] : self::extractBulletPoints($data['points']);
+                    } else {
+                        // Check if it's a numeric array of bullet strings
+                        $isList = true;
+                        foreach (array_keys($data) as $k) {
+                            if (!is_int($k)) { $isList = false; break; }
+                        }
+                        if ($isList) {
+                            $points = $data;
+                        }
+                    }
+                    if (isset($data['narrative'])) {
+                        $narrative = trim((string) $data['narrative']);
+                    }
+                } elseif (!empty($data) && is_string($data)) {
+                    $points = self::extractBulletPoints($data);
+                } elseif (!empty($fallbackCol) && !empty($entry->{$fallbackCol})) {
+                    $points = self::extractBulletPoints($entry->{$fallbackCol});
+                }
+
+                // Clean bullet list
+                $cleanedPoints = [];
+                foreach ((array)$points as $pt) {
+                    $trimmed = trim((string)$pt);
+                    if (!empty($trimmed)) {
+                        $cleanedPoints[] = $trimmed;
+                    }
+                }
+
+                return [
+                    'points' => array_values($cleanedPoints),
+                    'narrative' => $narrative,
                 ];
+            };
+
+            // 1. Pillar 1: Achievements
+            $p1 = is_array($entry->pillar_1_achievements) ? $entry->pillar_1_achievements : [];
+            $m = $parseSubPillar($p1['milestones'] ?? null, 'achievements_milestones');
+            $i = $parseSubPillar($p1['impact'] ?? null, 'achievements_impact');
+            $s = $parseSubPillar($p1['stories'] ?? null, 'achievements_stories');
+
+            if (!empty($p1['milestones_narrative']) && empty($m['narrative'])) $m['narrative'] = trim($p1['milestones_narrative']);
+            if (!empty($p1['impact_narrative']) && empty($i['narrative'])) $i['narrative'] = trim($p1['impact_narrative']);
+            if (!empty($p1['stories_narrative']) && empty($s['narrative'])) $s['narrative'] = trim($p1['stories_narrative']);
+
+            $entry->pillar_1_achievements = [
+                'milestones' => $m,
+                'impact' => $i,
+                'stories' => $s,
+            ];
+            $entry->achievements_milestones = implode("\n", $m['points']);
+            $entry->achievements_impact = implode("\n", $i['points']);
+            $entry->achievements_stories = implode("\n", $s['points']);
+
+            // Pillar 1 synthesis
+            $subNarratives1 = array_filter([$m['narrative'], $i['narrative'], $s['narrative']]);
+            if (empty($entry->pillar_1_narrative) && !empty($subNarratives1)) {
+                $entry->pillar_1_narrative = implode("\n\n", $subNarratives1);
             }
             if (!empty($entry->pillar_1_narrative)) {
                 $entry->achievements_narrative = $entry->pillar_1_narrative;
@@ -65,21 +114,28 @@ class ActivityEntry extends Model
             }
 
             // 2. Pillar 2: Challenges
-            if (!empty($entry->pillar_2_challenges) && is_array($entry->pillar_2_challenges)) {
-                $p2 = $entry->pillar_2_challenges;
-                $opList = (array) ($p2['operational'] ?? []);
-                $resList = (array) ($p2['resources'] ?? []);
-                $riskList = (array) ($p2['risks'] ?? []);
+            $p2 = is_array($entry->pillar_2_challenges) ? $entry->pillar_2_challenges : [];
+            $op = $parseSubPillar($p2['operational'] ?? null, 'challenges_operational');
+            $res = $parseSubPillar($p2['resources'] ?? null, 'challenges_resources');
+            $risk = $parseSubPillar($p2['risks'] ?? null, 'challenges_risks');
 
-                if (!empty($opList)) $entry->challenges_operational = implode("\n", array_filter(array_map('trim', $opList)));
-                if (!empty($resList)) $entry->challenges_resources = implode("\n", array_filter(array_map('trim', $resList)));
-                if (!empty($riskList)) $entry->challenges_risks = implode("\n", array_filter(array_map('trim', $riskList)));
-            } else {
-                $entry->pillar_2_challenges = [
-                    'operational' => self::extractBulletPoints($entry->challenges_operational ?? ''),
-                    'resources' => self::extractBulletPoints($entry->challenges_resources ?? ''),
-                    'risks' => self::extractBulletPoints($entry->challenges_risks ?? ''),
-                ];
+            if (!empty($p2['operational_narrative']) && empty($op['narrative'])) $op['narrative'] = trim($p2['operational_narrative']);
+            if (!empty($p2['resources_narrative']) && empty($res['narrative'])) $res['narrative'] = trim($p2['resources_narrative']);
+            if (!empty($p2['risks_narrative']) && empty($risk['narrative'])) $risk['narrative'] = trim($p2['risks_narrative']);
+
+            $entry->pillar_2_challenges = [
+                'operational' => $op,
+                'resources' => $res,
+                'risks' => $risk,
+            ];
+            $entry->challenges_operational = implode("\n", $op['points']);
+            $entry->challenges_resources = implode("\n", $res['points']);
+            $entry->challenges_risks = implode("\n", $risk['points']);
+
+            // Pillar 2 synthesis
+            $subNarratives2 = array_filter([$op['narrative'], $res['narrative'], $risk['narrative']]);
+            if (empty($entry->pillar_2_narrative) && !empty($subNarratives2)) {
+                $entry->pillar_2_narrative = implode("\n\n", $subNarratives2);
             }
             if (!empty($entry->pillar_2_narrative)) {
                 $entry->challenges_narrative = $entry->pillar_2_narrative;
@@ -88,21 +144,28 @@ class ActivityEntry extends Model
             }
 
             // 3. Pillar 3: Learning
-            if (!empty($entry->pillar_3_learning) && is_array($entry->pillar_3_learning)) {
-                $p3 = $entry->pillar_3_learning;
-                $lesList = (array) ($p3['lessons'] ?? []);
-                $feedList = (array) ($p3['feedback'] ?? []);
-                $innoList = (array) ($p3['innovation'] ?? []);
+            $p3 = is_array($entry->pillar_3_learning) ? $entry->pillar_3_learning : [];
+            $les = $parseSubPillar($p3['lessons'] ?? null, 'learning_lessons');
+            $feed = $parseSubPillar($p3['feedback'] ?? null, 'learning_feedback');
+            $inno = $parseSubPillar($p3['innovation'] ?? null, 'learning_innovation');
 
-                if (!empty($lesList)) $entry->learning_lessons = implode("\n", array_filter(array_map('trim', $lesList)));
-                if (!empty($feedList)) $entry->learning_feedback = implode("\n", array_filter(array_map('trim', $feedList)));
-                if (!empty($innoList)) $entry->learning_innovation = implode("\n", array_filter(array_map('trim', $innoList)));
-            } else {
-                $entry->pillar_3_learning = [
-                    'lessons' => self::extractBulletPoints($entry->learning_lessons ?? ''),
-                    'feedback' => self::extractBulletPoints($entry->learning_feedback ?? ''),
-                    'innovation' => self::extractBulletPoints($entry->learning_innovation ?? ''),
-                ];
+            if (!empty($p3['lessons_narrative']) && empty($les['narrative'])) $les['narrative'] = trim($p3['lessons_narrative']);
+            if (!empty($p3['feedback_narrative']) && empty($feed['narrative'])) $feed['narrative'] = trim($p3['feedback_narrative']);
+            if (!empty($p3['innovation_narrative']) && empty($inno['narrative'])) $inno['narrative'] = trim($p3['innovation_narrative']);
+
+            $entry->pillar_3_learning = [
+                'lessons' => $les,
+                'feedback' => $feed,
+                'innovation' => $inno,
+            ];
+            $entry->learning_lessons = implode("\n", $les['points']);
+            $entry->learning_feedback = implode("\n", $feed['points']);
+            $entry->learning_innovation = implode("\n", $inno['points']);
+
+            // Pillar 3 synthesis
+            $subNarratives3 = array_filter([$les['narrative'], $feed['narrative'], $inno['narrative']]);
+            if (empty($entry->pillar_3_narrative) && !empty($subNarratives3)) {
+                $entry->pillar_3_narrative = implode("\n\n", $subNarratives3);
             }
             if (!empty($entry->pillar_3_narrative)) {
                 $entry->learning_narrative = $entry->pillar_3_narrative;
@@ -111,21 +174,28 @@ class ActivityEntry extends Model
             }
 
             // 4. Pillar 4: M&E
-            if (!empty($entry->pillar_4_monitoring) && is_array($entry->pillar_4_monitoring)) {
-                $p4 = $entry->pillar_4_monitoring;
-                $perfList = (array) ($p4['performance'] ?? []);
-                $dqList = (array) ($p4['data_quality'] ?? []);
-                $evalList = (array) ($p4['evaluation'] ?? []);
+            $p4 = is_array($entry->pillar_4_monitoring) ? $entry->pillar_4_monitoring : [];
+            $perf = $parseSubPillar($p4['performance'] ?? null, 'mne_performance');
+            $dq = $parseSubPillar($p4['data_quality'] ?? null, 'mne_data_quality');
+            $eval = $parseSubPillar($p4['evaluation'] ?? null, 'mne_evaluation_plans');
 
-                if (!empty($perfList)) $entry->mne_performance = implode("\n", array_filter(array_map('trim', $perfList)));
-                if (!empty($dqList)) $entry->mne_data_quality = implode("\n", array_filter(array_map('trim', $dqList)));
-                if (!empty($evalList)) $entry->mne_evaluation_plans = implode("\n", array_filter(array_map('trim', $evalList)));
-            } else {
-                $entry->pillar_4_monitoring = [
-                    'performance' => self::extractBulletPoints($entry->mne_performance ?? ''),
-                    'data_quality' => self::extractBulletPoints($entry->mne_data_quality ?? ''),
-                    'evaluation' => self::extractBulletPoints($entry->mne_evaluation_plans ?? ''),
-                ];
+            if (!empty($p4['performance_narrative']) && empty($perf['narrative'])) $perf['narrative'] = trim($p4['performance_narrative']);
+            if (!empty($p4['data_quality_narrative']) && empty($dq['narrative'])) $dq['narrative'] = trim($p4['data_quality_narrative']);
+            if (!empty($p4['evaluation_narrative']) && empty($eval['narrative'])) $eval['narrative'] = trim($p4['evaluation_narrative']);
+
+            $entry->pillar_4_monitoring = [
+                'performance' => $perf,
+                'data_quality' => $dq,
+                'evaluation' => $eval,
+            ];
+            $entry->mne_performance = implode("\n", $perf['points']);
+            $entry->mne_data_quality = implode("\n", $dq['points']);
+            $entry->mne_evaluation_plans = implode("\n", $eval['points']);
+
+            // Pillar 4 synthesis
+            $subNarratives4 = array_filter([$perf['narrative'], $dq['narrative'], $eval['narrative']]);
+            if (empty($entry->pillar_4_narrative) && !empty($subNarratives4)) {
+                $entry->pillar_4_narrative = implode("\n\n", $subNarratives4);
             }
             if (!empty($entry->pillar_4_narrative)) {
                 $entry->mne_narrative = $entry->pillar_4_narrative;
@@ -134,21 +204,28 @@ class ActivityEntry extends Model
             }
 
             // 5. Pillar 5: Collaboration
-            if (!empty($entry->pillar_5_collaboration) && is_array($entry->pillar_5_collaboration)) {
-                $p5 = $entry->pillar_5_collaboration;
-                $projList = (array) ($p5['project_collab'] ?? $p5['projects'] ?? []);
-                $partList = (array) ($p5['partnerships'] ?? []);
-                $crossList = (array) ($p5['cross_learning'] ?? []);
+            $p5 = is_array($entry->pillar_5_collaboration) ? $entry->pillar_5_collaboration : [];
+            $proj = $parseSubPillar($p5['project_collab'] ?? $p5['projects'] ?? null, 'collab_projects');
+            $part = $parseSubPillar($p5['partnerships'] ?? null, 'collab_partnerships');
+            $cross = $parseSubPillar($p5['cross_learning'] ?? null, 'collab_cross_learning');
 
-                if (!empty($projList)) $entry->collab_projects = implode("\n", array_filter(array_map('trim', $projList)));
-                if (!empty($partList)) $entry->collab_partnerships = implode("\n", array_filter(array_map('trim', $partList)));
-                if (!empty($crossList)) $entry->collab_cross_learning = implode("\n", array_filter(array_map('trim', $crossList)));
-            } else {
-                $entry->pillar_5_collaboration = [
-                    'project_collab' => self::extractBulletPoints($entry->collab_projects ?? ''),
-                    'partnerships' => self::extractBulletPoints($entry->collab_partnerships ?? ''),
-                    'cross_learning' => self::extractBulletPoints($entry->collab_cross_learning ?? ''),
-                ];
+            if (!empty($p5['project_collab_narrative']) && empty($proj['narrative'])) $proj['narrative'] = trim($p5['project_collab_narrative']);
+            if (!empty($p5['partnerships_narrative']) && empty($part['narrative'])) $part['narrative'] = trim($p5['partnerships_narrative']);
+            if (!empty($p5['cross_learning_narrative']) && empty($cross['narrative'])) $cross['narrative'] = trim($p5['cross_learning_narrative']);
+
+            $entry->pillar_5_collaboration = [
+                'project_collab' => $proj,
+                'partnerships' => $part,
+                'cross_learning' => $cross,
+            ];
+            $entry->collab_projects = implode("\n", $proj['points']);
+            $entry->collab_partnerships = implode("\n", $part['points']);
+            $entry->collab_cross_learning = implode("\n", $cross['points']);
+
+            // Pillar 5 synthesis
+            $subNarratives5 = array_filter([$proj['narrative'], $part['narrative'], $cross['narrative']]);
+            if (empty($entry->pillar_5_narrative) && !empty($subNarratives5)) {
+                $entry->pillar_5_narrative = implode("\n\n", $subNarratives5);
             }
             if (!empty($entry->pillar_5_narrative)) {
                 $entry->collab_narrative = $entry->pillar_5_narrative;
@@ -197,11 +274,45 @@ class ActivityEntry extends Model
 
         if ($pillarColumn && !empty($this->{$pillarColumn}[$subField])) {
             $data = $this->{$pillarColumn}[$subField];
-            return is_array($data) ? $data : self::extractBulletPoints($data);
+            if (is_array($data)) {
+                if (isset($data['points'])) {
+                    return is_array($data['points']) ? $data['points'] : self::extractBulletPoints($data['points']);
+                }
+                return $data;
+            }
+            return self::extractBulletPoints($data);
         }
 
         // Fallback to direct sub-column
         return $this->getPoints($subField);
+    }
+
+    /**
+     * Get qualitative narrative for a specific sub-pillar section.
+     */
+    public function getSubPillarNarrative(int $pillarNumber, string $subField): string
+    {
+        $pillarColumn = match ($pillarNumber) {
+            1 => 'pillar_1_achievements',
+            2 => 'pillar_2_challenges',
+            3 => 'pillar_3_learning',
+            4 => 'pillar_4_monitoring',
+            5 => 'pillar_5_collaboration',
+            default => null,
+        };
+
+        if ($pillarColumn && !empty($this->{$pillarColumn}[$subField])) {
+            $data = $this->{$pillarColumn}[$subField];
+            if (is_array($data) && !empty($data['narrative'])) {
+                return trim((string) $data['narrative']);
+            }
+        }
+
+        if ($pillarColumn && !empty($this->{$pillarColumn}[$subField . '_narrative'])) {
+            return trim((string) $this->{$pillarColumn}[$subField . '_narrative']);
+        }
+
+        return '';
     }
 
     /**

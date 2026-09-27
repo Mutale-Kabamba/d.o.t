@@ -300,13 +300,28 @@
                                                                 </li>
                                                             @endforeach
                                                         </ul>
-                                                    @else
+                                                    @endif
+
+                                                    @if(!empty($sec['narrative']))
+                                                        <div style="margin-top: 5px; padding: 5px 8px; background: rgba(255,255,255,0.92); border-left: 2.5px solid {{ $color['border'] }}; border-radius: 4px; font-size: 11px; color: #334155; line-height: 1.35;">
+                                                            <strong style="color: #0f172a; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px;">Summary:</strong> {{ $sec['narrative'] }}
+                                                        </div>
+                                                    @elseif(empty($sec['points']))
                                                         <div style="font-size: 11px; color: #94a3b8; font-style: italic;">
                                                             No entries recorded for {{ strtolower($sec['title']) }}.
                                                         </div>
                                                     @endif
                                                 </div>
                                             @endforeach
+
+                                            @if(!empty($pData['theme_narrative_text'][$slideKey]))
+                                                <div style="margin-top: 4px; background: #f1f5f9; border-left: 3px solid #64748b; border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                                    <div style="font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 2px;">
+                                                        📋 Executive Pillar Synthesis
+                                                    </div>
+                                                    <div>{{ $pData['theme_narrative_text'][$slideKey] }}</div>
+                                                </div>
+                                            @endif
                                         </div>
                                     @elseif(!empty($points))
                                         <ul style="list-style-type: disc !important; list-style-position: outside; margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px;">

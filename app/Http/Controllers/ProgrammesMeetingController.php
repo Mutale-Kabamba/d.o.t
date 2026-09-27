@@ -316,7 +316,7 @@ class ProgrammesMeetingController extends Controller
         $this->ensureDatabaseReady();
 
         $user = Auth::user();
-        $isSuperAdmin = $user && $user->isSuperAdmin();
+        $isSuperAdmin = $user && $user->hasAdminAccess();
 
         // 1. Projects Scoping
         $projectsQuery = Project::query()->with(['users', 'activityEntries']);
@@ -852,15 +852,15 @@ class ProgrammesMeetingController extends Controller
     public function storeUser(Request $request): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can create user accounts.');
+        if (!$user || !$user->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can create user accounts.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:super_admin,project_officer,project_assistant',
+            'role' => 'required|in:super_admin,meal_officer,project_officer,project_assistant',
             'project_ids' => 'nullable|array',
             'project_ids.*' => 'exists:projects,id',
         ]);
@@ -880,20 +880,20 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Update existing user account details, credentials, and project assignments.
+     * Super Admin / MEAL Officer: Update existing user account details, credentials, and project assignments.
      */
     public function updateUser(Request $request, User $user): RedirectResponse
     {
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can edit user accounts.');
+        if (!$currentUser || !$currentUser->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can edit user accounts.');
         }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:super_admin,project_officer,project_assistant',
+            'role' => 'required|in:super_admin,meal_officer,project_officer,project_assistant',
             'project_ids' => 'nullable|array',
             'project_ids.*' => 'exists:projects,id',
         ]);
@@ -1002,6 +1002,24 @@ class ProgrammesMeetingController extends Controller
             ];
             $themeNarrativeText = [];
 
+            $itemSubKeyMap = [
+                'achievements_milestones' => 'milestones',
+                'achievements_impact' => 'impact',
+                'achievements_stories' => 'stories',
+                'challenges_operational' => 'operational',
+                'challenges_resources' => 'resources',
+                'challenges_risks' => 'risks',
+                'learning_lessons' => 'lessons',
+                'learning_feedback' => 'feedback',
+                'learning_innovation' => 'innovation',
+                'mne_performance' => 'performance',
+                'mne_data_quality' => 'data_quality',
+                'mne_evaluation_plans' => 'evaluation',
+                'collab_projects' => 'project_collab',
+                'collab_partnerships' => 'partnerships',
+                'collab_cross_learning' => 'cross_learning',
+            ];
+
             foreach (self::$slidesConfig as $themeKey => $themeConfig) {
                 $themeSections[$themeKey] = [];
                 foreach ($themeConfig['items'] as $itemKey => $item) {
@@ -1009,6 +1027,8 @@ class ProgrammesMeetingController extends Controller
                         'title' => $item['title'],
                         'prompt' => $item['prompt'],
                         'points' => [],
+                        'narratives' => [],
+                        'narrative' => '',
                     ];
                 }
             }
@@ -1019,10 +1039,28 @@ class ProgrammesMeetingController extends Controller
                 foreach (self::$slidesConfig as $themeKey => $themeConfig) {
                     $pField = $themeConfig['points_field'];
                     $nField = $themeConfig['narrative_field'];
+                    $pillarNum = $themeConfig['number'];
 
                     // Aggregate per sub-section
                     foreach ($themeConfig['items'] as $itemKey => $item) {
-                        if (!empty($entry->{$itemKey})) {
+                        $subKey = $itemSubKeyMap[$itemKey] ?? null;
+
+                        if ($subKey) {
+                            $subPts = $entry->getPillarBullets($pillarNum, $subKey);
+                            if (!empty($subPts)) {
+                                foreach ($subPts as $pt) {
+                                    $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
+                                        ? "{$actTitle}: {$pt}"
+                                        : $pt;
+                                    $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                }
+                            }
+
+                            $subNarrative = $entry->getSubPillarNarrative($pillarNum, $subKey);
+                            if (!empty($subNarrative) && !in_array($subNarrative, $themeSections[$themeKey][$itemKey]['narratives'])) {
+                                $themeSections[$themeKey][$itemKey]['narratives'][] = $subNarrative;
+                            }
+                        } elseif (!empty($entry->{$itemKey})) {
                             $pts = ActivityEntry::extractBulletPoints($entry->{$itemKey});
                             if (!empty($pts)) {
                                 foreach ($pts as $pt) {
@@ -1079,6 +1117,7 @@ class ProgrammesMeetingController extends Controller
                 $themePoints[$themeKey] = array_values(array_unique($themePoints[$themeKey]));
                 foreach ($themeConfig['items'] as $itemKey => $item) {
                     $themeSections[$themeKey][$itemKey]['points'] = array_values(array_unique($themeSections[$themeKey][$itemKey]['points']));
+                    $themeSections[$themeKey][$itemKey]['narrative'] = implode("\n\n", array_unique(array_filter($themeSections[$themeKey][$itemKey]['narratives'])));
                 }
                 $themeNarrativeText[$themeKey] = implode("\n\n", array_unique(array_filter($themeNarratives[$themeKey])));
             }
@@ -1315,7 +1354,7 @@ class ProgrammesMeetingController extends Controller
                     $hasAnySectionPoints = false;
 
                     foreach ($sections as $itemKey => $section) {
-                        if (!empty($section['points'])) {
+                        if (!empty($section['points']) || !empty($section['narrative'])) {
                             $hasAnySectionPoints = true;
                             $sTitleRun = $cell->createTextRun("▶ {$section['title']}\n");
                             $sTitleRun->getFont()->setBold(true)->setSize(9.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color($pColor));
@@ -1325,6 +1364,13 @@ class ProgrammesMeetingController extends Controller
                                 $ptRun = $cell->createTextRun("  • {$cleanPt}\n");
                                 $ptRun->getFont()->setSize(8.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF1E293B'));
                             }
+
+                            if (!empty($section['narrative'])) {
+                                $cleanNarr = ActivityEntry::formatPointText($section['narrative']);
+                                $narrRun = $cell->createTextRun("  [Summary: {$cleanNarr}]\n");
+                                $narrRun->getFont()->setItalic(true)->setSize(7.5)->setColor(new \PhpOffice\PhpPresentation\Style\Color('FF64748B'));
+                            }
+
                             $cell->createTextRun("\n");
                         }
                     }
@@ -1594,6 +1640,10 @@ class ProgrammesMeetingController extends Controller
      */
     protected function ensureDatabaseReady(): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
+
         try {
             if (config('database.default') === 'sqlite') {
                 $dbPath = config('database.connections.sqlite.database');

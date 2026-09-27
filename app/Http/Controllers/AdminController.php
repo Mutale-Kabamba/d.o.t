@@ -252,7 +252,8 @@ class AdminController extends Controller
         $totalOfficers = User::where('role', User::ROLE_PROJECT_OFFICER)->count();
         $totalAssistants = User::where('role', User::ROLE_PROJECT_ASSISTANT)->count();
         $totalAdmins = User::where('role', User::ROLE_SUPER_ADMIN)->count();
-        $unassignedStaff = User::whereDoesntHave('projects')->where('role', '!=', User::ROLE_SUPER_ADMIN)->count();
+        $totalMealOfficers = User::where('role', User::ROLE_MEAL_OFFICER)->count();
+        $unassignedStaff = User::whereDoesntHave('projects')->whereNotIn('role', [User::ROLE_SUPER_ADMIN, User::ROLE_MEAL_OFFICER])->count();
 
         $allProjects = Project::active()->orderBy('name')->get();
 
@@ -262,6 +263,7 @@ class AdminController extends Controller
             'totalOfficers' => $totalOfficers,
             'totalAssistants' => $totalAssistants,
             'totalAdmins' => $totalAdmins,
+            'totalMealOfficers' => $totalMealOfficers,
             'unassignedStaff' => $unassignedStaff,
             'allProjects' => $allProjects,
             'search' => $search,
@@ -279,7 +281,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:super_admin,project_officer,project_assistant',
+            'role' => 'required|in:super_admin,meal_officer,project_officer,project_assistant',
             'project_ids' => 'nullable|array',
             'project_ids.*' => 'exists:projects,id',
         ]);
@@ -314,7 +316,7 @@ class AdminController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'role_label' => $user->role_label,
-                'is_super_admin' => $user->isSuperAdmin(),
+                'is_super_admin' => $user->hasAdminAccess(),
                 'project_ids' => $user->projects->pluck('id'),
                 'projects' => $user->projects->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'code' => $p->code, 'status' => $p->status]),
                 'activity_count' => $user->activityEntries->count(),
@@ -336,7 +338,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:super_admin,project_officer,project_assistant',
+            'role' => 'required|in:super_admin,meal_officer,project_officer,project_assistant',
             'project_ids' => 'nullable|array',
             'project_ids.*' => 'exists:projects,id',
         ]);
@@ -445,7 +447,7 @@ class AdminController extends Controller
             $project->users()->sync($validated['user_ids']);
         }
 
-        return redirect()->back(fallback: route('admin.teams.index'))->with('success', "Team/Project '{$project->name}' created successfully.");
+        return redirect()->route('admin.teams.index')->with('success', "Team/Project '{$project->name}' created successfully.");
     }
 
     /**

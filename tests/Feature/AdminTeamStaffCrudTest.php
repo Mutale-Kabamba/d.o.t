@@ -244,4 +244,54 @@ class AdminTeamStaffCrudTest extends TestCase
         $this->assertEquals('Mwila Hub Edit', $this->officer->name);
         $this->assertEquals('mwila.hub@dot.org', $this->officer->email);
     }
+
+    public function test_meal_officer_has_equal_access_as_super_admin(): void
+    {
+        // 1. Create a MEAL Officer
+        $mealOfficer = User::create([
+            'name' => 'Chanda MEAL Specialist',
+            'email' => 'chanda.meal@dot.org',
+            'password' => Hash::make('password'),
+            'role' => User::ROLE_MEAL_OFFICER,
+        ]);
+
+        $this->assertTrue($mealOfficer->isMealOfficer());
+        $this->assertTrue($mealOfficer->hasAdminAccess());
+        $this->assertEquals('MEAL Officer', $mealOfficer->role_label);
+
+        // 2. Global project access without direct assignment
+        $this->assertTrue($mealOfficer->canAccessProject($this->project));
+
+        // 3. MEAL Officer can view and manage staff
+        $staffIndexResponse = $this->actingAs($mealOfficer)->get('/admin/staff');
+        $staffIndexResponse->assertStatus(200);
+        $staffIndexResponse->assertSee('Chanda MEAL Specialist');
+
+        // 4. MEAL Officer can create a new staff account
+        $createStaffResponse = $this->actingAs($mealOfficer)->post('/admin/staff', [
+            'name' => 'New Assistant Under MEAL',
+            'email' => 'assistant.meal@dot.org',
+            'password' => 'secret123',
+            'role' => User::ROLE_PROJECT_ASSISTANT,
+            'project_ids' => [$this->project->id],
+        ]);
+        $createStaffResponse->assertRedirect(route('admin.staff.index'));
+        $this->assertDatabaseHas('users', ['email' => 'assistant.meal@dot.org', 'role' => 'project_assistant']);
+
+        // 5. MEAL Officer can create and manage projects/teams
+        $teamResponse = $this->actingAs($mealOfficer)->post('/admin/teams', [
+            'name' => 'MEAL Innovation Project',
+            'code' => 'MIP',
+            'location' => 'Lusaka',
+            'description' => 'Data verification and impact evaluation',
+            'status' => 'active',
+        ]);
+        $teamResponse->assertRedirect(route('admin.teams.index'));
+        $this->assertDatabaseHas('projects', ['code' => 'MIP']);
+
+        // 6. MEAL Officer can view Programmes Hub and create activity entries on any project
+        $hubResponse = $this->actingAs($mealOfficer)->get(route('programmes.hub'));
+        $hubResponse->assertStatus(200);
+        $hubResponse->assertSee('MEAL Innovation Project');
+    }
 }

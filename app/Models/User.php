@@ -14,6 +14,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     public const ROLE_SUPER_ADMIN = 'super_admin';
+    public const ROLE_MEAL_OFFICER = 'meal_officer';
     public const ROLE_PROJECT_OFFICER = 'project_officer';
     public const ROLE_PROJECT_ASSISTANT = 'project_assistant';
 
@@ -77,6 +78,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is MEAL Officer.
+     */
+    public function isMealOfficer(): bool
+    {
+        return $this->role === self::ROLE_MEAL_OFFICER;
+    }
+
+    /**
+     * Check if user has administrative governance privileges (Super Admin or MEAL Officer).
+     */
+    public function hasAdminAccess(): bool
+    {
+        return in_array($this->role, [self::ROLE_SUPER_ADMIN, self::ROLE_MEAL_OFFICER], true);
+    }
+
+    /**
      * Check if user is Project Officer.
      */
     public function isProjectOfficer(): bool
@@ -94,11 +111,11 @@ class User extends Authenticatable
 
     /**
      * Check if user can access a specific project.
-     * Super Admins can access all projects; others only access assigned projects.
+     * Super Admins & MEAL Officers can access all projects; others only access assigned projects.
      */
     public function canAccessProject($project): bool
     {
-        if ($this->isSuperAdmin()) {
+        if ($this->hasAdminAccess()) {
             return true;
         }
 
@@ -139,7 +156,8 @@ class User extends Authenticatable
     public function getRoleLabelAttribute(): string
     {
         return match ($this->role) {
-            self::ROLE_SUPER_ADMIN => 'Super Admin',
+            self::ROLE_SUPER_ADMIN => 'System Admin',
+            self::ROLE_MEAL_OFFICER => 'MEAL Officer',
             self::ROLE_PROJECT_ASSISTANT => 'Project Assistant',
             default => 'Project Officer',
         };
