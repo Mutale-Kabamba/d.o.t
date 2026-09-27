@@ -956,11 +956,6 @@ class ProgrammesMeetingController extends Controller
                 }
             }
             $projects = $projectQuery->orderBy('name')->get();
-
-            if ($projects->isEmpty()) {
-                $this->seedSampleProjectsData();
-                $projects = Project::active()->orderBy('name')->get();
-            }
         }
 
         // 2. Determine interval filter
@@ -1723,34 +1718,6 @@ class ProgrammesMeetingController extends Controller
 
                     $table->timestamps();
                 });
-            }
-
-            // Ensure Super Admin user exists and has super_admin role
-            if (Schema::hasTable('users')) {
-                User::whereIn('email', ['admin@dot.org', 'admin@pifzambia.org'])->update(['role' => User::ROLE_SUPER_ADMIN]);
-                
-                if (User::where('email', 'admin@dot.org')->count() === 0) {
-                    User::create([
-                        'name' => 'Supervisor (Super Admin)',
-                        'email' => 'admin@dot.org',
-                        'password' => Hash::make('password'),
-                        'role' => User::ROLE_SUPER_ADMIN,
-                    ]);
-                }
-
-                if (User::where('email', 'admin@pifzambia.org')->count() === 0) {
-                    User::create([
-                        'name' => 'Super Administrator',
-                        'email' => 'admin@pifzambia.org',
-                        'password' => Hash::make('password'),
-                        'role' => User::ROLE_SUPER_ADMIN,
-                    ]);
-                }
-            }
-
-            // If no projects exist in database, seed core projects
-            if (Schema::hasTable('projects') && Project::count() === 0) {
-                $this->seedSampleProjectsData();
             }
         } catch (\Throwable $e) {
             Log::warning('Database auto-initialization note: ' . $e->getMessage());

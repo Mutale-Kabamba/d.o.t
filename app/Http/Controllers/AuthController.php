@@ -80,14 +80,6 @@ class AuthController extends Controller
                     $table->timestamps();
                 });
             }
-
-            if (Schema::hasTable('users') && User::count() === 0) {
-                User::create([
-                    'name' => 'Supervisor',
-                    'email' => 'admin@dot.org',
-                    'password' => Hash::make('password'),
-                ]);
-            }
         } catch (\Throwable $e) {
             Log::warning('Database auto-initialization note: ' . $e->getMessage());
         }

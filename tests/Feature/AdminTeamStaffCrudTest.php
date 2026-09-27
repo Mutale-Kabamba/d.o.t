@@ -294,4 +294,34 @@ class AdminTeamStaffCrudTest extends TestCase
         $hubResponse->assertStatus(200);
         $hubResponse->assertSee('MEAL Innovation Project');
     }
+
+    public function test_deleted_users_and_projects_do_not_reappear_automatically(): void
+    {
+        $adminPif = User::create([
+            'name' => 'Admin PIF',
+            'email' => 'admin@pifzambia.org',
+            'password' => Hash::make('password'),
+            'role' => User::ROLE_SUPER_ADMIN,
+        ]);
+
+        // Delete admin@pifzambia.org
+        $deleteUserRes = $this->actingAs($this->superAdmin)->delete('/admin/staff/' . $adminPif->id);
+        $deleteUserRes->assertRedirect(route('admin.staff.index'));
+        $this->assertDatabaseMissing('users', ['email' => 'admin@pifzambia.org']);
+
+        // Delete all projects
+        Project::query()->delete();
+        $this->assertEquals(0, Project::count());
+
+        // Hit the programmes hub, projector, and admin login
+        $hubRes = $this->actingAs($this->superAdmin)->get(route('programmes.hub'));
+        $hubRes->assertStatus(200);
+
+        $loginRes = $this->get(route('admin.login'));
+        $loginRes->assertStatus(200);
+
+        // Verify users and projects have NOT been re-seeded or resurrected
+        $this->assertDatabaseMissing('users', ['email' => 'admin@pifzambia.org']);
+        $this->assertEquals(0, Project::count());
+    }
 }
