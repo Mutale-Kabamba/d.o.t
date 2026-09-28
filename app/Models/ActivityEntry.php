@@ -279,7 +279,9 @@ class ActivityEntry extends Model
      */
     public function isOngoing(): bool
     {
-        return in_array(strtolower($this->activity_type ?? 'activity'), ['training', 'class', 'session']);
+        $type = strtolower($this->activity_type ?? 'activity');
+        return in_array($type, ['training', 'class', 'session', 'ongoing', 'session_training_class'])
+            || !empty($this->end_date);
     }
 
     /**
@@ -291,6 +293,7 @@ class ActivityEntry extends Model
             'training' => 'Training',
             'class' => 'Class',
             'session' => 'Session',
+            'ongoing', 'session_training_class' => 'Session / Class / Training',
             default => 'Activity',
         };
     }

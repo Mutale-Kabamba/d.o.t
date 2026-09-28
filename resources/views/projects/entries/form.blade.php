@@ -271,51 +271,33 @@ $entryFormConfig = [
                     <div class="md:col-span-12">
                         <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
                             <span>Type of Activity <span class="text-rose-500">*</span></span>
-                            <span class="text-[10px] text-slate-400 font-medium">Select type to configure duration and location</span>
+                            <span class="text-[10px] text-slate-400 font-medium">Select type to configure duration and venue / location</span>
                         </label>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                            <!-- Option 1: Activity -->
-                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'activity' ? 'border-blue-500 bg-blue-50/60 shadow-xs ring-2 ring-blue-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="activity">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Option 1: Activity (Single Day) -->
+                            <label class="activity-type-btn cursor-pointer p-3.5 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ !$isOngoingType ? 'border-blue-500 bg-blue-50/60 shadow-xs ring-2 ring-blue-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="activity">
                                 <div class="flex items-center justify-between">
-                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                                        ⚡ Activity
+                                    <span class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                                        ⚡ Activity <span class="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full">Single Day</span>
                                     </span>
-                                    <input type="radio" name="activity_type" value="activity" {{ $rawActivityType === 'activity' ? 'checked' : '' }} onchange="handleActivityTypeChange('activity')" class="rounded-full text-blue-600 focus:ring-blue-500">
+                                    <input type="radio" name="activity_type" id="activity_type_single" value="activity" {{ !$isOngoingType ? 'checked' : '' }} onchange="handleActivityTypeChange('activity')" class="rounded-full text-blue-600 focus:ring-blue-500">
                                 </div>
-                                <p class="text-[10px] text-slate-500 leading-tight">Single-day event, sports match, or community outreach</p>
+                                <p class="text-[11px] text-slate-500 leading-normal">
+                                    Single-day event, sports match, meeting, or outreach. Uses <strong class="text-slate-700">Venue</strong> and a single date.
+                                </p>
                             </label>
 
-                            <!-- Option 2: Training -->
-                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'training' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="training">
+                            <!-- Option 2: Ongoing (Sessions, Classes, Trainings) -->
+                            <label class="activity-type-btn cursor-pointer p-3.5 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $isOngoingType ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="ongoing">
                                 <div class="flex items-center justify-between">
-                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                                        🎓 Training
+                                    <span class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+                                        📅 Sessions, Classes &amp; Trainings <span class="text-[10px] font-semibold text-purple-700 bg-purple-100/80 px-2 py-0.5 rounded-full">Multi-Day / Period</span>
                                     </span>
-                                    <input type="radio" name="activity_type" value="training" {{ $rawActivityType === 'training' ? 'checked' : '' }} onchange="handleActivityTypeChange('training')" class="rounded-full text-purple-600 focus:ring-purple-500">
+                                    <input type="radio" name="activity_type" id="activity_type_ongoing" value="{{ in_array($rawActivityType, ['training', 'class', 'session']) ? $rawActivityType : 'training' }}" {{ $isOngoingType ? 'checked' : '' }} onchange="handleActivityTypeChange('ongoing')" class="rounded-full text-purple-600 focus:ring-purple-500">
                                 </div>
-                                <p class="text-[10px] text-slate-500 leading-tight">Multi-day bootcamp, workshop, or vocational training</p>
-                            </label>
-
-                            <!-- Option 3: Class -->
-                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'class' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="class">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                                        📚 Class
-                                    </span>
-                                    <input type="radio" name="activity_type" value="class" {{ $rawActivityType === 'class' ? 'checked' : '' }} onchange="handleActivityTypeChange('class')" class="rounded-full text-purple-600 focus:ring-purple-500">
-                                </div>
-                                <p class="text-[10px] text-slate-500 leading-tight">Ongoing academic / curriculum classes across a period</p>
-                            </label>
-
-                            <!-- Option 4: Session -->
-                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'session' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="session">
-                                <div class="flex items-center justify-between">
-                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                                        👥 Session
-                                    </span>
-                                    <input type="radio" name="activity_type" value="session" {{ $rawActivityType === 'session' ? 'checked' : '' }} onchange="handleActivityTypeChange('session')" class="rounded-full text-purple-600 focus:ring-purple-500">
-                                </div>
-                                <p class="text-[10px] text-slate-500 leading-tight">Recurring circles, coaching clinics, or mentorship series</p>
+                                <p class="text-[11px] text-slate-500 leading-normal">
+                                    Ongoing engagements across a period (bootcamps, courses, series). Uses <strong class="text-slate-700">Location</strong> and <strong class="text-slate-700">Period</strong>.
+                                </p>
                             </label>
                         </div>
                     </div>
@@ -385,6 +367,22 @@ $entryFormConfig = [
                                         Cadence / Schedule Pattern
                                     </label>
                                     <input type="text" name="period_cadence" id="period_cadence_input" value="{{ $rawPeriodCadence }}" placeholder="e.g. Weekly (4 Weeks) or Mon/Wed/Fri" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-white focus:border-purple-500 focus:ring-purple-500 p-2.5 border">
+                                </div>
+                            </div>
+
+                            <!-- Optional Specific Subtype -->
+                            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-purple-100/80 text-xs">
+                                <span class="text-[11px] font-bold text-purple-900">Activity Format:</span>
+                                <div class="inline-flex items-center gap-1.5" id="ongoing-format-pills">
+                                    <button type="button" onclick="setOngoingSubtype('training')" id="subtype-btn-training" class="cursor-pointer px-2.5 py-1 rounded-lg text-xs font-semibold transition border {{ (!in_array($rawActivityType, ['class', 'session'])) ? 'bg-purple-600 text-white border-purple-600 shadow-2xs' : 'bg-white text-purple-800 border-purple-200 hover:bg-purple-50' }}">
+                                        🎓 Training
+                                    </button>
+                                    <button type="button" onclick="setOngoingSubtype('class')" id="subtype-btn-class" class="cursor-pointer px-2.5 py-1 rounded-lg text-xs font-semibold transition border {{ ($rawActivityType === 'class') ? 'bg-purple-600 text-white border-purple-600 shadow-2xs' : 'bg-white text-purple-800 border-purple-200 hover:bg-purple-50' }}">
+                                        📚 Class
+                                    </button>
+                                    <button type="button" onclick="setOngoingSubtype('session')" id="subtype-btn-session" class="cursor-pointer px-2.5 py-1 rounded-lg text-xs font-semibold transition border {{ ($rawActivityType === 'session') ? 'bg-purple-600 text-white border-purple-600 shadow-2xs' : 'bg-white text-purple-800 border-purple-200 hover:bg-purple-50' }}">
+                                        👥 Session
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1664,14 +1662,36 @@ function saveDraftManual() {
 }
 
 // --- Activity Type, Period, and Venue/Location dynamic handler ---
+let currentOngoingSubtype = '{{ in_array($rawActivityType, ['class', 'session']) ? $rawActivityType : 'training' }}';
+
+function setOngoingSubtype(subtype) {
+    currentOngoingSubtype = subtype;
+    const ongoingRadio = document.getElementById('activity_type_ongoing');
+    if (ongoingRadio) {
+        ongoingRadio.value = subtype;
+        ongoingRadio.checked = true;
+    }
+    
+    ['training', 'class', 'session'].forEach(st => {
+        const btn = document.getElementById('subtype-btn-' + st);
+        if (btn) {
+            if (st === subtype) {
+                btn.className = 'cursor-pointer px-2.5 py-1 rounded-lg text-xs font-semibold transition border bg-purple-600 text-white border-purple-600 shadow-2xs';
+            } else {
+                btn.className = 'cursor-pointer px-2.5 py-1 rounded-lg text-xs font-semibold transition border bg-white text-purple-800 border-purple-200 hover:bg-purple-50';
+            }
+        }
+    });
+}
+
 function handleActivityTypeChange(type) {
-    const isOngoing = (type === 'training' || type === 'class' || type === 'session');
+    const isOngoing = (type === 'ongoing' || type === 'training' || type === 'class' || type === 'session');
     
     // Update active styles on radio buttons
     document.querySelectorAll('.activity-type-btn').forEach(btn => {
         const btnType = btn.getAttribute('data-type');
         const radio = btn.querySelector('input[type="radio"]');
-        if (btnType === type) {
+        if ((isOngoing && btnType === 'ongoing') || (!isOngoing && btnType === 'activity')) {
             if (radio) radio.checked = true;
             btn.classList.remove('border-slate-200', 'bg-slate-50');
             if (isOngoing) {
