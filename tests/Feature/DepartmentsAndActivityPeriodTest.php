@@ -508,43 +508,46 @@ class DepartmentsAndActivityPeriodTest extends TestCase
         $resDeptTab = $this->actingAs($superAdmin)->get(route('programmes.hub', ['tab' => 'departments']));
         $resDeptTab->assertStatus(200);
         $resDeptTab->assertSee('Parent Projects Directory');
-        $resDeptTab->assertSee('PARENT DEPARTMENT');
+        $resDeptTab->assertSee('DEPARTMENT');
         $resDeptTab->assertSee('Digital Skills');
         $resDeptTab->assertSee('↳ Ehub');
         $resDeptTab->assertSee('↳ Going Beyond');
         $resDeptTab->assertSee('Project Department Deck');
         $resDeptTab->assertSee('2 Sub-Projects');
 
-        // 3. Test Hub tab=projects card differentiation
+        // 3. Test Hub tab=projects card display (Standalone and Child are all Projects)
         $resProjTab = $this->actingAs($superAdmin)->get(route('programmes.hub', ['tab' => 'projects']));
         $resProjTab->assertStatus(200);
-        // Parent card cues
-        $resProjTab->assertSee('PARENT DEPARTMENT');
-        $resProjTab->assertSee('2 Sub-Projects');
-        // Child card cues
-        $resProjTab->assertSee('Sub-Project');
+        // All operational projects should be labeled as Project
+        $resProjTab->assertSee('PROJECT');
+        $resProjTab->assertSee('Project Deck');
+        // Child project cues
         $resProjTab->assertSee('Ehub');
         $resProjTab->assertSee('Going Beyond');
-        // Standalone card cues
-        $resProjTab->assertSee('Standalone Project');
+        $resProjTab->assertSee('Department: Digital Skills');
+        // Standalone project cues
+        $resProjTab->assertSee('Standalone Initiative');
         $resProjTab->assertSee('Community Library');
 
         // 4. Test Admin Teams type filters
         $resAdminDept = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'departments']));
         $resAdminDept->assertStatus(200);
         $resAdminDept->assertSee('Digital Skills');
+        $resAdminDept->assertSee('DEPARTMENT');
         $resAdminDept->assertDontSee('Community Library');
 
         $resAdminChild = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'children']));
         $resAdminChild->assertStatus(200);
         $resAdminChild->assertSee('Ehub');
         $resAdminChild->assertSee('Going Beyond');
-        $resAdminChild->assertSee('Sub-Project');
+        $resAdminChild->assertSee('PROJECT');
+        $resAdminChild->assertSee('Department: Digital Skills');
         $resAdminChild->assertDontSee('Community Library');
 
         $resAdminStand = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'standalone']));
         $resAdminStand->assertStatus(200);
         $resAdminStand->assertSee('Community Library');
+        $resAdminStand->assertSee('PROJECT');
         $resAdminStand->assertSee('Standalone Project');
     }
 }

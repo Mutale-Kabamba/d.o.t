@@ -90,7 +90,7 @@
                         <svg class="w-4 h-4 {{ $currentTab === 'departments' ? 'text-white' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
-                        <span>Parent Projects</span>
+                        <span>Parent Projects (Departments)</span>
                     </div>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $currentTab === 'departments' ? 'bg-purple-700/50 text-white' : 'bg-purple-50 text-purple-700' }}">
                         {{ $departments->count() }}
@@ -946,15 +946,15 @@
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                             <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider">
-                                Operational Projects Directory ({{ $operationalProjects->count() }})
+                                All Projects Directory ({{ $operationalProjects->count() }})
                             </h3>
                         </div>
-                        <p class="text-xs text-slate-500 mt-1">Manage field initiatives, child sub-projects, and standalone development programs.</p>
+                        <p class="text-xs text-slate-500 mt-1">Operational initiatives including standalone projects and child projects under departments.</p>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2.5">
                         <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'departments'])) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition">
-                            <span>🏢 Parent Projects</span>
+                            <span>🏢 Parent Projects (Departments)</span>
                             <span class="px-1.5 py-0.2 rounded-full bg-purple-200 text-purple-800 text-[10px] font-black">{{ $departments->count() }}</span>
                         </a>
 
@@ -974,190 +974,144 @@
                     <button type="button" onclick="filterProjectsList('all')" id="pill-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-2xs transition cursor-pointer">
                         All Projects ({{ $operationalProjects->count() }})
                     </button>
-                    <button type="button" onclick="filterProjectsList('child')" id="pill-child" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-purple-700 border border-purple-200 hover:bg-purple-50 transition cursor-pointer flex items-center gap-1.5">
-                        <span>↳ Child Sub-Projects ({{ $childProjectsCount }})</span>
+                    <button type="button" onclick="filterProjectsList('child')" id="pill-child" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1.5">
+                        <span>↳ Projects under Departments ({{ $childProjectsCount }})</span>
                     </button>
-                    <button type="button" onclick="filterProjectsList('standalone')" id="pill-standalone" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 transition cursor-pointer flex items-center gap-1.5">
+                    <button type="button" onclick="filterProjectsList('standalone')" id="pill-standalone" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition cursor-pointer flex items-center gap-1.5">
                         <span>📁 Standalone Projects ({{ $standaloneProjectsCount }})</span>
                     </button>
-                    @if($projects->where('is_department', true)->count() > 0)
-                    <button type="button" onclick="filterProjectsList('department')" id="pill-department" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 transition cursor-pointer flex items-center gap-1.5">
-                        <span>🏢 Parent Departments ({{ $projects->where('is_department', true)->count() }})</span>
-                    </button>
-                    @endif
                 </div>
 
-                <!-- Projects Grid with Distinct Differentiated Card Displays -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="projects-grid-container">
-                    @foreach($projects as $p)
+                <!-- Projects Grid (Styled identically to Department Cards with Blue Theme) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="projects-grid-container">
+                    @forelse($operationalProjects as $p)
                         @php
-                            $isChild = !empty($p->parent_id) && !$p->is_department;
-                            $isDept = (bool) $p->is_department;
-                            $isStandalone = empty($p->parent_id) && !$p->is_department;
-                            $cardType = $isDept ? 'department' : ($isChild ? 'child' : 'standalone');
+                            $isChild = !empty($p->parent_id);
+                            $cardType = $isChild ? 'child' : 'standalone';
+                            $linkedSiblings = $p->isLinked() ? $p->linkedSiblingProjects()->where('id', '!=', $p->id) : collect();
                         @endphp
 
-                        @if($isDept)
-                        <!-- ==================== PARENT DEPARTMENT CARD ==================== -->
-                        <div class="project-card bg-linear-to-br from-white via-white to-purple-50/25 border-2 border-purple-300 hover:border-purple-400 rounded-2xl p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4" data-card-type="department">
-                            <div class="space-y-3">
-                                <!-- Top Badges -->
-                                <div class="flex items-start justify-between gap-2 flex-wrap">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-md shadow-2xs flex items-center gap-1">
-                                            <span>🏢</span> PARENT DEPT
+                        <div class="project-card bg-white border-2 border-blue-200/80 hover:border-blue-400 rounded-3xl p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-5 bg-linear-to-br from-white via-white to-blue-50/20" data-card-type="{{ $cardType }}">
+                            <div class="space-y-4">
+                                <!-- Top Card Header -->
+                                <div class="flex items-start justify-between gap-3 flex-wrap">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="px-3 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white rounded-lg shadow-2xs flex items-center gap-1.5">
+                                            <span>📁</span>
+                                            <span>PROJECT</span>
                                         </span>
-                                        <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md">
-                                            {{ $p->code ?: 'DEPT' }}
+                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 rounded-lg">
+                                            {{ $p->code ?: 'PROJ' }}
                                         </span>
-                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
-                                            📁 {{ $p->children->count() }} Sub-Projects
-                                        </span>
+                                        @if($isChild)
+                                            <span class="px-2.5 py-1 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg flex items-center gap-1" title="Department: {{ $p->parent->name }}">
+                                                <span>🏢</span> Department: {{ $p->parent->name }}
+                                            </span>
+                                            @if($p->isLinked())
+                                                <span class="px-2.5 py-1 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded-lg flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                                    <span>🔗</span> Linked Slide
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="px-2.5 py-1 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg flex items-center gap-1">
+                                                <span>📁</span> Standalone Project
+                                            </span>
+                                        @endif
                                     </div>
-                                    <span class="text-[11px] font-bold {{ $p->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
+                                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full {{ $p->status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
                                         ● {{ ucfirst($p->status) }}
                                     </span>
                                 </div>
 
+                                <!-- Project Title & Description -->
                                 <div>
-                                    <h4 class="text-sm font-black text-slate-900 leading-snug">{{ $p->name }}</h4>
-                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $p->description ?: 'Umbrella department coordinating thematic projects and shared resources.' }}</p>
+                                    <h3 class="text-lg font-black text-slate-900 leading-snug tracking-tight">{{ $p->name }}</h3>
+                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                        {{ $p->description ?: 'Community development and youth empowerment programming.' }}
+                                    </p>
                                 </div>
 
-                                <!-- Sub-Projects Chips -->
-                                @if($p->children->isNotEmpty())
-                                    <div class="bg-purple-50/60 border border-purple-100 rounded-xl p-2.5 space-y-1.5">
-                                        <span class="text-[10px] font-black uppercase tracking-wider text-purple-700 block">Sub-Projects ({{ $p->children->count() }}):</span>
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($p->children as $child)
-                                                <span class="px-2 py-0.5 bg-white border border-purple-200 rounded-md text-[10px] font-bold text-purple-900 shadow-2xs">
-                                                    ↳ {{ $child->name }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <div class="pt-2 text-[11px] text-slate-600 space-y-1.5 border-t border-purple-100">
-                                    <div class="flex items-center gap-1.5 font-medium">
-                                        <span class="text-slate-400">Team:</span>
-                                        <strong class="text-slate-800">{{ $p->assigned_team_summary }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between text-slate-500">
-                                        <span>📍 {{ $p->location ?: 'Livingstone' }}</span>
-                                        <span class="font-bold text-purple-700">{{ $p->totalDescendantActivitiesCount() }} activities (all sub-projects)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Presentation & Export Actions -->
-                            <div class="pt-3 border-t border-purple-100 flex flex-wrap items-center justify-between gap-1.5">
-                                <div class="flex items-center gap-1">
-                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="px-2.5 py-1 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition shadow-2xs" title="Project this department with all sub-projects">
-                                        ▶ Project Dept
-                                    </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
-                                        PPTX
-                                    </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
-                                        PDF
-                                    </a>
-                                </div>
-
-                                @if($isSuperAdmin)
-                                <div class="flex items-center gap-1">
-                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, 1, null)" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer" title="Edit Department">
-                                        ⚙️
-                                    </button>
-                                    <form action="{{ route('programmes.projects.toggle_status', $p->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Department' : 'Activate Department' }}">
-                                            {{ $p->status === 'active' ? '📁' : '⚡' }}
-                                        </button>
-                                    </form>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        @elseif($isChild)
-                        <!-- ==================== CHILD SUB-PROJECT CARD ==================== -->
-                        <div class="project-card bg-white border-l-4 border-l-purple-500 border-t border-r border-b border-slate-200/90 rounded-2xl p-5 shadow-xs hover:border-l-purple-600 hover:shadow-md transition flex flex-col justify-between space-y-4" data-card-type="child">
-                            <div class="space-y-3">
-                                <!-- Top Hierarchy Header -->
-                                <div class="space-y-1.5">
-                                    <div class="flex items-start justify-between gap-2 flex-wrap">
-                                        <div class="flex items-center gap-1.5 flex-wrap">
-                                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md flex items-center gap-1">
-                                                <span>↳</span> Sub-Project
-                                            </span>
-                                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
-                                                {{ $p->code ?: 'CHILD' }}
-                                            </span>
-                                        </div>
-                                        <span class="text-[11px] font-bold {{ $p->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
-                                            ● {{ ucfirst($p->status) }}
+                                <!-- Structured Scope / Department Link Box -->
+                                <div class="bg-blue-50/50 border border-blue-100/80 rounded-2xl p-4 space-y-2">
+                                    @if($isChild)
+                                    <div class="flex items-center justify-between text-xs font-bold text-blue-900">
+                                        <span class="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-blue-700">
+                                            <span>🏢</span>
+                                            <span>Department: {{ $p->parent->name }}</span>
                                         </span>
+                                        @if($p->isLinked())
+                                            <span class="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[10px] font-bold">
+                                                🔗 Linked Slide with {{ $linkedSiblings->pluck('name')->implode(', ') }}
+                                            </span>
+                                        @else
+                                            <span class="text-[10px] font-semibold text-blue-600">Sub-project</span>
+                                        @endif
                                     </div>
-
-                                    <!-- Parent Department Banner -->
-                                    <div class="px-2.5 py-1 text-[11px] font-black bg-purple-50 text-purple-900 border border-purple-200/80 rounded-lg flex items-center gap-1.5 truncate" title="Sub-project under parent department {{ $p->parent->name }}">
-                                        <span class="text-xs">🏢</span>
-                                        <span class="text-purple-700 font-bold truncate">{{ $p->parent->name }}</span>
-                                        <span class="text-purple-400">↳</span>
-                                        <span class="text-purple-950 font-black truncate">{{ $p->name }}</span>
+                                    <p class="text-[11px] text-slate-600">
+                                        Delivered under the <strong class="text-slate-800">{{ $p->parent->name }}</strong> strategic department umbrella.
+                                    </p>
+                                    @else
+                                    <div class="flex items-center justify-between text-xs font-bold text-blue-900">
+                                        <span class="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-blue-700">
+                                            <span>📁</span>
+                                            <span>Standalone Initiative</span>
+                                        </span>
+                                        <span class="text-[10px] font-semibold text-blue-600">Direct Scope</span>
                                     </div>
-
-                                    @if($p->isLinked())
-                                        @php
-                                            $linkedSiblings = $p->linkedSiblingProjects()->where('id', '!=', $p->id);
-                                        @endphp
-                                        <div class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200 rounded-lg flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
-                                            <span>🔗</span>
-                                            <span>Linked Slide: {{ $linkedSiblings->pluck('name')->implode(', ') }}</span>
-                                        </div>
+                                    <p class="text-[11px] text-slate-600">
+                                        Independent programming initiative reporting directly to executive &amp; MEAL operations.
+                                    </p>
                                     @endif
                                 </div>
 
-                                <div>
-                                    <h4 class="text-sm font-bold text-slate-900 leading-snug">{{ $p->name }}</h4>
-                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $p->description ?: 'Community development and youth empowerment programming.' }}</p>
-                                </div>
-                                
-                                <div class="pt-2 text-[11px] text-slate-600 space-y-1.5 border-t border-slate-100">
-                                    <div class="flex items-center gap-1.5 font-medium">
-                                        <span class="text-slate-400">Team:</span>
-                                        <strong class="text-slate-800">{{ $p->assigned_team_summary }}</strong>
+                                <!-- Meta Stats Grid -->
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs">
+                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Activities</span>
+                                        <span class="text-base font-black text-slate-900 mt-0.5 block">
+                                            {{ $p->activityEntries->count() }}
+                                        </span>
+                                        <span class="text-[10px] text-slate-400">logged entries</span>
                                     </div>
-                                    <div class="flex items-center justify-between text-slate-500">
-                                        <span>📍 {{ $p->location ?: 'Livingstone, Zambia' }}</span>
-                                        <span class="font-bold text-slate-700">{{ $p->activityEntries->count() }} activities</span>
+
+                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Location Hub</span>
+                                        <span class="text-xs font-bold text-slate-800 mt-1 block truncate">
+                                            📍 {{ $p->location ?: 'Livingstone' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3 col-span-2 sm:col-span-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
+                                        <span class="text-xs font-bold text-blue-700 mt-1 block truncate" title="{{ $p->assigned_team_summary }}">
+                                            {{ $p->assigned_team_summary }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Presentation & Export Actions -->
-                            <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5">
-                                <div class="flex items-center gap-1">
-                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific sub-project">
-                                        ▶ Project
+                            <!-- Project Presentation & Actions Toolbar -->
+                            <div class="pt-4 border-t border-blue-100 flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition active:scale-95" title="Present this specific project directly">
+                                        <span>▶ Project Deck</span>
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
+                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition" title="Download Isolated PPTX">
                                         PPTX
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
+                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition" title="Download Isolated PDF">
                                         PDF
                                     </a>
                                 </div>
 
                                 @if($isSuperAdmin)
-                                <div class="flex items-center gap-1">
-                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, 0, {{ $p->isLinked() ? ($p->linkedSiblingProjects()->where('id', '!=', $p->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Child Project">
-                                        ⚙️
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, 0, {{ $p->isLinked() ? ($p->linkedSiblingProjects()->where('id', '!=', $p->id)->first()?->id ?? 'null') : 'null' }})" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition cursor-pointer" title="Edit Project Details">
+                                        ⚙️ Edit
                                     </button>
                                     <form action="{{ route('programmes.projects.toggle_status', $p->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
+                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-xl cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
                                             {{ $p->status === 'active' ? '📁' : '⚡' }}
                                         </button>
                                     </form>
@@ -1165,78 +1119,21 @@
                                 @endif
                             </div>
                         </div>
-
-                        @else
-                        <!-- ==================== STANDALONE PROJECT CARD ==================== -->
-                        <div class="project-card bg-white border-l-4 border-l-blue-500 border-t border-r border-b border-slate-200/90 rounded-2xl p-5 shadow-xs hover:border-l-blue-600 hover:shadow-md transition flex flex-col justify-between space-y-4" data-card-type="standalone">
-                            <div class="space-y-3">
-                                <!-- Top Badges -->
-                                <div class="flex items-start justify-between gap-2 flex-wrap">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="px-2.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md flex items-center gap-1">
-                                            <span>📁</span> Standalone Project
-                                        </span>
-                                        <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
-                                            {{ $p->code ?: 'PROJECT' }}
-                                        </span>
-                                    </div>
-                                    <span class="text-[11px] font-bold {{ $p->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
-                                        ● {{ ucfirst($p->status) }}
-                                    </span>
-                                </div>
-
-                                <div>
-                                    <h4 class="text-sm font-bold text-slate-900 leading-snug">{{ $p->name }}</h4>
-                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $p->description ?: 'Community development and youth empowerment programming.' }}</p>
-                                </div>
-                                
-                                <div class="pt-2 text-[11px] text-slate-600 space-y-1.5 border-t border-slate-100">
-                                    <div class="flex items-center gap-1.5 font-medium">
-                                        <span class="text-slate-400">Team:</span>
-                                        <strong class="text-slate-800">{{ $p->assigned_team_summary }}</strong>
-                                    </div>
-                                    <div class="flex items-center justify-between text-slate-500">
-                                        <span>📍 {{ $p->location ?: 'Livingstone, Zambia' }}</span>
-                                        <span class="font-bold text-slate-700">{{ $p->activityEntries->count() }} activities</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Presentation & Export Actions -->
-                            <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-1.5">
-                                <div class="flex items-center gap-1">
-                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific project directly">
-                                        ▶ Project
-                                    </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
-                                        PPTX
-                                    </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
-                                        PDF
-                                    </a>
-                                </div>
-
-                                @if($isSuperAdmin)
-                                <div class="flex items-center gap-1">
-                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, null, 0, null)" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Project">
-                                        ⚙️
-                                    </button>
-                                    <form action="{{ route('programmes.projects.toggle_status', $p->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
-                                            {{ $p->status === 'active' ? '📁' : '⚡' }}
-                                        </button>
-                                    </form>
-                                </div>
-                                @endif
-                            </div>
+                    @empty
+                        <div class="col-span-full bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
+                            <div class="text-4xl">📁</div>
+                            <h3 class="text-base font-bold text-slate-800">No Projects Configured Yet</h3>
+                            <p class="text-xs text-slate-500 max-w-md mx-auto">Create a new standalone or child project to start tracking activities and field achievements.</p>
+                            @if($isSuperAdmin)
+                            <button type="button" onclick="document.getElementById('create-project-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition cursor-pointer">
+                                <span>+ Create First Project</span>
+                            </button>
+                            @endif
                         </div>
-                        @endif
-                    @endforeach
+                    @endforelse
                 </div>
             </div>
             @endif
-
             <!-- ==================== TAB: PARENT PROJECTS / DEPARTMENTS DIRECTORY ==================== -->
             @if($currentTab === 'departments')
             <div class="space-y-6">
@@ -1277,7 +1174,7 @@
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="px-3 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-lg shadow-2xs flex items-center gap-1.5">
                                         <span>🏢</span>
-                                        <span>PARENT DEPARTMENT</span>
+                                        <span>DEPARTMENT</span>
                                     </span>
                                     <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-lg">
                                         {{ $dept->code ?: 'DEPT' }}

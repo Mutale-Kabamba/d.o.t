@@ -118,9 +118,10 @@
 
             <!-- Hierarchy Type Filter -->
             <select name="type" onchange="this.form.submit()" class="text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="all" {{ ($selectedType ?? 'all') === 'all' ? 'selected' : '' }}>All Types</option>
-                <option value="departments" {{ ($selectedType ?? 'all') === 'departments' ? 'selected' : '' }}>🏢 Parent Departments ({{ $totalDepartments }})</option>
-                <option value="children" {{ ($selectedType ?? 'all') === 'children' ? 'selected' : '' }}>↳ Child Sub-Projects</option>
+                <option value="all" {{ ($selectedType ?? 'all') === 'all' ? 'selected' : '' }}>All Records</option>
+                <option value="projects" {{ ($selectedType ?? 'all') === 'projects' ? 'selected' : '' }}>📁 All Projects ({{ $totalProjects }})</option>
+                <option value="departments" {{ ($selectedType ?? 'all') === 'departments' ? 'selected' : '' }}>🏢 Departments ({{ $totalDepartments }})</option>
+                <option value="children" {{ ($selectedType ?? 'all') === 'children' ? 'selected' : '' }}>↳ Projects under Departments</option>
                 <option value="standalone" {{ ($selectedType ?? 'all') === 'standalone' ? 'selected' : '' }}>📁 Standalone Projects</option>
             </select>
 
@@ -156,7 +157,7 @@
                     <div class="flex items-center justify-between gap-2 flex-wrap">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-md shadow-2xs flex items-center gap-1">
-                                <span>🏢</span> PARENT DEPT
+                                <span>🏢</span> DEPARTMENT
                             </span>
                             <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md">
                                 {{ $team->code ?: 'DEPT' }}
@@ -258,20 +259,37 @@
                 </div>
             </div>
 
-            @elseif($isChild)
-            <!-- ==================== CHILD SUB-PROJECT CARD ==================== -->
-            <div class="bg-white rounded-2xl border-l-4 border-l-purple-500 border-t border-r border-b border-slate-200/90 shadow-xs hover:border-l-purple-600 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+            @else
+            <!-- ==================== PROJECT CARD (STANDALONE & CHILD) ==================== -->
+            <div class="bg-linear-to-br from-white via-white to-blue-50/25 rounded-2xl border-2 border-blue-200/80 hover:border-blue-400 shadow-xs hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
                 <div class="space-y-3">
                     <!-- Top Badges -->
                     <div class="space-y-1.5">
                         <div class="flex items-center justify-between gap-2 flex-wrap">
                             <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md flex items-center gap-1">
-                                    <span>↳</span> Sub-Project
+                                <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white rounded-md shadow-2xs flex items-center gap-1">
+                                    <span>📁</span> PROJECT
                                 </span>
-                                <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
-                                    {{ $team->code ?: 'CHILD' }}
+                                <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 rounded-md">
+                                    {{ $team->code ?: 'PROJ' }}
                                 </span>
+                                @if($isChild)
+                                    <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md flex items-center gap-1" title="Department: {{ $team->parent->name }}">
+                                        <span>🏢</span> Department: {{ $team->parent->name }}
+                                    </span>
+                                    @if($team->isLinked())
+                                        @php
+                                            $linkedSiblings = $team->linkedSiblingProjects()->where('id', '!=', $team->id);
+                                        @endphp
+                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded-md flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                            <span>🔗</span> Linked Slide
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md flex items-center gap-1">
+                                        <span>📁</span> Standalone Project
+                                    </span>
+                                @endif
                             </div>
                             <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
                                 <span>●</span>
@@ -279,22 +297,20 @@
                             </span>
                         </div>
 
-                        <!-- Parent Breadcrumb -->
-                        <div class="px-2.5 py-1 text-[11px] font-black bg-purple-50 text-purple-900 border border-purple-200/80 rounded-lg flex items-center gap-1.5 truncate" title="Sub-project under parent department {{ $team->parent->name }}">
+                        @if($isChild)
+                        <!-- Parent Department Breadcrumb Banner -->
+                        <div class="px-2.5 py-1 text-[11px] font-black bg-purple-50 text-purple-900 border border-purple-200/80 rounded-lg flex items-center gap-1.5 truncate" title="Sub-project under department {{ $team->parent->name }}">
                             <span class="text-xs">🏢</span>
                             <span class="text-purple-700 font-bold truncate">{{ $team->parent->name }}</span>
                             <span class="text-purple-400">↳</span>
                             <span class="text-purple-950 font-black truncate">{{ $team->name }}</span>
                         </div>
-
                         @if($team->isLinked())
-                            @php
-                                $linkedSiblings = $team->linkedSiblingProjects()->where('id', '!=', $team->id);
-                            @endphp
-                            <div class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200 rounded-lg flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                            <div class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200 rounded-lg flex items-center gap-1">
                                 <span>🔗</span>
                                 <span>Linked Slide: {{ $linkedSiblings->pluck('name')->implode(', ') }}</span>
                             </div>
+                        @endif
                         @endif
                     </div>
 
@@ -334,7 +350,7 @@
                                 <span>{{ $team->location ?: 'Livingstone, Zambia' }}</span>
                             </span>
 
-                            <span class="font-bold text-slate-700">
+                            <span class="font-bold text-blue-700">
                                 {{ $team->activityEntries->count() }} activities
                             </span>
                         </div>
@@ -344,8 +360,8 @@
                 <!-- Action Buttons Footer -->
                 <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                     <div class="flex items-center gap-1">
-                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific team/project directly">
-                            ▶ Project
+                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-2xs" title="Project this specific team/project directly">
+                            ▶ Project Deck
                         </a>
                         <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
                             PDF
@@ -353,114 +369,19 @@
                     </div>
 
                     <div class="flex items-center gap-1">
-                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, 0, {{ $team->isLinked() ? ($team->linkedSiblingProjects()->where('id', '!=', $team->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
+                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, 0, {{ $team->isLinked() ? ($team->linkedSiblingProjects()->where('id', '!=', $team->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer" title="Edit Project Details">
                             ⚙️
                         </button>
                         <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
                             @csrf
-                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Team' : 'Activate Team' }}">
+                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
                                 {{ $team->status === 'active' ? '📁' : '⚡' }}
                             </button>
                         </form>
-                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
+                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove associated assignments.')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Team/Project">
-                                🗑️
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            @else
-            <!-- ==================== STANDALONE PROJECT CARD ==================== -->
-            <div class="bg-white rounded-2xl border-l-4 border-l-blue-500 border-t border-r border-b border-slate-200/90 shadow-xs hover:border-l-blue-600 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
-                <div class="space-y-3">
-                    <!-- Top Badges -->
-                    <div class="flex items-center justify-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="px-2.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md flex items-center gap-1">
-                                <span>📁</span> Standalone Project
-                            </span>
-                            <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
-                                {{ $team->code ?: 'PROJECT' }}
-                            </span>
-                        </div>
-                        <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
-                            <span>●</span>
-                            <span>{{ ucfirst($team->status) }}</span>
-                        </span>
-                    </div>
-
-                    <!-- Team Title & Description -->
-                    <div>
-                        <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
-                        <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Community development and youth empowerment programming.' }}</p>
-                    </div>
-
-                    <!-- Team Staff & Location Details -->
-                    <div class="pt-2 border-t border-slate-100 text-xs space-y-2">
-                        <div class="flex items-start gap-2">
-                            <svg class="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            <div class="min-w-0 flex-1">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
-                                @if($team->users->isNotEmpty())
-                                    <div class="flex flex-wrap gap-1 mt-1">
-                                        @foreach($team->users as $u)
-                                            <span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[10px] font-bold border border-slate-200">
-                                                {{ $u->name }} <span class="font-normal text-slate-500">({{ $u->role === 'project_officer' ? 'Lead' : 'Staff' }})</span>
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <span class="text-[11px] text-rose-500 font-medium italic">No staff assigned</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-1 text-[11px] text-slate-500">
-                            <span class="flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                </svg>
-                                <span>{{ $team->location ?: 'Livingstone, Zambia' }}</span>
-                            </span>
-
-                            <span class="font-bold text-slate-700">
-                                {{ $team->activityEntries->count() }} activities
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons Footer -->
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-1">
-                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific team/project directly">
-                            ▶ Project
-                        </a>
-                        <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
-                            PDF
-                        </a>
-                    </div>
-
-                    <div class="flex items-center gap-1">
-                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, null, 0, null)" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
-                            ⚙️
-                        </button>
-                        <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Team' : 'Activate Team' }}">
-                                {{ $team->status === 'active' ? '📁' : '⚡' }}
-                            </button>
-                        </form>
-                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Team/Project">
+                            <button type="submit" class="p-1.5 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Project">
                                 🗑️
                             </button>
                         </form>
