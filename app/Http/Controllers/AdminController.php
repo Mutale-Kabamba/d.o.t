@@ -386,7 +386,7 @@ class AdminController extends Controller
         $search = $request->query('q');
         $status = $request->query('status');
 
-        $query = Project::with(['users', 'officers', 'assistants', 'activityEntries'])->latest();
+        $query = Project::with(['users', 'officers', 'assistants', 'activityEntries', 'parent', 'children'])->latest();
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -408,6 +408,7 @@ class AdminController extends Controller
         $activeProjects = Project::where('status', 'active')->count();
         $archivedProjects = Project::where('status', 'archived')->count();
         $allStaff = User::orderBy('name')->get();
+        $departments = Project::where('is_department', true)->orWhereNull('parent_id')->orderBy('name')->get();
 
         return view('admin.teams.index', [
             'teams' => $teams,
@@ -415,6 +416,7 @@ class AdminController extends Controller
             'activeProjects' => $activeProjects,
             'archivedProjects' => $archivedProjects,
             'allStaff' => $allStaff,
+            'departments' => $departments,
             'search' => $search,
             'selectedStatus' => $status ?? 'all',
         ]);
@@ -430,6 +432,8 @@ class AdminController extends Controller
             'code' => 'nullable|string|max:50',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:projects,id',
+            'is_department' => 'nullable|boolean',
             'status' => 'nullable|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
@@ -440,6 +444,8 @@ class AdminController extends Controller
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
+            'parent_id' => $validated['parent_id'] ?? null,
+            'is_department' => $request->boolean('is_department'),
             'status' => $validated['status'] ?? 'active',
         ]);
 
@@ -460,16 +466,26 @@ class AdminController extends Controller
             'code' => 'nullable|string|max:50',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:projects,id',
+            'is_department' => 'nullable|boolean',
             'status' => 'required|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
+
+        // Prevent setting project as its own parent
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId && (int) $parentId === (int) $project->id) {
+            $parentId = null;
+        }
 
         $project->update([
             'name' => $validated['name'],
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
+            'parent_id' => $parentId,
+            'is_department' => $request->boolean('is_department'),
             'status' => $validated['status'],
         ]);
 

@@ -120,7 +120,19 @@ class User extends Authenticatable
         }
 
         $projectId = is_object($project) ? $project->id : (int) $project;
-        return $this->projects()->where('projects.id', $projectId)->exists();
+        
+        // Direct assignment check
+        if ($this->projects()->where('projects.id', $projectId)->exists()) {
+            return true;
+        }
+
+        // Parent department assignment check
+        $projectModel = is_object($project) ? $project : Project::find($projectId);
+        if ($projectModel && $projectModel->parent_id) {
+            return $this->projects()->where('projects.id', $projectModel->parent_id)->exists();
+        }
+
+        return false;
     }
 
     /**

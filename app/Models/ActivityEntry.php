@@ -22,6 +22,8 @@ class ActivityEntry extends Model
         'pillar_4_monitoring' => 'array',
         'pillar_5_collaboration' => 'array',
         'activity_date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     protected static function booted(): void
@@ -29,6 +31,20 @@ class ActivityEntry extends Model
         static::creating(function ($entry) {
             if (empty($entry->token)) {
                 $entry->token = (string) Str::uuid();
+            }
+            if (empty($entry->activity_type)) {
+                $entry->activity_type = 'activity';
+            }
+            if (empty($entry->period_type)) {
+                $entry->period_type = in_array($entry->activity_type, ['session', 'class', 'training']) && !empty($entry->end_date)
+                    ? 'date_range'
+                    : 'single_day';
+            }
+            if (empty($entry->start_date) && !empty($entry->activity_date)) {
+                $entry->start_date = $entry->activity_date;
+            }
+            if (empty($entry->activity_date) && !empty($entry->start_date)) {
+                $entry->activity_date = $entry->start_date;
             }
             if (empty($entry->period_granularity)) {
                 $entry->period_granularity = 'quarter';
@@ -259,6 +275,75 @@ class ActivityEntry extends Model
     }
 
     /**
+     * Check if activity is an ongoing type (e.g. Training, Class, Session).
+     */
+    public function isOngoing(): bool
+    {
+        return in_array(strtolower($this->activity_type ?? 'activity'), ['training', 'class', 'session']);
+    }
+
+    /**
+     * Get human-friendly label for activity type.
+     */
+    public function getTypeLabelAttribute(): string
+    {
+        return match (strtolower($this->activity_type ?? 'activity')) {
+            'training' => 'Training',
+            'class' => 'Class',
+            'session' => 'Session',
+            default => 'Activity',
+        };
+    }
+
+    /**
+     * Get appropriate label: "Location" for ongoing sessions/trainings/classes, "Venue" for activities.
+     */
+    public function getVenueOrLocationLabelAttribute(): string
+    {
+        return $this->isOngoing() ? 'Location' : 'Venue';
+    }
+
+    /**
+     * Accessor for venue, alias for location.
+     */
+    public function getVenueAttribute(): ?string
+    {
+        return $this->location;
+    }
+
+    /**
+     * Mutator for venue, alias for location.
+     */
+    public function setVenueAttribute($value): void
+    {
+        $this->attributes['location'] = $value;
+    }
+
+    /**
+     * Formatted date or period range with duration.
+     */
+    public function getFormattedPeriodAttribute(): string
+    {
+        $start = $this->start_date ? Carbon::parse($this->start_date) : ($this->activity_date ? Carbon::parse($this->activity_date) : null);
+        $end = $this->end_date ? Carbon::parse($this->end_date) : null;
+
+        if (!$start) {
+            return 'No date set';
+        }
+
+        if (!$end || $start->toDateString() === $end->toDateString()) {
+            return $start->format('d M Y');
+        }
+
+        $diffDays = $start->diffInDays($end) + 1;
+        $duration = $diffDays >= 7
+            ? round($diffDays / 7, 1) . ' weeks (' . $diffDays . ' days)'
+            : $diffDays . ' days';
+
+        return $start->format('d M') . ' – ' . $end->format('d M Y') . ' (' . $duration . ')';
+    }
+
+    /**
      * Get bullet points array for a specific pillar and sub-category.
      */
     public function getPillarBullets(int $pillarNumber, string $subField): array
@@ -436,6 +521,7 @@ class ActivityEntry extends Model
     {
         return $this->belongsTo(User::class);
     }
+
 
     /**
      * Helper to get bullet points array from a thematic presentation points or sub-section field.

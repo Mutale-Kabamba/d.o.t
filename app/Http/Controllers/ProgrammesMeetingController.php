@@ -319,30 +319,37 @@ class ProgrammesMeetingController extends Controller
         $isSuperAdmin = $user && $user->hasAdminAccess();
 
         // 1. Projects Scoping
-        $projectsQuery = Project::query()->with(['users', 'activityEntries']);
+        $projectsQuery = Project::query()->with(['users', 'parent', 'children', 'activityEntries']);
         if (!$isSuperAdmin && $user) {
-            $projectsQuery->whereHas('users', fn($q) => $q->where('users.id', $user->id));
+            $projectsQuery->forUser($user);
         }
         $projects = $projectsQuery->orderBy('name')->get();
+        $departments = Project::where('is_department', true)->orWhereNull('parent_id')->orderBy('name')->get();
 
         // 2. Interval & Project Filtering
         $interval = $request->query('interval', 'all'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
         $selectedProjectId = $request->query('project_id');
         $search = $request->query('q');
 
-        $activitiesQuery = ActivityEntry::with(['project', 'user'])->latest('activity_date');
+        $activitiesQuery = ActivityEntry::with(['project.parent', 'user'])->latest('activity_date');
 
         if (!$isSuperAdmin && $user) {
             $activitiesQuery->forUser($user);
         }
 
         if ($selectedProjectId && $selectedProjectId !== 'all') {
-            $activitiesQuery->where('project_id', $selectedProjectId);
+            $selectedProj = Project::with('children')->find($selectedProjectId);
+            if ($selectedProj && $selectedProj->isDepartment()) {
+                $activitiesQuery->whereIn('project_id', $selectedProj->descendantProjectIds());
+            } else {
+                $activitiesQuery->where('project_id', $selectedProjectId);
+            }
         }
 
         if ($search) {
             $activitiesQuery->where(function ($q) use ($search) {
                 $q->where('activity_title', 'like', "%{$search}%")
+                  ->orWhere('activity_type', 'like', "%{$search}%")
                   ->orWhere('location', 'like', "%{$search}%")
                   ->orWhere('achievements_points', 'like', "%{$search}%")
                   ->orWhere('challenges_points', 'like', "%{$search}%")
@@ -380,7 +387,12 @@ class ProgrammesMeetingController extends Controller
             $allActivitiesInScope->forUser($user);
         }
         if ($selectedProjectId && $selectedProjectId !== 'all') {
-            $allActivitiesInScope->where('project_id', $selectedProjectId);
+            $selectedProj = Project::with('children')->find($selectedProjectId);
+            if ($selectedProj && $selectedProj->isDepartment()) {
+                $allActivitiesInScope->whereIn('project_id', $selectedProj->descendantProjectIds());
+            } else {
+                $allActivitiesInScope->where('project_id', $selectedProjectId);
+            }
         }
         if ($interval !== 'all') {
             $allActivitiesInScope->filterInterval($interval, $filterParams);
@@ -434,6 +446,7 @@ class ProgrammesMeetingController extends Controller
 
         return view('programmes.dashboard', [
             'projects' => $projects,
+            'departments' => $departments,
             'activities' => $activities,
             'submissions' => $submissions,
             'slidesConfig' => self::$slidesConfig,
@@ -458,8 +471,8 @@ class ProgrammesMeetingController extends Controller
 
         $user = Auth::user();
         $projects = $user->hasAdminAccess()
-            ? Project::active()->orderBy('name')->get()
-            : $user->projects()->where('status', 'active')->orderBy('name')->get();
+            ? Project::active()->with(['parent', 'children'])->orderBy('name')->get()
+            : Project::active()->with(['parent', 'children'])->forUser($user)->orderBy('name')->get();
 
         $preselectedProject = $request->query('project_id') 
             ? $projects->firstWhere('id', $request->query('project_id'))
@@ -487,8 +500,8 @@ class ProgrammesMeetingController extends Controller
         }
 
         $projects = $user->hasAdminAccess()
-            ? Project::active()->orderBy('name')->get()
-            : $user->projects()->where('status', 'active')->orderBy('name')->get();
+            ? Project::active()->with(['parent', 'children'])->orderBy('name')->get()
+            : Project::active()->with(['parent', 'children'])->forUser($user)->orderBy('name')->get();
 
         return view('projects.entries.form', [
             'projects' => $projects,
@@ -519,8 +532,14 @@ class ProgrammesMeetingController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'activity_title' => 'required|string|max:255',
-            'activity_date' => 'required|date',
+            'activity_type' => 'nullable|string|max:50',
+            'period_type' => 'nullable|string|max:50',
+            'activity_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'period_cadence' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:255',
+            'venue' => 'nullable|string|max:255',
             'reporting_period' => 'nullable|string|max:255',
             'period_granularity' => 'nullable|string|in:day,month,quarter,year',
 
@@ -572,12 +591,26 @@ class ProgrammesMeetingController extends Controller
             'collab_narrative' => 'nullable|string',
         ]);
 
-        // Scoping check: non-super-admins can only log for assigned projects
+        // Scoping check: non-super-admins can only log for assigned projects or their parents
         if (!$user->canAccessProject($validated['project_id'])) {
             abort(403, 'Unauthorized. You are not assigned to this project.');
         }
 
+        $validated['location'] = $validated['location'] ?? $request->input('venue') ?? null;
+        unset($validated['venue']);
         $validated['user_id'] = $user->id;
+        $validated['activity_type'] = $validated['activity_type'] ?? 'activity';
+        if (empty($validated['start_date'])) {
+            $validated['start_date'] = $validated['activity_date'] ?? now()->toDateString();
+        }
+        if (empty($validated['activity_date'])) {
+            $validated['activity_date'] = $validated['start_date'] ?? now()->toDateString();
+        }
+        if (empty($validated['period_type'])) {
+            $validated['period_type'] = in_array($validated['activity_type'], ['session', 'class', 'training']) && !empty($validated['end_date'])
+                ? 'date_range'
+                : 'single_day';
+        }
 
         $entry = ActivityEntry::create($validated);
 
@@ -615,8 +648,8 @@ class ProgrammesMeetingController extends Controller
         }
 
         $projects = $user->hasAdminAccess()
-            ? Project::active()->orderBy('name')->get()
-            : $user->projects()->where('status', 'active')->orderBy('name')->get();
+            ? Project::active()->with(['parent', 'children'])->orderBy('name')->get()
+            : Project::active()->with(['parent', 'children'])->forUser($user)->orderBy('name')->get();
 
         return view('programmes.activity_entry_form', [
             'projects' => $projects,
@@ -642,8 +675,14 @@ class ProgrammesMeetingController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'activity_title' => 'required|string|max:255',
-            'activity_date' => 'required|date',
+            'activity_type' => 'nullable|string|max:50',
+            'period_type' => 'nullable|string|max:50',
+            'activity_date' => 'nullable|date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'period_cadence' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:255',
+            'venue' => 'nullable|string|max:255',
             'reporting_period' => 'nullable|string|max:255',
             'period_granularity' => 'nullable|in:day,month,quarter,year',
 
@@ -699,6 +738,21 @@ class ProgrammesMeetingController extends Controller
             abort(403, 'Unauthorized project selected.');
         }
 
+        $validated['location'] = $validated['location'] ?? $request->input('venue') ?? null;
+        unset($validated['venue']);
+        $validated['activity_type'] = $validated['activity_type'] ?? 'activity';
+        if (empty($validated['start_date'])) {
+            $validated['start_date'] = $validated['activity_date'] ?? now()->toDateString();
+        }
+        if (empty($validated['activity_date'])) {
+            $validated['activity_date'] = $validated['start_date'] ?? now()->toDateString();
+        }
+        if (empty($validated['period_type'])) {
+            $validated['period_type'] = in_array($validated['activity_type'], ['session', 'class', 'training']) && !empty($validated['end_date'])
+                ? 'date_range'
+                : 'single_day';
+        }
+
         $activity->update($validated);
 
         return redirect()->route('programmes.hub')->with('success', "Activity '{$activity->activity_title}' updated successfully.");
@@ -736,6 +790,8 @@ class ProgrammesMeetingController extends Controller
             'code' => 'nullable|string|max:50',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:projects,id',
+            'is_department' => 'nullable|boolean',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
@@ -745,6 +801,8 @@ class ProgrammesMeetingController extends Controller
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
+            'parent_id' => $validated['parent_id'] ?? null,
+            'is_department' => $request->boolean('is_department'),
             'status' => 'active',
         ]);
 
@@ -770,16 +828,25 @@ class ProgrammesMeetingController extends Controller
             'code' => 'nullable|string|max:50',
             'location' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:projects,id',
+            'is_department' => 'nullable|boolean',
             'status' => 'required|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        if ($parentId && (int) $parentId === (int) $project->id) {
+            $parentId = null;
+        }
 
         $project->update([
             'name' => $validated['name'],
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
+            'parent_id' => $parentId,
+            'is_department' => $request->boolean('is_department'),
             'status' => $validated['status'],
         ]);
 
@@ -1719,6 +1786,39 @@ class ProgrammesMeetingController extends Controller
                     $table->timestamps();
                 });
             }
+
+            // Ensure new columns exist on projects
+            if (Schema::hasTable('projects')) {
+                Schema::table('projects', function (Blueprint $table) {
+                    if (!Schema::hasColumn('projects', 'parent_id')) {
+                        $table->foreignId('parent_id')->nullable()->after('id')->constrained('projects')->nullOnDelete();
+                    }
+                    if (!Schema::hasColumn('projects', 'is_department')) {
+                        $table->boolean('is_department')->default(false)->after('parent_id');
+                    }
+                });
+            }
+
+            // Ensure new columns exist on activity_entries
+            if (Schema::hasTable('activity_entries')) {
+                Schema::table('activity_entries', function (Blueprint $table) {
+                    if (!Schema::hasColumn('activity_entries', 'activity_type')) {
+                        $table->string('activity_type')->default('activity')->after('activity_title');
+                    }
+                    if (!Schema::hasColumn('activity_entries', 'period_type')) {
+                        $table->string('period_type')->default('single_day')->after('activity_type');
+                    }
+                    if (!Schema::hasColumn('activity_entries', 'start_date')) {
+                        $table->date('start_date')->nullable()->after('activity_date');
+                    }
+                    if (!Schema::hasColumn('activity_entries', 'end_date')) {
+                        $table->date('end_date')->nullable()->after('start_date');
+                    }
+                    if (!Schema::hasColumn('activity_entries', 'period_cadence')) {
+                        $table->string('period_cadence')->nullable()->after('end_date');
+                    }
+                });
+            }
         } catch (\Throwable $e) {
             Log::warning('Database auto-initialization note: ' . $e->getMessage());
         }
@@ -1789,13 +1889,68 @@ class ProgrammesMeetingController extends Controller
         );
         $proj3->users()->syncWithoutDetaching([$officerKelvin->id]);
 
+        // 2b. Seed Department: Digital Skills, and sub-projects: Ehub, Going Beyond, Secondary School
+        $deptDigitalSkills = Project::firstOrCreate(
+            ['name' => 'Digital Skills'],
+            [
+                'code' => 'DSK',
+                'location' => 'Livingstone Innovation Hub',
+                'description' => 'Department for digital literacy, innovation laboratories, and youth tech employment.',
+                'status' => 'active',
+                'is_department' => true,
+            ]
+        );
+        $deptDigitalSkills->users()->syncWithoutDetaching([$officerMwila->id, $officerKelvin->id]);
+
+        $subProjEhub = Project::firstOrCreate(
+            ['name' => 'Ehub'],
+            [
+                'code' => 'EHUB',
+                'parent_id' => $deptDigitalSkills->id,
+                'location' => 'Livingstone Innovation Hub - Lab 1',
+                'description' => 'Ehub digital innovation and co-working workspace for youth freelancers and developers.',
+                'status' => 'active',
+                'is_department' => false,
+            ]
+        );
+        $subProjEhub->users()->syncWithoutDetaching([$officerMwila->id]);
+
+        $subProjGoingBeyond = Project::firstOrCreate(
+            ['name' => 'Going Beyond'],
+            [
+                'code' => 'GB',
+                'parent_id' => $deptDigitalSkills->id,
+                'location' => 'Livingstone & Kazungula Centers',
+                'description' => 'Advanced digital competencies, coding bootcamp, and remote job placement initiative.',
+                'status' => 'active',
+                'is_department' => false,
+            ]
+        );
+        $subProjGoingBeyond->users()->syncWithoutDetaching([$officerKelvin->id]);
+
+        $subProjSecondary = Project::firstOrCreate(
+            ['name' => 'Secondary School'],
+            [
+                'code' => 'SS-DIGI',
+                'parent_id' => $deptDigitalSkills->id,
+                'location' => 'Livingstone Secondary Schools',
+                'description' => 'Secondary school computer club curriculum, robotics, and STEM career guidance.',
+                'status' => 'active',
+                'is_department' => false,
+            ]
+        );
+        $subProjSecondary->users()->syncWithoutDetaching([$assistantCaristo->id]);
+
         // 3. Seed continuous activity entries for each project
         $activities = [
             [
                 'project_id' => $proj1->id,
                 'user_id' => $officerMwila->id,
                 'activity_title' => 'Community Health Match Day & Coach Clinic',
+                'activity_type' => 'activity',
+                'period_type' => 'single_day',
                 'activity_date' => Carbon::now()->subDays(12)->toDateString(),
+                'start_date' => Carbon::now()->subDays(12)->toDateString(),
                 'location' => 'Livingstone Urban Pitch A',
                 'reporting_period' => 'Quarter 2 April, May, June 2026',
                 'achievements_points' => "• 98% of girls passed foundational health module\n• 100+ youth participants in attendance\n• 1 in 4 coaches completed refresher certification",
@@ -1813,7 +1968,10 @@ class ProgrammesMeetingController extends Controller
                 'project_id' => $proj2->id,
                 'user_id' => $officerFaith->id,
                 'activity_title' => 'Sister Circle Safe Space & Dignity Kit Distribution',
+                'activity_type' => 'activity',
+                'period_type' => 'single_day',
                 'activity_date' => Carbon::now()->subDays(6)->toDateString(),
+                'start_date' => Carbon::now()->subDays(6)->toDateString(),
                 'location' => 'Maramba Community Hall',
                 'reporting_period' => 'Quarter 2 April, May, June 2026',
                 'achievements_points' => "• Established 8 safe space circles for 420 girls\n• Delivered 12 menstrual hygiene workshops\n• Distributed 400 dignity kits",
@@ -1831,7 +1989,10 @@ class ProgrammesMeetingController extends Controller
                 'project_id' => $proj3->id,
                 'user_id' => $officerKelvin->id,
                 'activity_title' => 'Micro-Enterprise Pitch & Grant Disbursement Day',
+                'activity_type' => 'activity',
+                'period_type' => 'single_day',
                 'activity_date' => Carbon::now()->subDays(2)->toDateString(),
+                'start_date' => Carbon::now()->subDays(2)->toDateString(),
                 'location' => 'Zambezi Hub Training Center',
                 'reporting_period' => 'Quarter 2 April, May, June 2026',
                 'achievements_points' => "• Graduated 65 youth leaders from business bootcamps\n• Disbursed 18 micro-grants totaling ZMW 45,000\n• 24 youth placed into apprenticeships",
@@ -1844,6 +2005,52 @@ class ProgrammesMeetingController extends Controller
                 'mne_narrative' => 'Tracking active cash-flow across all 18 funded youth enterprises.',
                 'collab_points' => "• Enterprise alumni supplied tournament sports bibs to Football programme\n• Partnership with Livingstone Chamber of Commerce",
                 'collab_narrative' => 'Alumni businesses integrated into organizational procurement supply chain.',
+            ],
+            [
+                'project_id' => $subProjGoingBeyond->id,
+                'user_id' => $officerKelvin->id,
+                'activity_title' => 'Web Development & Cloud Computing 4-Week Training',
+                'activity_type' => 'training',
+                'period_type' => 'date_range',
+                'activity_date' => Carbon::now()->subWeeks(4)->toDateString(),
+                'start_date' => Carbon::now()->subWeeks(4)->toDateString(),
+                'end_date' => Carbon::now()->subWeeks(1)->toDateString(),
+                'period_cadence' => 'Weekly (4 Weeks)',
+                'location' => 'Livingstone Innovation Hub - Lab 1',
+                'reporting_period' => 'Quarter 2 April, May, June 2026',
+                'achievements_points' => "• 45 students completed 4-week full-stack web training\n• 38 live portfolio projects deployed to Vercel\n• 12 students shortlisted for international remote internships",
+                'achievements_narrative' => 'Intensive 4-week ongoing technical training successfully concluded with high project completion rates.',
+                'challenges_points' => "• Power outages interrupted online lab tests\n• Limited high-spec laptops for mobile app emulation",
+                'challenges_narrative' => 'Generator power was utilized during load-shedding to maintain training continuity.',
+                'learning_points' => "• Peer code-reviews accelerated student debugging skill by 50%\n• Hands-on group capstones produced better retention than solo exercises",
+                'learning_narrative' => 'Pair programming structure produced remarkable student retention and portfolio results.',
+                'mne_points' => "• 93% weekly attendance across the 4-week period\n• 100% pre- and post-test assessment compliance",
+                'mne_narrative' => 'Post-training skill evaluations demonstrated a 140% improvement in computational literacy.',
+                'collab_points' => "• Partnered with Zambia ICT Authority (ZICTA) for guest masterclasses\n• Shared training labs with Ehub members during weekends",
+                'collab_narrative' => 'Guest tech industry mentors provided weekly industry review sessions.',
+            ],
+            [
+                'project_id' => $subProjEhub->id,
+                'user_id' => $officerMwila->id,
+                'activity_title' => 'Digital Freelancing Mentorship & Masterclass Series',
+                'activity_type' => 'session',
+                'period_type' => 'date_range',
+                'activity_date' => Carbon::now()->subDays(10)->toDateString(),
+                'start_date' => Carbon::now()->subDays(10)->toDateString(),
+                'end_date' => Carbon::now()->subDays(3)->toDateString(),
+                'period_cadence' => '7-Day Intensive Session',
+                'location' => 'Ehub Co-working Center, Livingstone',
+                'reporting_period' => 'Quarter 2 April, May, June 2026',
+                'achievements_points' => "• 30 youth registered on Upwork and Fiverr\n• 8 first-time freelance contracts secured worth $1,200\n• 100% profile optimization score achieved",
+                'achievements_narrative' => 'Ongoing series of mentorship sessions enabled youth freelancers to secure international gigs.',
+                'challenges_points' => "• Foreign currency withdrawal friction for local banks\n• Unreliable internet during afternoon peak hours",
+                'challenges_narrative' => 'Provided Starlink backup link to guarantee connection stability.',
+                'learning_points' => "• Mock client interviews doubled pitch win rate\n• Specializing in niche CRM setup yielded faster contracts",
+                'learning_narrative' => 'Niche skill specialization proved far more effective than generic virtual assistance.',
+                'mne_points' => "• Daily milestone checklists logged by participants\n• 28 of 30 participants verified with active gig accounts",
+                'mne_narrative' => 'Verified tangible economic empowerment outputs within one week.',
+                'collab_points' => "• Cross-collaboration with Secondary School teachers for youth awareness\n• Ehub alumni volunteering as junior mentors",
+                'collab_narrative' => 'Senior freelancers returned to mentor current cohort.',
             ],
         ];
 

@@ -138,10 +138,22 @@
         <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-300 transition flex flex-col justify-between p-5 space-y-4">
             <div class="space-y-3">
                 <!-- Top Badges -->
-                <div class="flex items-center justify-between gap-2">
-                    <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
-                        {{ $team->code ?: 'PROJECT' }}
-                    </span>
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
+                            {{ $team->code ?: 'PROJECT' }}
+                        </span>
+                        @if($team->is_department)
+                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 rounded-md flex items-center gap-1" title="Department / Program Area">
+                                <span>🏢</span> Dept
+                            </span>
+                        @endif
+                        @if($team->parent)
+                            <span class="px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded-md flex items-center gap-1" title="Sub-project under {{ $team->parent->name }}">
+                                <span>↳</span> {{ $team->parent->name }}
+                            </span>
+                        @endif
+                    </div>
                     <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
                         <span>●</span>
                         <span>{{ ucfirst($team->status) }}</span>
@@ -151,6 +163,14 @@
                 <!-- Team Title & Description -->
                 <div>
                     <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
+                    @if($team->is_department && $team->children->isNotEmpty())
+                        <div class="mt-1 text-[11px] font-semibold text-purple-700 flex items-center gap-1 flex-wrap">
+                            <span class="text-slate-400 font-normal">Sub-Projects:</span>
+                            @foreach($team->children as $child)
+                                <span class="px-1.5 py-0.5 bg-purple-50 border border-purple-200 rounded text-[10px] text-purple-800">{{ $child->name }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                     <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Community development and youth empowerment programming.' }}</p>
                 </div>
 
@@ -204,7 +224,7 @@
 
                 <div class="flex items-center gap-1">
                     <!-- Edit Team -->
-                    <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
+                    <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, {{ $team->is_department ? 1 : 0 }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
                         ⚙️
                     </button>
 
@@ -258,6 +278,32 @@
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Project / Team Name <span class="text-rose-500">*</span></label>
                 <input type="text" name="name" required placeholder="e.g. Disability Sports &amp; Inclusion" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+
+            <!-- Department & Hierarchy Settings -->
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="create-is-department" name="is_department" value="1" class="rounded text-purple-600 focus:ring-purple-500">
+                    <label for="create-is-department" class="text-xs font-bold text-slate-800 cursor-pointer">
+                        🏢 Acts as a Department / Program Area
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 pl-6">
+                    Check this if this initiative groups other sub-projects (e.g. <em>Digital Skills</em> containing Ehub, Going Beyond, Secondary School).
+                </p>
+
+                <div class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
+                    <select name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone / Top-Level Project --</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}">
+                                🏢 {{ $dept->name }} {{ $dept->is_department ? '(Department)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -316,6 +362,32 @@
                 <input type="text" id="edit-team-name" name="name" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
 
+            <!-- Department & Hierarchy Settings -->
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="edit-team-is-department" name="is_department" value="1" class="rounded text-purple-600 focus:ring-purple-500">
+                    <label for="edit-team-is-department" class="text-xs font-bold text-slate-800 cursor-pointer">
+                        🏢 Acts as a Department / Program Area
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 pl-6">
+                    Check this if this initiative groups other sub-projects.
+                </p>
+
+                <div class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
+                    <select id="edit-team-parent-id" name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone / Top-Level Project --</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}" class="edit-dept-opt-{{ $dept->id }}">
+                                🏢 {{ $dept->name }} {{ $dept->is_department ? '(Department)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Code</label>
@@ -361,13 +433,21 @@
 </div>
 
 <script>
-function openEditTeamModal(id, name, code, location, description, status, userIds) {
+function openEditTeamModal(id, name, code, location, description, status, userIds, parentId, isDepartment) {
     document.getElementById('edit-team-form').action = '/admin/teams/' + id;
     document.getElementById('edit-team-name').value = name || '';
     document.getElementById('edit-team-code').value = code || '';
     document.getElementById('edit-team-location').value = location || '';
     document.getElementById('edit-team-desc').value = description || '';
     document.getElementById('edit-team-status').value = status || 'active';
+    document.getElementById('edit-team-is-department').checked = !!isDepartment;
+
+    const parentSelect = document.getElementById('edit-team-parent-id');
+    // Hide self in parent dropdown options
+    Array.from(parentSelect.options).forEach(opt => {
+        opt.disabled = (opt.value && parseInt(opt.value) === parseInt(id));
+    });
+    parentSelect.value = parentId || '';
 
     const checkboxes = document.querySelectorAll('#edit-team-staff-container input[type="checkbox"]');
     checkboxes.forEach(cb => {

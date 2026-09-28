@@ -728,16 +728,32 @@
 
                             <!-- 3. Project Filter Dropdown -->
                             <div>
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Project</label>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Project / Department</label>
                                 <select name="project_id" onchange="this.form.submit()" class="w-full text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="all" {{ (!$selectedProjectId || $selectedProjectId === 'all') ? 'selected' : '' }}>
                                         All Projects ({{ $projects->count() }})
                                     </option>
-                                    @foreach($projects as $p)
-                                        <option value="{{ $p->id }}" {{ $selectedProjectId == $p->id ? 'selected' : '' }}>
-                                            {{ $p->name }}
+                                    @foreach($departments as $dept)
+                                        <option value="{{ $dept->id }}" class="font-bold text-slate-900 bg-slate-100" {{ $selectedProjectId == $dept->id ? 'selected' : '' }}>
+                                            🏢 {{ $dept->name }} {{ $dept->is_department ? '(Department / All Sub-Projects)' : '' }}
                                         </option>
+                                        @foreach($dept->children as $child)
+                                            <option value="{{ $child->id }}" {{ $selectedProjectId == $child->id ? 'selected' : '' }}>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;↳ {{ $child->name }}
+                                            </option>
+                                        @endforeach
                                     @endforeach
+                                    @php
+                                        $deptAndChildIds = $departments->pluck('id')->merge($departments->flatMap->children->pluck('id'))->unique();
+                                        $standaloneProjects = $projects->whereNotIn('id', $deptAndChildIds);
+                                    @endphp
+                                    @if($standaloneProjects->isNotEmpty())
+                                        @foreach($standaloneProjects as $sp)
+                                            <option value="{{ $sp->id }}" {{ $selectedProjectId == $sp->id ? 'selected' : '' }}>
+                                                {{ $sp->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
 
@@ -792,9 +808,9 @@
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr class="border-b border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
-                                    <th class="py-3 px-3.5">Date</th>
-                                    <th class="py-3 px-3.5">Project</th>
-                                    <th class="py-3 px-3.5">Activity Title</th>
+                                    <th class="py-3 px-3.5">Period / Date</th>
+                                    <th class="py-3 px-3.5">Project / Dept</th>
+                                    <th class="py-3 px-3.5">Activity Title &amp; Location</th>
                                     <th class="py-3 px-3.5">Key Highlights (Bullets)</th>
                                     <th class="py-3 px-3.5">Logged By</th>
                                     <th class="py-3 px-3.5 text-right">Actions</th>
@@ -806,18 +822,60 @@
                                     $pts = $act->getPoints('achievements_points');
                                 @endphp
                                 <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="py-3 px-3.5 font-semibold text-slate-900 whitespace-nowrap">
-                                        {{ \Carbon\Carbon::parse($act->activity_date)->format('d M Y') }}
+                                    <td class="py-3 px-3.5 whitespace-nowrap">
+                                        <div class="font-semibold text-slate-900">
+                                            {{ $act->formatted_period }}
+                                        </div>
+                                        <div class="mt-1">
+                                            @if($act->activity_type === 'training')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                                                    🎓 Training
+                                                </span>
+                                            @elseif($act->activity_type === 'class')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                                    📚 Class
+                                                </span>
+                                            @elseif($act->activity_type === 'session')
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
+                                                    ⏱ Session
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    ⚡ Activity
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="py-3 px-3.5">
-                                        <span class="px-2 py-0.5 text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md whitespace-nowrap">
-                                            {{ $act->project->name ?? 'Unassigned' }}
-                                        </span>
+                                        <div class="flex flex-col gap-0.5">
+                                            @if($act->project && $act->project->parent)
+                                                <span class="text-[10px] text-purple-700 font-bold flex items-center gap-1">
+                                                    <span>🏢</span> {{ $act->project->parent->name }}
+                                                </span>
+                                                <span class="px-2 py-0.5 text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md whitespace-nowrap w-fit">
+                                                    ↳ {{ $act->project->name }}
+                                                </span>
+                                            @elseif($act->project && $act->project->is_department)
+                                                <span class="px-2 py-0.5 text-[11px] font-black bg-purple-50 text-purple-700 border border-purple-200 rounded-md whitespace-nowrap w-fit">
+                                                    🏢 {{ $act->project->name }}
+                                                </span>
+                                            @else
+                                                <span class="px-2 py-0.5 text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md whitespace-nowrap w-fit">
+                                                    {{ $act->project->name ?? 'Unassigned' }}
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td class="py-3 px-3.5 font-bold text-slate-900">
-                                        <a href="{{ route('programmes.activities.show', $act->token) }}" class="hover:text-blue-600 transition">
+                                    <td class="py-3 px-3.5">
+                                        <a href="{{ route('programmes.activities.show', $act->token) }}" class="font-bold text-slate-900 hover:text-blue-600 transition block">
                                             {{ $act->activity_title }}
                                         </a>
+                                        @if($act->venue)
+                                            <div class="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
+                                                <span class="text-slate-400">📍 {{ $act->venue_or_location_label }}:</span>
+                                                <span>{{ $act->venue }}</span>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td class="py-3 px-3.5 text-slate-600 max-w-xs truncate">
                                         @if(!empty($pts))
@@ -888,15 +946,35 @@
                     @foreach($projects as $p)
                     <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs hover:border-blue-300 transition flex flex-col justify-between space-y-4">
                         <div class="space-y-2.5">
-                            <div class="flex items-start justify-between gap-2">
-                                <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
-                                    {{ $p->code ?: 'PROJECT' }}
-                                </span>
+                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
+                                        {{ $p->code ?: 'PROJECT' }}
+                                    </span>
+                                    @if($p->is_department)
+                                        <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 rounded-md flex items-center gap-1" title="Department / Program Area">
+                                            <span>🏢</span> Dept
+                                        </span>
+                                    @endif
+                                    @if($p->parent)
+                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded-md flex items-center gap-1" title="Sub-project under {{ $p->parent->name }}">
+                                            <span>↳</span> {{ $p->parent->name }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <span class="text-[11px] font-bold {{ $p->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
                                     ● {{ ucfirst($p->status) }}
                                 </span>
                             </div>
                             <h4 class="text-sm font-bold text-slate-900 leading-snug">{{ $p->name }}</h4>
+                            @if($p->is_department && $p->children->isNotEmpty())
+                                <div class="text-[11px] font-semibold text-purple-700 flex items-center gap-1 flex-wrap">
+                                    <span class="text-slate-400 font-normal">Sub-Projects:</span>
+                                    @foreach($p->children as $child)
+                                        <span class="px-1.5 py-0.5 bg-purple-50 border border-purple-200 rounded text-[10px] text-purple-800">{{ $child->name }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
                             <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">{{ $p->description ?: 'Community development and youth empowerment programming.' }}</p>
                             
                             <div class="pt-2 text-[11px] text-slate-600 space-y-1">
@@ -931,7 +1009,7 @@
 
                             @if($isSuperAdmin)
                             <div class="flex items-center gap-1">
-                                <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Project">
+                                <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, {{ $p->is_department ? 1 : 0 }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Project">
                                     ⚙️
                                 </button>
                                 <form action="{{ route('programmes.projects.toggle_status', $p->id) }}" method="POST" class="inline">
@@ -1143,6 +1221,32 @@
                 <input type="text" name="name" required placeholder="e.g. Disability Sports &amp; Inclusion" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
             </div>
 
+            <!-- Department & Hierarchy Settings -->
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="create-p-is-department" name="is_department" value="1" class="rounded text-purple-600 focus:ring-purple-500">
+                    <label for="create-p-is-department" class="text-xs font-bold text-slate-800 cursor-pointer">
+                        🏢 Acts as a Department / Program Area
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 pl-6">
+                    Check this if this initiative groups other sub-projects (e.g. <em>Digital Skills</em> containing Ehub, Going Beyond, Secondary School).
+                </p>
+
+                <div class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
+                    <select name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone / Top-Level Project --</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}">
+                                🏢 {{ $dept->name }} {{ $dept->is_department ? '(Department)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Project Code</label>
@@ -1197,6 +1301,32 @@
             <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Project Name <span class="text-rose-500">*</span></label>
                 <input type="text" id="edit-p-name" name="name" required class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+            </div>
+
+            <!-- Department & Hierarchy Settings -->
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="edit-p-is-department" name="is_department" value="1" class="rounded text-purple-600 focus:ring-purple-500">
+                    <label for="edit-p-is-department" class="text-xs font-bold text-slate-800 cursor-pointer">
+                        🏢 Acts as a Department / Program Area
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 pl-6">
+                    Check this if this initiative groups other sub-projects.
+                </p>
+
+                <div class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
+                    <select id="edit-p-parent-id" name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone / Top-Level Project --</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}" class="edit-p-dept-opt-{{ $dept->id }}">
+                                🏢 {{ $dept->name }} {{ $dept->is_department ? '(Department)' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -1372,7 +1502,7 @@
 </div>
 
 <script>
-function openEditProjectModal(id, name, code, location, description, status, userIds) {
+function openEditProjectModal(id, name, code, location, description, status, userIds, parentId, isDepartment) {
     document.getElementById('edit-project-form').action = '/programmes-meeting/projects/' + id;
     document.getElementById('delete-project-form').action = '/programmes-meeting/projects/' + id;
     document.getElementById('delete-project-btn').onclick = function() {
@@ -1386,6 +1516,13 @@ function openEditProjectModal(id, name, code, location, description, status, use
     document.getElementById('edit-p-location').value = location || '';
     document.getElementById('edit-p-desc').value = description || '';
     document.getElementById('edit-p-status').value = status || 'active';
+    document.getElementById('edit-p-is-department').checked = !!isDepartment;
+
+    const parentSelect = document.getElementById('edit-p-parent-id');
+    Array.from(parentSelect.options).forEach(opt => {
+        opt.disabled = (opt.value && parseInt(opt.value) === parseInt(id));
+    });
+    parentSelect.value = parentId || '';
 
     // Checkboxes
     const allCbs = document.querySelectorAll('#edit-user-checkboxes input[type="checkbox"]');

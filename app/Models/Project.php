@@ -15,6 +15,73 @@ class Project extends Model
 
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'is_department' => 'boolean',
+    ];
+
+    /**
+     * Parent department or umbrella project.
+     */
+    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'parent_id');
+    }
+
+    /**
+     * Sub-projects belonging to this department / umbrella initiative.
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Project::class, 'parent_id')->orderBy('name');
+    }
+
+    /**
+     * Alias for children sub-projects.
+     */
+    public function subProjects(): HasMany
+    {
+        return $this->children();
+    }
+
+    /**
+     * Check if this project acts as a Department or has sub-projects.
+     */
+    public function isDepartment(): bool
+    {
+        return (bool) ($this->is_department || $this->children()->exists());
+    }
+
+    /**
+     * Check if this project is a sub-project under a department.
+     */
+    public function isSubProject(): bool
+    {
+        return !empty($this->parent_id);
+    }
+
+    /**
+     * Get array of IDs including this project and all its sub-projects.
+     */
+    public function descendantProjectIds(): array
+    {
+        $ids = [$this->id];
+        foreach ($this->children as $child) {
+            $ids[] = $child->id;
+        }
+        return $ids;
+    }
+
+    /**
+     * Full hierarchical display name.
+     */
+    public function getHierarchyNameAttribute(): string
+    {
+        if ($this->parent) {
+            return "{$this->parent->name} ↳ {$this->name}";
+        }
+        return $this->isDepartment() ? "{$this->name} (Department)" : $this->name;
+    }
+
     /**
      * Users assigned to this project.
      */
@@ -64,7 +131,24 @@ class Project extends Model
     }
 
     /**
+     * Scope for departments / parent projects.
+     */
+    public function scopeDepartments(Builder $query): Builder
+    {
+        return $query->where('is_department', true)->orWhereNull('parent_id');
+    }
+
+    /**
+     * Scope for subprojects.
+     */
+    public function scopeSubProjects(Builder $query): Builder
+    {
+        return $query->whereNotNull('parent_id');
+    }
+
+    /**
      * Scope projects accessible by a specific user.
+     * Inherits access if user is assigned directly or to parent department.
      */
     public function scopeForUser(Builder $query, User $user): Builder
     {
@@ -72,8 +156,12 @@ class Project extends Model
             return $query;
         }
 
-        return $query->whereHas('users', function ($q) use ($user) {
-            $q->where('users.id', $user->id);
+        return $query->where(function ($q) use ($user) {
+            $q->whereHas('users', function ($uq) use ($user) {
+                $uq->where('users.id', $user->id);
+            })->orWhereHas('parent.users', function ($pq) use ($user) {
+                $pq->where('users.id', $user->id);
+            });
         });
     }
 

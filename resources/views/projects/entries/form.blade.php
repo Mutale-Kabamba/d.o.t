@@ -132,13 +132,21 @@ $rawLocation = (string)old('location', $activity->location ?? '');
 if (str_starts_with($rawLocation, 'http://') || str_starts_with($rawLocation, 'https://')) {
     $rawLocation = '';
 }
+$rawActivityType = (string)old('activity_type', $activity->activity_type ?? 'activity');
+$rawPeriodType = (string)old('period_type', $activity->period_type ?? 'single_day');
+$rawStartDate = (string)old('start_date', (isset($activity) && $activity && $activity->start_date ? $activity->start_date->toDateString() : (isset($activity) && $activity && $activity->activity_date ? $activity->activity_date->toDateString() : now()->toDateString())));
+$rawEndDate = (string)old('end_date', (isset($activity) && $activity && $activity->end_date ? $activity->end_date->toDateString() : ''));
+$rawPeriodCadence = (string)old('period_cadence', $activity->period_cadence ?? '');
+$isOngoingType = in_array(strtolower($rawActivityType), ['training', 'class', 'session']);
 
 $entryFormConfig = [
     'isEdit' => (bool)$isEdit,
     'activityToken' => (string)($activity->token ?? ''),
     'projectId' => (string)($activity->project_id ?? $preselectedProject->id ?? ''),
     'activityTitle' => (string)old('activity_title', $activity->activity_title ?? ''),
-    'activityDate' => (string)old('activity_date', (isset($activity) && $activity && $activity->activity_date ? $activity->activity_date->toDateString() : now()->toDateString())),
+    'activityType' => $rawActivityType,
+    'activityDate' => $rawStartDate,
+    'activityEndDate' => $rawEndDate,
     'activityLocation' => $rawLocation,
     'initialPillars' => $initialPillars,
 ];
@@ -204,50 +212,182 @@ $entryFormConfig = [
             @endif
 
             <!-- 1. Activity Overview & Metadata Card -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                     <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
                         Activity Overview &amp; Scoping
                     </h2>
-                    <span class="text-[11px] font-semibold text-slate-500">Step 1: Activity Context</span>
+                    <span id="activity-nature-pill" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full {{ $isOngoingType ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200' }}">
+                        {{ $isOngoingType ? 'Ongoing / Multi-Day Schedule' : 'Single-Day Activity' }}
+                    </span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Row 1: Project (wider) & Date -->
-                    <div class="md:col-span-8">
+                    <!-- Project Selector (grouped by Departments and Sub-projects) -->
+                    <div class="md:col-span-12">
                         <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Assigned Project <span class="text-rose-500">*</span>
+                            Assigned Project / Department <span class="text-rose-500">*</span>
                         </label>
+                        @php
+                            $selectedProjId = old('project_id', $activity->project_id ?? $preselectedProject->id ?? '');
+                            $departments = $projects->filter(fn($p) => $p->isDepartment() || $p->children->isNotEmpty());
+                            $deptIds = [];
+                            foreach ($departments as $d) {
+                                $deptIds[] = $d->id;
+                                foreach ($d->children as $c) {
+                                    $deptIds[] = $c->id;
+                                }
+                            }
+                            $otherProjects = $projects->filter(fn($p) => !in_array($p->id, $deptIds));
+                        @endphp
                         <select name="project_id" id="activity_project_id" required class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
-                            @foreach($projects as $p)
-                                <option value="{{ $p->id }}" {{ (old('project_id', $activity->project_id ?? $preselectedProject->id ?? '') == $p->id) ? 'selected' : '' }}>
-                                    {{ $p->name }} ({{ $p->code ?: 'PIFZ' }})
-                                </option>
+                            @foreach($departments as $dept)
+                                <optgroup label="🏢 Department: {{ $dept->name }}">
+                                    <option value="{{ $dept->id }}" {{ $selectedProjId == $dept->id ? 'selected' : '' }}>
+                                        {{ $dept->name }} (Department Level / General)
+                                    </option>
+                                    @foreach($dept->children as $child)
+                                        <option value="{{ $child->id }}" {{ $selectedProjId == $child->id ? 'selected' : '' }}>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;↳ {{ $child->name }} ({{ $child->code ?: 'PIFZ' }})
+                                        </option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
+
+                            @if($otherProjects->isNotEmpty())
+                                <optgroup label="📁 Projects &amp; Initiatives">
+                                    @foreach($otherProjects as $p)
+                                        <option value="{{ $p->id }}" {{ $selectedProjId == $p->id ? 'selected' : '' }}>
+                                            {{ $p->name }} ({{ $p->code ?: 'PIFZ' }})
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
                         </select>
                     </div>
 
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Activity Date <span class="text-rose-500">*</span>
+                    <!-- Type of Activity Selector -->
+                    <div class="md:col-span-12">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                            <span>Type of Activity <span class="text-rose-500">*</span></span>
+                            <span class="text-[10px] text-slate-400 font-medium">Select type to configure duration and location</span>
                         </label>
-                        <input type="date" name="activity_date" id="activity_date_input" value="{{ old('activity_date', (isset($activity) && $activity && $activity->activity_date ? $activity->activity_date->toDateString() : now()->toDateString())) }}" required class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <!-- Option 1: Activity -->
+                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'activity' ? 'border-blue-500 bg-blue-50/60 shadow-xs ring-2 ring-blue-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="activity">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                                        ⚡ Activity
+                                    </span>
+                                    <input type="radio" name="activity_type" value="activity" {{ $rawActivityType === 'activity' ? 'checked' : '' }} onchange="handleActivityTypeChange('activity')" class="rounded-full text-blue-600 focus:ring-blue-500">
+                                </div>
+                                <p class="text-[10px] text-slate-500 leading-tight">Single-day event, sports match, or community outreach</p>
+                            </label>
+
+                            <!-- Option 2: Training -->
+                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'training' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="training">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                                        🎓 Training
+                                    </span>
+                                    <input type="radio" name="activity_type" value="training" {{ $rawActivityType === 'training' ? 'checked' : '' }} onchange="handleActivityTypeChange('training')" class="rounded-full text-purple-600 focus:ring-purple-500">
+                                </div>
+                                <p class="text-[10px] text-slate-500 leading-tight">Multi-day bootcamp, workshop, or vocational training</p>
+                            </label>
+
+                            <!-- Option 3: Class -->
+                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'class' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="class">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                                        📚 Class
+                                    </span>
+                                    <input type="radio" name="activity_type" value="class" {{ $rawActivityType === 'class' ? 'checked' : '' }} onchange="handleActivityTypeChange('class')" class="rounded-full text-purple-600 focus:ring-purple-500">
+                                </div>
+                                <p class="text-[10px] text-slate-500 leading-tight">Ongoing academic / curriculum classes across a period</p>
+                            </label>
+
+                            <!-- Option 4: Session -->
+                            <label class="activity-type-btn cursor-pointer p-3 rounded-xl border transition flex flex-col justify-between gap-1.5 {{ $rawActivityType === 'session' ? 'border-purple-500 bg-purple-50/60 shadow-xs ring-2 ring-purple-500/20' : 'border-slate-200 bg-slate-50 hover:bg-white' }}" data-type="session">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                                        👥 Session
+                                    </span>
+                                    <input type="radio" name="activity_type" value="session" {{ $rawActivityType === 'session' ? 'checked' : '' }} onchange="handleActivityTypeChange('session')" class="rounded-full text-purple-600 focus:ring-purple-500">
+                                </div>
+                                <p class="text-[10px] text-slate-500 leading-tight">Recurring circles, coaching clinics, or mentorship series</p>
+                            </label>
+                        </div>
                     </div>
 
-                    <!-- Row 2: Activity Title & Venue paired side-by-side -->
+                    <!-- Row 3: Activity Title -->
                     <div class="md:col-span-7">
                         <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Activity Title <span class="text-rose-500">*</span>
+                            <span id="activity-title-label">Activity Title</span> <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" name="activity_title" id="activity_title_input" value="{{ old('activity_title', $activity->activity_title ?? '') }}" placeholder="e.g. Weekly Health Match &amp; Coach Clinic" required class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
                     </div>
 
+                    <!-- Venue (for activities) or Location (for ongoing sessions/trainings/classes) -->
                     <div class="md:col-span-5">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">
-                            Venue
+                        <label class="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                            <span id="venue-location-label">{{ $isOngoingType ? 'Location' : 'Venue' }}</span>
+                            <span id="venue-location-hint" class="text-[10px] font-normal text-slate-400">
+                                {{ $isOngoingType ? 'Facility / Lab Room / Online' : 'Event Grounds / Stadium' }}
+                            </span>
                         </label>
-                        <input type="text" name="location" id="activity_location_input" value="{{ $rawLocation }}" placeholder="e.g. Maramba Community Grounds, Livingstone" autocomplete="off" data-lpignore="true" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
+                        <input type="text" name="location" id="activity_location_input" value="{{ $rawLocation }}" placeholder="{{ $isOngoingType ? 'e.g. Digital Skills Innovation Hub - Lab 1, Livingstone or Online' : 'e.g. Maramba Community Grounds, Livingstone' }}" autocomplete="off" data-lpignore="true" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
+                    </div>
+
+                    <!-- Single Day Container -->
+                    <div id="single-day-period-container" class="md:col-span-12 {{ $isOngoingType ? 'hidden' : '' }}">
+                        <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div class="space-y-0.5">
+                                <label class="block text-xs font-bold text-slate-800">
+                                    Activity Date <span class="text-rose-500">*</span>
+                                </label>
+                                <p class="text-[11px] text-slate-500">The specific day this activity was executed.</p>
+                            </div>
+                            <div class="w-full sm:w-64">
+                                <input type="date" name="activity_date" id="activity_date_input" value="{{ $rawStartDate }}" required class="w-full text-xs font-bold rounded-xl border-slate-300 bg-white focus:border-blue-500 focus:ring-blue-500 p-2.5 border">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Day / Ongoing Period Container -->
+                    <div id="ongoing-period-container" class="md:col-span-12 {{ $isOngoingType ? '' : 'hidden' }} space-y-3">
+                        <div class="bg-purple-50/50 border border-purple-100 rounded-2xl p-4 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-100 pb-2.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-black text-purple-900 uppercase tracking-wider">🗓️ Period &amp; Schedule Selection</span>
+                                    <span class="text-[10px] font-semibold text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md">Ongoing Course / Series</span>
+                                </div>
+                                <div id="period-duration-badge" class="text-xs font-bold px-2.5 py-1 rounded-xl bg-purple-600 text-white shadow-xs">
+                                    Duration: Calculating...
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                                        Period Start Date <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="date" name="start_date" id="start_date_input" value="{{ $rawStartDate }}" onchange="syncDates()" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-white focus:border-purple-500 focus:ring-purple-500 p-2.5 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                                        Period End Date <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="date" name="end_date" id="end_date_input" value="{{ $rawEndDate }}" onchange="syncDates()" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-white focus:border-purple-500 focus:ring-purple-500 p-2.5 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">
+                                        Cadence / Schedule Pattern
+                                    </label>
+                                    <input type="text" name="period_cadence" id="period_cadence_input" value="{{ $rawPeriodCadence }}" placeholder="e.g. Weekly (4 Weeks) or Mon/Wed/Fri" class="w-full text-xs font-semibold rounded-xl border-slate-300 bg-white focus:border-purple-500 focus:ring-purple-500 p-2.5 border">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1523,6 +1663,114 @@ function saveDraftManual() {
     } catch(e) {}
 }
 
+// --- Activity Type, Period, and Venue/Location dynamic handler ---
+function handleActivityTypeChange(type) {
+    const isOngoing = (type === 'training' || type === 'class' || type === 'session');
+    
+    // Update active styles on radio buttons
+    document.querySelectorAll('.activity-type-btn').forEach(btn => {
+        const btnType = btn.getAttribute('data-type');
+        const radio = btn.querySelector('input[type="radio"]');
+        if (btnType === type) {
+            if (radio) radio.checked = true;
+            btn.classList.remove('border-slate-200', 'bg-slate-50');
+            if (isOngoing) {
+                btn.classList.add('border-purple-500', 'bg-purple-50/60', 'shadow-xs', 'ring-2', 'ring-purple-500/20');
+                btn.classList.remove('border-blue-500', 'bg-blue-50/60', 'ring-blue-500/20');
+            } else {
+                btn.classList.add('border-blue-500', 'bg-blue-50/60', 'shadow-xs', 'ring-2', 'ring-blue-500/20');
+                btn.classList.remove('border-purple-500', 'bg-purple-50/60', 'ring-purple-500/20');
+            }
+        } else {
+            btn.classList.remove('border-blue-500', 'bg-blue-50/60', 'border-purple-500', 'bg-purple-50/60', 'shadow-xs', 'ring-2', 'ring-blue-500/20', 'ring-purple-500/20');
+            btn.classList.add('border-slate-200', 'bg-slate-50');
+        }
+    });
+
+    // Update nature pill
+    const naturePill = document.getElementById('activity-nature-pill');
+    if (naturePill) {
+        if (isOngoing) {
+            naturePill.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200';
+            naturePill.textContent = 'Ongoing / Multi-Day Schedule';
+        } else {
+            naturePill.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200';
+            naturePill.textContent = 'Single-Day Activity';
+        }
+    }
+
+    // Toggle Period Containers
+    const singleContainer = document.getElementById('single-day-period-container');
+    const ongoingContainer = document.getElementById('ongoing-period-container');
+    if (singleContainer && ongoingContainer) {
+        if (isOngoing) {
+            singleContainer.classList.add('hidden');
+            ongoingContainer.classList.remove('hidden');
+        } else {
+            singleContainer.classList.remove('hidden');
+            ongoingContainer.classList.add('hidden');
+        }
+    }
+
+    // Toggle Venue vs Location
+    const venueLocLabel = document.getElementById('venue-location-label');
+    const venueLocHint = document.getElementById('venue-location-hint');
+    const locInput = document.getElementById('activity_location_input');
+    if (venueLocLabel) {
+        venueLocLabel.textContent = isOngoing ? 'Location' : 'Venue';
+    }
+    if (venueLocHint) {
+        venueLocHint.textContent = isOngoing ? 'Facility / Lab Room / Online' : 'Event Grounds / Stadium';
+    }
+    if (locInput) {
+        locInput.placeholder = isOngoing
+            ? 'e.g. Digital Skills Innovation Hub - Lab 1, Livingstone or Online'
+            : 'e.g. Maramba Community Grounds, Livingstone';
+    }
+
+    syncDates();
+}
+
+function syncDates() {
+    const singleDateInput = document.getElementById('activity_date_input');
+    const startDateInput = document.getElementById('start_date_input');
+    const endDateInput = document.getElementById('end_date_input');
+    const durationBadge = document.getElementById('period-duration-badge');
+
+    // Sync values between single and start date
+    if (startDateInput && singleDateInput) {
+        if (startDateInput.value) {
+            singleDateInput.value = startDateInput.value;
+        } else if (singleDateInput.value) {
+            startDateInput.value = singleDateInput.value;
+        }
+    }
+
+    // Calculate duration badge
+    if (durationBadge && startDateInput && endDateInput) {
+        if (startDateInput.value && endDateInput.value) {
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+            const diffTime = end - start;
+            if (diffTime >= 0) {
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                const weeks = Math.ceil(diffDays / 7);
+                const text = diffDays >= 14
+                    ? `${weeks} Weeks (${diffDays} days)`
+                    : `${diffDays} Day${diffDays > 1 ? 's' : ''}`;
+                durationBadge.textContent = `⏱️ Duration: ${text}`;
+                durationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-xl bg-purple-600 text-white shadow-xs';
+            } else {
+                durationBadge.textContent = '⚠️ End date must be after start date';
+                durationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-xl bg-rose-600 text-white shadow-xs';
+            }
+        } else if (startDateInput.value) {
+            durationBadge.textContent = '⏱️ Set End Date';
+            durationBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-xl bg-purple-100 text-purple-800';
+        }
+    }
+}
+
 // Initial count calculation and input event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Clear unexpected URL in location input if autofilled
@@ -1536,6 +1784,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     updatePillarCounts();
+    syncDates();
 });
 </script>
 @endsection
