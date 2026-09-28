@@ -456,4 +456,96 @@ class DepartmentsAndActivityPeriodTest extends TestCase
         $resProjector->assertSee('Sessions (Literacy): 20 sessions done');
         $resProjector->assertSee('Sessions (After Class): 20 sessions done');
     }
+
+    /**
+     * Test separate Parent Projects tab and card display differentiation between Parent, Child, and Standalone.
+     */
+    public function test_parent_projects_tab_and_card_display_differentiation(): void
+    {
+        $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+
+        // 1. Setup Parent Department, Child sub-projects, and Standalone project
+        $dept = Project::create([
+            'name' => 'Digital Skills',
+            'code' => 'DS',
+            'is_department' => true,
+            'status' => 'active',
+        ]);
+
+        $child1 = Project::create([
+            'name' => 'Ehub',
+            'code' => 'EH',
+            'parent_id' => $dept->id,
+            'is_department' => false,
+            'status' => 'active',
+        ]);
+
+        $child2 = Project::create([
+            'name' => 'Going Beyond',
+            'code' => 'GB',
+            'parent_id' => $dept->id,
+            'is_department' => false,
+            'status' => 'active',
+        ]);
+
+        $standalone = Project::create([
+            'name' => 'Community Library',
+            'code' => 'CL',
+            'is_department' => false,
+            'status' => 'active',
+        ]);
+
+        // Log an activity for child1
+        ActivityEntry::create([
+            'project_id' => $child1->id,
+            'user_id' => $superAdmin->id,
+            'activity_title' => 'Web Dev Workshop',
+            'activity_date' => '2026-06-15',
+            'reporting_period' => 'Quarter 2 2026',
+        ]);
+
+        // 2. Test Hub tab=departments (Separate Parent Projects tab)
+        $resDeptTab = $this->actingAs($superAdmin)->get(route('programmes.hub', ['tab' => 'departments']));
+        $resDeptTab->assertStatus(200);
+        $resDeptTab->assertSee('Parent Projects Directory');
+        $resDeptTab->assertSee('PARENT DEPARTMENT');
+        $resDeptTab->assertSee('Digital Skills');
+        $resDeptTab->assertSee('↳ Ehub');
+        $resDeptTab->assertSee('↳ Going Beyond');
+        $resDeptTab->assertSee('Project Department Deck');
+        $resDeptTab->assertSee('2 Sub-Projects');
+
+        // 3. Test Hub tab=projects card differentiation
+        $resProjTab = $this->actingAs($superAdmin)->get(route('programmes.hub', ['tab' => 'projects']));
+        $resProjTab->assertStatus(200);
+        // Parent card cues
+        $resProjTab->assertSee('PARENT DEPARTMENT');
+        $resProjTab->assertSee('2 Sub-Projects');
+        // Child card cues
+        $resProjTab->assertSee('Sub-Project');
+        $resProjTab->assertSee('Ehub');
+        $resProjTab->assertSee('Going Beyond');
+        // Standalone card cues
+        $resProjTab->assertSee('Standalone Project');
+        $resProjTab->assertSee('Community Library');
+
+        // 4. Test Admin Teams type filters
+        $resAdminDept = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'departments']));
+        $resAdminDept->assertStatus(200);
+        $resAdminDept->assertSee('Digital Skills');
+        $resAdminDept->assertDontSee('Community Library');
+
+        $resAdminChild = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'children']));
+        $resAdminChild->assertStatus(200);
+        $resAdminChild->assertSee('Ehub');
+        $resAdminChild->assertSee('Going Beyond');
+        $resAdminChild->assertSee('Sub-Project');
+        $resAdminChild->assertDontSee('Community Library');
+
+        $resAdminStand = $this->actingAs($superAdmin)->get(route('admin.teams.index', ['type' => 'standalone']));
+        $resAdminStand->assertStatus(200);
+        $resAdminStand->assertSee('Community Library');
+        $resAdminStand->assertSee('Standalone Project');
+    }
 }
+

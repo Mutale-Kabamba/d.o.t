@@ -72,6 +72,30 @@ class Project extends Model
     }
 
     /**
+     * Total activities logged across this project and all its child sub-projects.
+     */
+    public function totalDescendantActivitiesCount(): int
+    {
+        return ActivityEntry::whereIn('project_id', $this->descendantProjectIds())->count();
+    }
+
+    /**
+     * Check if project is a child sub-project.
+     */
+    public function isChild(): bool
+    {
+        return !empty($this->parent_id) && !$this->is_department;
+    }
+
+    /**
+     * Check if project is standalone (not a department and has no parent).
+     */
+    public function isStandalone(): bool
+    {
+        return empty($this->parent_id) && !$this->is_department;
+    }
+
+    /**
      * Full hierarchical display name.
      */
     public function getHierarchyNameAttribute(): string

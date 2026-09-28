@@ -116,7 +116,15 @@
                 <option value="archived" {{ $selectedStatus === 'archived' ? 'selected' : '' }}>Archived Only</option>
             </select>
 
-            @if($search || $selectedStatus !== 'all')
+            <!-- Hierarchy Type Filter -->
+            <select name="type" onchange="this.form.submit()" class="text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all" {{ ($selectedType ?? 'all') === 'all' ? 'selected' : '' }}>All Types</option>
+                <option value="departments" {{ ($selectedType ?? 'all') === 'departments' ? 'selected' : '' }}>🏢 Parent Departments ({{ $totalDepartments }})</option>
+                <option value="children" {{ ($selectedType ?? 'all') === 'children' ? 'selected' : '' }}>↳ Child Sub-Projects</option>
+                <option value="standalone" {{ ($selectedType ?? 'all') === 'standalone' ? 'selected' : '' }}>📁 Standalone Projects</option>
+            </select>
+
+            @if($search || $selectedStatus !== 'all' || ($selectedType ?? 'all') !== 'all')
                 <a href="{{ route('admin.teams.index') }}" class="px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 rounded-xl transition">
                     Clear Filters
                 </a>
@@ -132,129 +140,334 @@
         </button>
     </div>
 
-    <!-- Teams & Projects Grid -->
+    <!-- Teams & Projects Grid with Distinct Differentiated Card Displays -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @forelse($teams as $team)
-        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-300 transition flex flex-col justify-between p-5 space-y-4">
-            <div class="space-y-3">
-                <!-- Top Badges -->
-                <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
-                            {{ $team->code ?: 'PROJECT' }}
+            @php
+                $isDept = (bool) $team->is_department;
+                $isChild = !empty($team->parent_id) && !$team->is_department;
+            @endphp
+
+            @if($isDept)
+            <!-- ==================== PARENT DEPARTMENT CARD ==================== -->
+            <div class="bg-linear-to-br from-white via-white to-purple-50/25 rounded-2xl border-2 border-purple-300 shadow-xs hover:border-purple-400 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+                <div class="space-y-3">
+                    <!-- Top Badges -->
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-md shadow-2xs flex items-center gap-1">
+                                <span>🏢</span> PARENT DEPT
+                            </span>
+                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md">
+                                {{ $team->code ?: 'DEPT' }}
+                            </span>
+                            <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
+                                📁 {{ $team->children->count() }} Sub-Projects
+                            </span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
+                            <span>●</span>
+                            <span>{{ ucfirst($team->status) }}</span>
                         </span>
-                        @if($team->is_department)
-                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 rounded-md flex items-center gap-1" title="Department / Program Area">
-                                <span>🏢</span> Dept
-                            </span>
+                    </div>
+
+                    <!-- Team Title & Description -->
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
+                        @if($team->children->isNotEmpty())
+                            <div class="mt-2 bg-purple-50/60 border border-purple-100 rounded-xl p-2.5 space-y-1">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-purple-700 block">Sub-Projects ({{ $team->children->count() }}):</span>
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach($team->children as $child)
+                                        <span class="px-2 py-0.5 bg-white border border-purple-200 rounded-md text-[10px] font-bold text-purple-900 shadow-2xs">
+                                            ↳ {{ $child->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endif
-                        @if($team->parent)
-                            <span class="px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded-md flex items-center gap-1" title="Sub-project under {{ $team->parent->name }}">
-                                <span>↳</span> {{ $team->parent->name }}
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Umbrella department coordinating initiatives and reporting.' }}</p>
+                    </div>
+
+                    <!-- Team Staff & Location Details -->
+                    <div class="pt-2 border-t border-purple-100 text-xs space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-purple-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Department Staff / Leads</span>
+                                @if($team->users->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        @foreach($team->users as $u)
+                                            <span class="inline-block px-2 py-0.5 rounded-md bg-purple-50 text-purple-800 text-[10px] font-bold border border-purple-200">
+                                                {{ $u->name }} <span class="font-normal text-purple-600">({{ $u->role === 'project_officer' ? 'Lead' : 'Staff' }})</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-[11px] text-slate-400 italic">No direct oversight staff</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                <span>{{ $team->location ?: 'Livingstone' }}</span>
                             </span>
-                        @endif
+
+                            <span class="font-bold text-purple-700">
+                                {{ $team->totalDescendantActivitiesCount() }} activities (all sub-projects)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Footer -->
+                <div class="pt-3 border-t border-purple-100 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1">
+                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition shadow-2xs" title="Project this department with all sub-projects">
+                            ▶ Project Dept
+                        </a>
+                        <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
+                            PDF
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, 1, null)" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg cursor-pointer" title="Edit Department Details">
+                            ⚙️
+                        </button>
+                        <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Department' : 'Activate Department' }}">
+                                {{ $team->status === 'active' ? '📁' : '⚡' }}
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete department \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Department">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @elseif($isChild)
+            <!-- ==================== CHILD SUB-PROJECT CARD ==================== -->
+            <div class="bg-white rounded-2xl border-l-4 border-l-purple-500 border-t border-r border-b border-slate-200/90 shadow-xs hover:border-l-purple-600 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+                <div class="space-y-3">
+                    <!-- Top Badges -->
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-md flex items-center gap-1">
+                                    <span>↳</span> Sub-Project
+                                </span>
+                                <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
+                                    {{ $team->code ?: 'CHILD' }}
+                                </span>
+                            </div>
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
+                                <span>●</span>
+                                <span>{{ ucfirst($team->status) }}</span>
+                            </span>
+                        </div>
+
+                        <!-- Parent Breadcrumb -->
+                        <div class="px-2.5 py-1 text-[11px] font-black bg-purple-50 text-purple-900 border border-purple-200/80 rounded-lg flex items-center gap-1.5 truncate" title="Sub-project under parent department {{ $team->parent->name }}">
+                            <span class="text-xs">🏢</span>
+                            <span class="text-purple-700 font-bold truncate">{{ $team->parent->name }}</span>
+                            <span class="text-purple-400">↳</span>
+                            <span class="text-purple-950 font-black truncate">{{ $team->name }}</span>
+                        </div>
+
                         @if($team->isLinked())
                             @php
                                 $linkedSiblings = $team->linkedSiblingProjects()->where('id', '!=', $team->id);
                             @endphp
-                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 rounded-md flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
-                                <span>🔗</span> Linked ({{ $linkedSiblings->pluck('name')->implode(', ') }})
-                            </span>
+                            <div class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200 rounded-lg flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                <span>🔗</span>
+                                <span>Linked Slide: {{ $linkedSiblings->pluck('name')->implode(', ') }}</span>
+                            </div>
                         @endif
                     </div>
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
-                        <span>●</span>
-                        <span>{{ ucfirst($team->status) }}</span>
-                    </span>
-                </div>
 
-                <!-- Team Title & Description -->
-                <div>
-                    <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
-                    @if($team->is_department && $team->children->isNotEmpty())
-                        <div class="mt-1 text-[11px] font-semibold text-purple-700 flex items-center gap-1 flex-wrap">
-                            <span class="text-slate-400 font-normal">Sub-Projects:</span>
-                            @foreach($team->children as $child)
-                                <span class="px-1.5 py-0.5 bg-purple-50 border border-purple-200 rounded text-[10px] text-purple-800">{{ $child->name }}</span>
-                            @endforeach
-                        </div>
-                    @endif
-                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Community development and youth empowerment programming.' }}</p>
-                </div>
-
-                <!-- Team Staff & Location Details -->
-                <div class="pt-2 border-t border-slate-100 text-xs space-y-2">
-                    <div class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        <div class="min-w-0 flex-1">
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
-                            @if($team->users->isNotEmpty())
-                                <div class="flex flex-wrap gap-1 mt-1">
-                                    @foreach($team->users as $u)
-                                        <span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[10px] font-bold border border-slate-200">
-                                            {{ $u->name }} <span class="font-normal text-slate-500">({{ $u->role === 'project_officer' ? 'Lead' : 'Staff' }})</span>
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @else
-                                <span class="text-[11px] text-rose-500 font-medium italic">No staff assigned</span>
-                            @endif
-                        </div>
+                    <!-- Team Title & Description -->
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Community development and youth empowerment programming.' }}</p>
                     </div>
 
-                    <div class="flex items-center justify-between pt-1 text-[11px] text-slate-500">
-                        <span class="flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <!-- Team Staff & Location Details -->
+                    <div class="pt-2 border-t border-slate-100 text-xs space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
-                            <span>{{ $team->location ?: 'Livingstone, Zambia' }}</span>
-                        </span>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
+                                @if($team->users->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        @foreach($team->users as $u)
+                                            <span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[10px] font-bold border border-slate-200">
+                                                {{ $u->name }} <span class="font-normal text-slate-500">({{ $u->role === 'project_officer' ? 'Lead' : 'Staff' }})</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-[11px] text-rose-500 font-medium italic">No staff assigned</span>
+                                @endif
+                            </div>
+                        </div>
 
-                        <span class="font-bold text-slate-700">
-                            {{ $team->activityEntries->count() }} activities
-                        </span>
+                        <div class="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                <span>{{ $team->location ?: 'Livingstone, Zambia' }}</span>
+                            </span>
+
+                            <span class="font-bold text-slate-700">
+                                {{ $team->activityEntries->count() }} activities
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Footer -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1">
+                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific team/project directly">
+                            ▶ Project
+                        </a>
+                        <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
+                            PDF
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, 0, {{ $team->isLinked() ? ($team->linkedSiblingProjects()->where('id', '!=', $team->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
+                            ⚙️
+                        </button>
+                        <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Team' : 'Activate Team' }}">
+                                {{ $team->status === 'active' ? '📁' : '⚡' }}
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Team/Project">
+                                🗑️
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <!-- Action Buttons Footer -->
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-1">
-                    <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific team/project directly">
-                        ▶ Project
-                    </a>
-                    <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
-                        PDF
-                    </a>
+            @else
+            <!-- ==================== STANDALONE PROJECT CARD ==================== -->
+            <div class="bg-white rounded-2xl border-l-4 border-l-blue-500 border-t border-r border-b border-slate-200/90 shadow-xs hover:border-l-blue-600 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+                <div class="space-y-3">
+                    <!-- Top Badges -->
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md flex items-center gap-1">
+                                <span>📁</span> Standalone Project
+                            </span>
+                            <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 rounded-md">
+                                {{ $team->code ?: 'PROJECT' }}
+                            </span>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
+                            <span>●</span>
+                            <span>{{ ucfirst($team->status) }}</span>
+                        </span>
+                    </div>
+
+                    <!-- Team Title & Description -->
+                    <div>
+                        <h3 class="text-sm font-black text-slate-900 leading-snug">{{ $team->name }}</h3>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ $team->description ?: 'Community development and youth empowerment programming.' }}</p>
+                    </div>
+
+                    <!-- Team Staff & Location Details -->
+                    <div class="pt-2 border-t border-slate-100 text-xs space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-slate-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <div class="min-w-0 flex-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
+                                @if($team->users->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1 mt-1">
+                                        @foreach($team->users as $u)
+                                            <span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 text-[10px] font-bold border border-slate-200">
+                                                {{ $u->name }} <span class="font-normal text-slate-500">({{ $u->role === 'project_officer' ? 'Lead' : 'Staff' }})</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-[11px] text-rose-500 font-medium italic">No staff assigned</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+                            <span class="flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                <span>{{ $team->location ?: 'Livingstone, Zambia' }}</span>
+                            </span>
+
+                            <span class="font-bold text-slate-700">
+                                {{ $team->activityEntries->count() }} activities
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-1">
-                    <!-- Edit Team -->
-                    <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, {{ $team->is_department ? 1 : 0 }}, {{ $team->isLinked() ? ($team->linkedSiblingProjects()->where('id', '!=', $team->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
-                        ⚙️
-                    </button>
+                <!-- Action Buttons Footer -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-1">
+                        <a href="{{ route('programmes.projects.projector', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition" title="Project this specific team/project directly">
+                            ▶ Project
+                        </a>
+                        <a href="{{ route('programmes.projects.export_pdf', $team->id) }}" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
+                            PDF
+                        </a>
+                    </div>
 
-                    <!-- Toggle Status -->
-                    <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
-                            {{ $team->status === 'active' ? '📁' : '⚡' }}
+                    <div class="flex items-center gap-1">
+                        <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, null, 0, null)" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
+                            ⚙️
                         </button>
-                    </form>
-
-                    <!-- Delete Team -->
-                    <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Team/Project">
-                            🗑️
-                        </button>
-                    </form>
+                        <form action="{{ route('admin.teams.toggle_status', $team->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="p-1.5 text-xs {{ $team->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $team->status === 'active' ? 'Archive Team' : 'Activate Team' }}">
+                                {{ $team->status === 'active' ? '📁' : '⚡' }}
+                            </button>
+                        </form>
+                        <form action="{{ route('admin.teams.destroy', $team->id) }}" method="POST" class="inline" onsubmit="return confirm('Permanently delete project \'{{ addslashes($team->name) }}\'? This will remove team linkages.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="p-1.5 text-xs text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg cursor-pointer" title="Delete Team/Project">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
+            @endif
         @empty
         <div class="col-span-full py-12 text-center text-slate-400 font-medium bg-white rounded-2xl border border-slate-200/90 p-8">
             No projects or teams found matching the filters.

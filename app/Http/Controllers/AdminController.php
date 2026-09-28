@@ -385,6 +385,7 @@ class AdminController extends Controller
     {
         $search = $request->query('q');
         $status = $request->query('status');
+        $type = $request->query('type', 'all');
 
         $query = Project::with(['users', 'officers', 'assistants', 'activityEntries', 'parent', 'children'])->latest();
 
@@ -399,6 +400,16 @@ class AdminController extends Controller
 
         if ($status && $status !== 'all') {
             $query->where('status', $status);
+        }
+
+        if ($type === 'departments') {
+            $query->where('is_department', true);
+        } elseif ($type === 'children' || $type === 'child') {
+            $query->where('is_department', false)->whereNotNull('parent_id');
+        } elseif ($type === 'standalone') {
+            $query->where('is_department', false)->whereNull('parent_id');
+        } elseif ($type === 'projects') {
+            $query->where('is_department', false);
         }
 
         $teams = $query->paginate(12)->withQueryString();
@@ -421,6 +432,7 @@ class AdminController extends Controller
             'departments' => $departments,
             'search' => $search,
             'selectedStatus' => $status ?? 'all',
+            'selectedType' => $type ?? 'all',
         ]);
     }
 
