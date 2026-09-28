@@ -457,7 +457,7 @@ class ProgrammesMeetingController extends Controller
         $this->ensureDatabaseReady();
 
         $user = Auth::user();
-        $projects = $user->isSuperAdmin()
+        $projects = $user->hasAdminAccess()
             ? Project::active()->orderBy('name')->get()
             : $user->projects()->where('status', 'active')->orderBy('name')->get();
 
@@ -486,7 +486,7 @@ class ProgrammesMeetingController extends Controller
             abort(403, 'Unauthorized. You are not assigned to this project.');
         }
 
-        $projects = $user->isSuperAdmin()
+        $projects = $user->hasAdminAccess()
             ? Project::active()->orderBy('name')->get()
             : $user->projects()->where('status', 'active')->orderBy('name')->get();
 
@@ -614,7 +614,7 @@ class ProgrammesMeetingController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        $projects = $user->isSuperAdmin()
+        $projects = $user->hasAdminAccess()
             ? Project::active()->orderBy('name')->get()
             : $user->projects()->where('status', 'active')->orderBy('name')->get();
 
@@ -722,13 +722,13 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Create new project.
+     * Super Admin / MEAL Officer: Create new project.
      */
     public function storeProject(Request $request): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can create projects.');
+        if (!$user || !$user->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can create projects.');
         }
 
         $validated = $request->validate([
@@ -756,13 +756,13 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Update project details and team assignments.
+     * Super Admin / MEAL Officer: Update project details and team assignments.
      */
     public function updateProject(Request $request, Project $project): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can edit projects.');
+        if (!$user || !$user->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can edit projects.');
         }
 
         $validated = $request->validate([
@@ -789,13 +789,13 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Toggle project status (active/archived).
+     * Super Admin / MEAL Officer: Toggle project status (active/archived).
      */
     public function toggleProjectStatus(Project $project): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can archive/restore projects.');
+        if (!$user || !$user->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can archive/restore projects.');
         }
 
         $newStatus = $project->status === 'active' ? 'archived' : 'active';
@@ -805,13 +805,13 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Delete project.
+     * Super Admin / MEAL Officer: Delete project.
      */
     public function destroyProject(Project $project): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can delete projects.');
+        if (!$user || !$user->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can delete projects.');
         }
 
         $name = $project->name;
@@ -822,12 +822,12 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Assign/unassign user to project.
+     * Super Admin / MEAL Officer: Assign/unassign user to project.
      */
     public function assignUserToProject(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
+        if (!$user || !$user->hasAdminAccess()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -914,13 +914,13 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Super Admin: Delete user account.
+     * Super Admin / MEAL Officer: Delete user account.
      */
     public function destroyUser(User $user): RedirectResponse
     {
         $currentUser = Auth::user();
-        if (!$currentUser || !$currentUser->isSuperAdmin()) {
-            abort(403, 'Only Super Admins can delete user accounts.');
+        if (!$currentUser || !$currentUser->hasAdminAccess()) {
+            abort(403, 'Only Super Admins and MEAL Officers can delete user accounts.');
         }
 
         if ($user->id === $currentUser->id) {
@@ -947,7 +947,7 @@ class ProgrammesMeetingController extends Controller
             $projects = collect([$singleProject]);
         } else {
             $projectQuery = Project::active()->with('users');
-            if ($user && !$user->isSuperAdmin()) {
+            if ($user && !$user->hasAdminAccess()) {
                 $projectQuery->forUser($user);
             }
             if ($pId = $request->query('project_id')) {

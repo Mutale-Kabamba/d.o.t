@@ -31,13 +31,13 @@
     <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200' }} border flex items-center justify-center font-black text-xl shrink-0">
+                <div class="w-14 h-14 rounded-2xl {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-700 border-purple-200' : ($staff->isMealOfficer() ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-indigo-100 text-indigo-700 border-indigo-200') }} border flex items-center justify-center font-black text-xl shrink-0">
                     {{ strtoupper(substr($staff->name, 0, 1)) }}
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-black text-slate-900 font-display">{{ $staff->name }}</h1>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border border-purple-200' : ($staff->isMealOfficer() ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : ($staff->role === 'project_officer' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-amber-100 text-amber-800 border border-amber-200')) }}">
                             {{ $staff->role_label }}
                         </span>
                     </div>

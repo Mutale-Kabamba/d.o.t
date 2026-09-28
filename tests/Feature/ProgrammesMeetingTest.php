@@ -152,6 +152,61 @@ class ProgrammesMeetingTest extends TestCase
     }
 
     /**
+     * Test MEAL Officer can create and manage projects and users.
+     */
+    public function test_meal_officer_can_create_projects_and_users(): void
+    {
+        $mealOfficer = User::factory()->create(['role' => User::ROLE_MEAL_OFFICER]);
+        $officer = User::factory()->create(['role' => User::ROLE_PROJECT_OFFICER]);
+
+        // 1. MEAL Officer can create projects
+        $projectResponse = $this->actingAs($mealOfficer)->post(route('programmes.projects.store'), [
+            'name' => 'MEAL Monitoring Initiative',
+            'code' => 'MMI',
+            'location' => 'Livingstone',
+            'user_ids' => [$officer->id],
+        ]);
+        $projectResponse->assertRedirect(route('programmes.hub', ['tab' => 'projects']));
+        $this->assertDatabaseHas('projects', ['name' => 'MEAL Monitoring Initiative', 'code' => 'MMI']);
+
+        $project = Project::where('code', 'MMI')->first();
+        $this->assertTrue($mealOfficer->canAccessProject($project));
+
+        // 2. MEAL Officer can edit projects
+        $updateProjectRes = $this->actingAs($mealOfficer)->put(route('programmes.projects.update', $project->id), [
+            'name' => 'MEAL Monitoring & Evaluation Hub',
+            'code' => 'MMEH',
+            'status' => 'active',
+            'user_ids' => [$officer->id],
+        ]);
+        $updateProjectRes->assertRedirect(route('programmes.hub', ['tab' => 'projects']));
+        $this->assertDatabaseHas('projects', ['name' => 'MEAL Monitoring & Evaluation Hub']);
+
+        // 3. MEAL Officer can create users
+        $userResponse = $this->actingAs($mealOfficer)->post(route('programmes.users.store'), [
+            'name' => 'Lubinda Mutale',
+            'email' => 'lubinda@pifzambia.org',
+            'password' => 'password123',
+            'role' => User::ROLE_PROJECT_ASSISTANT,
+            'project_ids' => [$project->id],
+        ]);
+        $userResponse->assertRedirect(route('programmes.hub', ['tab' => 'staff']));
+        $this->assertDatabaseHas('users', ['email' => 'lubinda@pifzambia.org', 'role' => 'project_assistant']);
+
+        $createdUser = User::where('email', 'lubinda@pifzambia.org')->first();
+
+        // 4. MEAL Officer can edit user accounts
+        $updateUserRes = $this->actingAs($mealOfficer)->put(route('programmes.users.update', $createdUser->id), [
+            'name' => 'Lubinda Mutale Senior',
+            'email' => 'lubinda.senior@pifzambia.org',
+            'role' => User::ROLE_PROJECT_OFFICER,
+            'project_ids' => [$project->id],
+        ]);
+        $updateUserRes->assertRedirect(route('programmes.hub', ['tab' => 'staff']));
+        $this->assertDatabaseHas('users', ['email' => 'lubinda.senior@pifzambia.org', 'role' => 'project_officer']);
+    }
+
+    /**
      * Test Continuous Activity Logging CRUD.
      */
     public function test_continuous_activity_logging_crud(): void

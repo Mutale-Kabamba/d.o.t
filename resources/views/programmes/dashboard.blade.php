@@ -20,17 +20,20 @@
             </div>
 
             <!-- User Profile Summary Pill -->
-            <div class="p-3 bg-slate-50 border border-slate-200/70 rounded-2xl flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl {{ $isSuperAdmin ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-blue-100 text-blue-700 border-blue-200' }} border flex items-center justify-center font-bold text-xs shrink-0">
+            <a href="{{ route('profile.edit') }}" class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200/70 hover:border-blue-300 rounded-2xl flex items-center gap-3 transition group cursor-pointer" title="Manage your account & profile">
+                <div class="w-9 h-9 rounded-xl {{ $isSuperAdmin ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-blue-100 text-blue-700 border-blue-200' }} border flex items-center justify-center font-bold text-xs shrink-0 group-hover:scale-105 transition">
                     {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <div class="text-xs font-bold text-slate-900 truncate">{{ $currentUser->name ?? 'Supervisor' }}</div>
+                    <div class="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition truncate flex items-center justify-between gap-1">
+                        <span class="truncate">{{ $currentUser->name ?? 'Supervisor' }}</span>
+                        <span class="text-[10px] text-slate-400 font-normal">⚙️</span>
+                    </div>
                     <span class="inline-block px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md {{ $isSuperAdmin ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200' }}">
                         {{ $currentUser ? $currentUser->role_label : 'Staff' }}
                     </span>
                 </div>
-            </div>
+            </a>
 
             <!-- Navigation Links / Tabs -->
             <nav class="space-y-1.5" aria-label="Main Sidebar Navigation">
@@ -91,6 +94,19 @@
                     </div>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $currentTab === 'matrix' ? 'bg-blue-700/50 text-white' : 'bg-slate-100 text-slate-600' }}">
                         5 Pillars
+                    </span>
+                </a>
+
+                <!-- Account & Profile -->
+                <a href="{{ route('profile.edit') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition text-slate-600 hover:bg-slate-100 hover:text-slate-900">
+                    <div class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span>My Profile</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-bold">
+                        ⚙️
                     </span>
                 </a>
 
@@ -1005,7 +1021,7 @@
                                         </div>
                                     </td>
                                     <td class="py-3.5 px-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border border-purple-200' : ($staff->role === 'project_officer' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-amber-100 text-amber-800 border border-amber-200') }}">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $staff->isSuperAdmin() ? 'bg-purple-100 text-purple-800 border border-purple-200' : ($staff->isMealOfficer() ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : ($staff->role === 'project_officer' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-amber-100 text-amber-800 border border-amber-200')) }}">
                                             {{ $staff->role_label }}
                                         </span>
                                     </td>

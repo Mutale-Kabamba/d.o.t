@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProgrammesMeetingController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,11 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 
 // Authenticated Application Routes (Scoped to User & Assigned Projects)
 Route::middleware('auth')->group(function () {
+    // User Profile Management (All Accounts)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
     // Project Dashboard / Hub
     Route::get('/programmes-meeting/hub', [ProgrammesMeetingController::class, 'hub'])->name('programmes.hub');
     Route::get('/dashboard', [ProgrammesMeetingController::class, 'hub'])->name('dashboard');

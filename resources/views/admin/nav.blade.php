@@ -9,7 +9,9 @@
         <div>
             <div class="flex items-center gap-2">
                 <span class="text-[10px] font-extrabold uppercase bg-brand-50 text-brand-700 px-2 py-0.5 rounded border border-brand-200">Admin Portal</span>
-                <span class="text-xs text-slate-400 font-medium">Logged in as: <strong class="text-slate-700">{{ Auth::user()->name ?? 'Administrator' }}</strong></span>
+                <a href="{{ route('profile.edit') }}" class="text-xs text-slate-400 hover:text-slate-600 font-medium transition" title="Manage your account profile">
+                    Logged in as: <strong class="text-slate-700 underline decoration-slate-300 hover:decoration-blue-500">{{ Auth::user()->name ?? 'Administrator' }}</strong>
+                </a>
             </div>
             <h1 class="text-lg sm:text-xl font-black text-slate-900 font-display">
                 @if(($activeTab ?? '') === 'staff')
@@ -48,6 +50,14 @@
                 <span>Teams &amp; Projects</span>
             </a>
         </div>
+
+        <!-- Link to Profile Management -->
+        <a href="{{ route('profile.edit') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition shadow-xs" title="Manage your account profile and password">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <span>My Profile</span>
+        </a>
 
         <!-- Link to Programmes Hub -->
         <a href="{{ route('programmes.hub') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs transition shadow-xs">

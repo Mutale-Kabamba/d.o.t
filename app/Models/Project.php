@@ -68,7 +68,7 @@ class Project extends Model
      */
     public function scopeForUser(Builder $query, User $user): Builder
     {
-        if ($user->isSuperAdmin()) {
+        if ($user->hasAdminAccess()) {
             return $query;
         }
 
