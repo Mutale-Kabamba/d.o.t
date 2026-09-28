@@ -57,7 +57,7 @@
             </div>
             <div class="my-2">
                 <div class="text-2xl sm:text-3xl font-black text-slate-900 font-display">{{ $totalProjects }}</div>
-                <p class="text-[11px] text-slate-400 font-medium">All registered projects</p>
+                <p class="text-[11px] text-slate-400 font-medium">Projects (excludes {{ $totalDepartments }} depts)</p>
             </div>
         </div>
 
@@ -153,6 +153,14 @@
                                 <span>↳</span> {{ $team->parent->name }}
                             </span>
                         @endif
+                        @if($team->isLinked())
+                            @php
+                                $linkedSiblings = $team->linkedSiblingProjects()->where('id', '!=', $team->id);
+                            @endphp
+                            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200 rounded-md flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                <span>🔗</span> Linked ({{ $linkedSiblings->pluck('name')->implode(', ') }})
+                            </span>
+                        @endif
                     </div>
                     <span class="inline-flex items-center gap-1 text-[11px] font-bold {{ $team->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
                         <span>●</span>
@@ -224,7 +232,7 @@
 
                 <div class="flex items-center gap-1">
                     <!-- Edit Team -->
-                    <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, {{ $team->is_department ? 1 : 0 }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
+                    <button type="button" onclick="openEditTeamModal({{ $team->id }}, '{{ addslashes($team->name) }}', '{{ addslashes($team->code) }}', '{{ addslashes($team->location) }}', '{{ addslashes($team->description) }}', '{{ $team->status }}', {{ json_encode($team->users->pluck('id')) }}, {{ $team->parent_id ? $team->parent_id : 'null' }}, {{ $team->is_department ? 1 : 0 }}, {{ $team->isLinked() ? ($team->linkedSiblingProjects()->where('id', '!=', $team->id)->first()?->id ?? 'null') : 'null' }})" class="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg cursor-pointer" title="Edit Team Details">
                         ⚙️
                     </button>
 
@@ -294,7 +302,7 @@
 
                 <div class="pt-2 border-t border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
-                    <select name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <select name="parent_id" id="create-team-parent-id" onchange="filterSiblingOptions('create-team-parent-id', 'create-team-linked-project-id')" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="">-- Standalone / Top-Level Project --</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}">
@@ -303,6 +311,21 @@
                         @endforeach
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
+
+                <div id="create-team-link-group" class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">🔗 Link with Sibling Project (Combined Slide)</label>
+                    <select name="linked_project_id" id="create-team-linked-project-id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone Slide (Not Linked) --</option>
+                        @foreach($departments as $dept)
+                            @foreach($dept->children as $child)
+                                <option value="{{ $child->id }}" data-parent="{{ $dept->id }}">
+                                    {{ $dept->name }} ↳ {{ $child->name }}
+                                </option>
+                            @endforeach
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">If this child project shares a combined slide under the parent (e.g. <em>Education (Literacy &amp; After Class)</em>), select its sibling project.</p>
                 </div>
             </div>
 
@@ -376,7 +399,7 @@
 
                 <div class="pt-2 border-t border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 mb-1">Parent Department / Area (Optional)</label>
-                    <select id="edit-team-parent-id" name="parent_id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <select id="edit-team-parent-id" name="parent_id" onchange="filterSiblingOptions('edit-team-parent-id', 'edit-team-linked-project-id')" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="">-- Standalone / Top-Level Project --</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" class="edit-dept-opt-{{ $dept->id }}">
@@ -385,6 +408,21 @@
                         @endforeach
                     </select>
                     <p class="text-[10px] text-slate-400 mt-1">If this project belongs under a Department, select it here.</p>
+                </div>
+
+                <div id="edit-team-link-group" class="pt-2 border-t border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">🔗 Link with Sibling Project (Combined Slide)</label>
+                    <select name="linked_project_id" id="edit-team-linked-project-id" class="w-full text-xs font-semibold rounded-xl border border-slate-300 p-2.5 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                        <option value="">-- Standalone Slide (Not Linked) --</option>
+                        @foreach($departments as $dept)
+                            @foreach($dept->children as $child)
+                                <option value="{{ $child->id }}" data-parent="{{ $dept->id }}" class="edit-team-link-opt-{{ $child->id }}">
+                                    {{ $dept->name }} ↳ {{ $child->name }}
+                                </option>
+                            @endforeach
+                        @endforeach
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1">Select sibling project to present under a combined slide (e.g. <em>Education (Literacy &amp; After Class)</em>).</p>
                 </div>
             </div>
 
@@ -433,7 +471,32 @@
 </div>
 
 <script>
-function openEditTeamModal(id, name, code, location, description, status, userIds, parentId, isDepartment) {
+function filterSiblingOptions(parentSelectId, linkSelectId) {
+    const parentSelect = document.getElementById(parentSelectId);
+    const linkSelect = document.getElementById(linkSelectId);
+    if (!parentSelect || !linkSelect) return;
+
+    const parentVal = parentSelect.value;
+    Array.from(linkSelect.options).forEach((opt, idx) => {
+        if (idx === 0) return; // Keep "-- Standalone --"
+        const optParent = opt.getAttribute('data-parent');
+        if (!parentVal || (optParent && optParent !== parentVal)) {
+            opt.style.display = 'none';
+        } else {
+            opt.style.display = '';
+        }
+    });
+    if (parentVal) {
+        const currentSelectedOpt = linkSelect.options[linkSelect.selectedIndex];
+        if (currentSelectedOpt && currentSelectedOpt.getAttribute('data-parent') !== parentVal && linkSelect.selectedIndex !== 0) {
+            linkSelect.value = '';
+        }
+    } else {
+        linkSelect.value = '';
+    }
+}
+
+function openEditTeamModal(id, name, code, location, description, status, userIds, parentId, isDepartment, linkedProjectId) {
     document.getElementById('edit-team-form').action = '/admin/teams/' + id;
     document.getElementById('edit-team-name').value = name || '';
     document.getElementById('edit-team-code').value = code || '';
@@ -448,6 +511,14 @@ function openEditTeamModal(id, name, code, location, description, status, userId
         opt.disabled = (opt.value && parseInt(opt.value) === parseInt(id));
     });
     parentSelect.value = parentId || '';
+
+    // Disable self in linked siblings
+    const linkSelect = document.getElementById('edit-team-linked-project-id');
+    Array.from(linkSelect.options).forEach(opt => {
+        opt.disabled = (opt.value && parseInt(opt.value) === parseInt(id));
+    });
+    filterSiblingOptions('edit-team-parent-id', 'edit-team-linked-project-id');
+    linkSelect.value = linkedProjectId || '';
 
     const checkboxes = document.querySelectorAll('#edit-team-staff-container input[type="checkbox"]');
     checkboxes.forEach(cb => {

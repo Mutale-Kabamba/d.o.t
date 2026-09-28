@@ -130,13 +130,6 @@ class Project extends Model
         return $query->where('status', 'archived');
     }
 
-    /**
-     * Scope for departments / parent projects.
-     */
-    public function scopeDepartments(Builder $query): Builder
-    {
-        return $query->where('is_department', true)->orWhereNull('parent_id');
-    }
 
     /**
      * Scope for subprojects.
@@ -163,6 +156,108 @@ class Project extends Model
                 $pq->where('users.id', $user->id);
             });
         });
+    }
+
+    /**
+     * Scope for operational projects only (excluding parent departments).
+     */
+    public function scopeOnlyProjects(Builder $query): Builder
+    {
+        return $query->where('is_department', false);
+    }
+
+    /**
+     * Scope for parent departments only.
+     */
+    public function scopeDepartments(Builder $query): Builder
+    {
+        return $query->where('is_department', true);
+    }
+
+    /**
+     * Check if this child project is linked with siblings for combined presentation.
+     */
+    public function isLinked(): bool
+    {
+        return !empty($this->link_group) && !empty($this->parent_id);
+    }
+
+    /**
+     * Sibling child projects linked with this project under the same parent.
+     */
+    public function linkedSiblingProjects(): \Illuminate\Support\Collection
+    {
+        if (!$this->isLinked()) {
+            return collect([$this]);
+        }
+
+        return Project::where('parent_id', $this->parent_id)
+            ->where('link_group', $this->link_group)
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get combined presentation slide title, e.g. "Education (Literacy & After Class)".
+     */
+    public function getCombinedPresentationTitleAttribute(): string
+    {
+        if (!$this->isLinked() || !$this->parent) {
+            return $this->parent ? "{$this->parent->name} ↳ {$this->name}" : $this->name;
+        }
+
+        $siblings = $this->linkedSiblingProjects();
+        $names = $siblings->pluck('name')->all();
+        if (count($names) <= 1) {
+            return "{$this->parent->name} ↳ {$this->name}";
+        }
+
+        $last = array_pop($names);
+        $formattedNames = implode(', ', $names) . ' & ' . $last;
+        return "{$this->parent->name} ({$formattedNames})";
+    }
+
+    /**
+     * Helper to format bullet points for linked child projects, e.g.:
+     * "- Sessions (Literacy): 20 sessions done"
+     */
+    public static function formatLinkedBullet(string $pt, ?string $actTitle, string $projectName): string
+    {
+        $pt = trim($pt);
+        $projectName = trim($projectName);
+
+        if (empty($pt)) {
+            return '';
+        }
+
+        // Clean any leading bullet characters with UTF-8 support
+        $cleanPt = trim(preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $pt));
+
+        // If point already mentions project name in parentheses, return it
+        if (str_contains($cleanPt, "({$projectName})")) {
+            return $cleanPt;
+        }
+
+        // If bullet already has a category/metric prefix before colon, e.g. "Sessions: 20 sessions done"
+        if (preg_match('/^([^:]+):(.*)$/s', $cleanPt, $matches)) {
+            $prefix = trim($matches[1]);
+            $rest = trim($matches[2]);
+            return "{$prefix} ({$projectName}): {$rest}";
+        }
+
+        // Use actTitle prefix if available and not redundant
+        $baseText = !empty($actTitle) && !str_starts_with(strtolower($cleanPt), strtolower($actTitle))
+            ? "{$actTitle}: {$cleanPt}"
+            : $cleanPt;
+
+        if (preg_match('/^([^:]+):(.*)$/s', $baseText, $matches)) {
+            $prefix = trim($matches[1]);
+            $rest = trim($matches[2]);
+            return "{$prefix} ({$projectName}): {$rest}";
+        }
+
+        // Otherwise append: "20 sessions done (Literacy)"
+        return "{$baseText} ({$projectName})";
     }
 
     /**

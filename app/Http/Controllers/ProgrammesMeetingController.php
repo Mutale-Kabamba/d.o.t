@@ -324,7 +324,7 @@ class ProgrammesMeetingController extends Controller
             $projectsQuery->forUser($user);
         }
         $projects = $projectsQuery->orderBy('name')->get();
-        $departments = Project::where('is_department', true)->orWhereNull('parent_id')->orderBy('name')->get();
+        $departments = Project::where('is_department', true)->with('children')->orderBy('name')->get();
 
         // 2. Interval & Project Filtering
         $interval = $request->query('interval', 'all'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
@@ -399,7 +399,8 @@ class ProgrammesMeetingController extends Controller
         }
         $filteredActivities = $allActivitiesInScope->get();
 
-        $activeProjectsList = $projects->where('status', 'active');
+        $operationalProjects = $projects->where('is_department', false);
+        $activeProjectsList = $operationalProjects->where('status', 'active');
         $totalActiveProjects = $activeProjectsList->count();
         $fullyReportedProjects = 0;
         $totalPillarsPossible = $totalActiveProjects * 5;
@@ -427,8 +428,9 @@ class ProgrammesMeetingController extends Controller
 
         $metrics = [
             'total_activities' => $filteredActivities->count(),
-            'total_projects' => $projects->count(),
+            'total_projects' => $operationalProjects->count(),
             'active_projects' => $totalActiveProjects,
+            'total_departments' => $departments->count(),
             'reporting_coverage_rate' => $reportingCoverageRate,
             'fully_reported_projects' => $fullyReportedProjects,
             'total_pillars_reported' => $totalPillarsReported,
@@ -792,19 +794,41 @@ class ProgrammesMeetingController extends Controller
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:projects,id',
             'is_department' => 'nullable|boolean',
+            'link_group' => 'nullable|string|max:100',
+            'linked_project_id' => 'nullable|exists:projects,id',
+            'linked_project_ids' => 'nullable|array',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        $isDept = $request->boolean('is_department');
+        $linkGroup = $validated['link_group'] ?? null;
 
         $project = Project::create([
             'name' => $validated['name'],
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
-            'parent_id' => $validated['parent_id'] ?? null,
-            'is_department' => $request->boolean('is_department'),
+            'parent_id' => $parentId,
+            'link_group' => $linkGroup,
+            'is_department' => $isDept,
             'status' => 'active',
         ]);
+
+        // Link with selected sibling project if provided
+        $linkedWithIds = array_filter((array) ($request->input('linked_project_ids', [])));
+        if ($request->input('linked_project_id')) {
+            $linkedWithIds[] = $request->input('linked_project_id');
+        }
+        $linkedWithIds = array_diff($linkedWithIds, [$project->id]);
+
+        if (!empty($linkedWithIds) && $parentId && !$isDept) {
+            $existingGroup = Project::whereIn('id', $linkedWithIds)->whereNotNull('link_group')->value('link_group');
+            $grp = $existingGroup ?: ('grp_' . Str::random(8));
+            $project->update(['link_group' => $grp]);
+            Project::whereIn('id', $linkedWithIds)->where('parent_id', $parentId)->update(['link_group' => $grp]);
+        }
 
         if (!empty($validated['user_ids'])) {
             $project->users()->sync($validated['user_ids']);
@@ -830,6 +854,9 @@ class ProgrammesMeetingController extends Controller
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:projects,id',
             'is_department' => 'nullable|boolean',
+            'link_group' => 'nullable|string|max:100',
+            'linked_project_id' => 'nullable',
+            'linked_project_ids' => 'nullable|array',
             'status' => 'required|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
@@ -839,6 +866,36 @@ class ProgrammesMeetingController extends Controller
         if ($parentId && (int) $parentId === (int) $project->id) {
             $parentId = null;
         }
+        $isDept = $request->boolean('is_department');
+        $linkGroup = $validated['link_group'] ?? $project->link_group;
+
+        // Process link with sibling projects under the parent
+        $linkedWithIds = array_filter((array) ($request->input('linked_project_ids', [])));
+        if ($request->filled('linked_project_id')) {
+            $linkedWithIds[] = $request->input('linked_project_id');
+        }
+        $linkedWithIds = array_diff($linkedWithIds, [$project->id]);
+
+        if (!empty($linkedWithIds) && $parentId && !$isDept) {
+            $existingGroup = Project::whereIn('id', array_merge([$project->id], $linkedWithIds))
+                ->whereNotNull('link_group')
+                ->value('link_group');
+            $linkGroup = $existingGroup ?: ('grp_' . Str::random(8));
+
+            Project::whereIn('id', $linkedWithIds)
+                ->where('parent_id', $parentId)
+                ->update(['link_group' => $linkGroup]);
+        } elseif ($request->has('linked_project_id') || $request->has('linked_project_ids')) {
+            // User explicitly cleared the link
+            $oldGroup = $project->link_group;
+            $linkGroup = null;
+            if ($oldGroup) {
+                $rem = Project::where('link_group', $oldGroup)->where('id', '!=', $project->id)->get();
+                if ($rem->count() <= 1) {
+                    Project::where('link_group', $oldGroup)->update(['link_group' => null]);
+                }
+            }
+        }
 
         $project->update([
             'name' => $validated['name'],
@@ -846,7 +903,8 @@ class ProgrammesMeetingController extends Controller
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
             'parent_id' => $parentId,
-            'is_department' => $request->boolean('is_department'),
+            'link_group' => $linkGroup,
+            'is_department' => $isDept,
             'status' => $validated['status'],
         ]);
 
@@ -1009,20 +1067,36 @@ class ProgrammesMeetingController extends Controller
         $this->ensureDatabaseReady();
         $user = Auth::user();
 
-        // 1. Determine projects to include
+        // 1. Determine projects to include (excluding parent departments that have child projects)
         if ($singleProject) {
-            $projects = collect([$singleProject]);
+            if ($singleProject->isDepartment() && $singleProject->children()->exists()) {
+                $projects = $singleProject->children()->where('status', 'active')->with(['users', 'parent'])->orderBy('name')->get();
+            } elseif ($singleProject->isLinked()) {
+                $projects = $singleProject->linkedSiblingProjects()->where('status', 'active')->load(['users', 'parent']);
+            } else {
+                $projects = collect([$singleProject]);
+            }
         } else {
-            $projectQuery = Project::active()->with('users');
+            $projectQuery = Project::active()->with(['users', 'parent', 'children']);
             if ($user && !$user->hasAdminAccess()) {
                 $projectQuery->forUser($user);
             }
             if ($pId = $request->query('project_id')) {
                 if ($pId !== 'all') {
-                    $projectQuery->where('id', $pId);
+                    $selectedProj = Project::find($pId);
+                    if ($selectedProj && $selectedProj->isDepartment()) {
+                        $projectQuery->whereIn('id', $selectedProj->descendantProjectIds());
+                    } else {
+                        $projectQuery->where('id', $pId);
+                    }
                 }
             }
-            $projects = $projectQuery->orderBy('name')->get();
+            $allFetched = $projectQuery->orderBy('name')->get();
+
+            // The parent Project/Departments should not be counted as projects or presented as standalone empty slides
+            $projects = $allFetched->filter(function ($p) {
+                return !$p->isDepartment() || !$p->children()->exists();
+            })->values();
         }
 
         // 2. Determine interval filter
@@ -1036,15 +1110,60 @@ class ProgrammesMeetingController extends Controller
             'to_date' => $request->query('to_date'),
         ];
 
-        // 3. For each project, fetch its activity entries and aggregate bullet points per theme
+        // 3. Group linked child projects into composite presentation units
+        $groupedUnits = $projects->groupBy(function ($project) {
+            if ($project->parent_id && !empty($project->link_group)) {
+                return "parent_{$project->parent_id}_group_{$project->link_group}";
+            }
+            return "project_{$project->id}";
+        });
+
         $projectDataList = [];
 
-        foreach ($projects as $project) {
-            $entriesQuery = $project->activityEntries();
-            if ($interval !== 'all') {
-                $entriesQuery->filterInterval($interval, $filterParams);
+        $itemSubKeyMap = [
+            'achievements_milestones' => 'milestones',
+            'achievements_impact' => 'impact',
+            'achievements_stories' => 'stories',
+            'challenges_operational' => 'operational',
+            'challenges_resources' => 'resources',
+            'challenges_risks' => 'risks',
+            'learning_lessons' => 'lessons',
+            'learning_feedback' => 'feedback',
+            'learning_innovation' => 'innovation',
+            'mne_performance' => 'performance',
+            'mne_data_quality' => 'data_quality',
+            'mne_evaluation_plans' => 'evaluation',
+            'collab_projects' => 'project_collab',
+            'collab_partnerships' => 'partnerships',
+            'collab_cross_learning' => 'cross_learning',
+        ];
+
+        foreach ($groupedUnits as $unitKey => $unitProjects) {
+            $isLinkedGroup = $unitProjects->count() > 1 || ($unitProjects->first()->isLinked());
+            $primaryProject = $unitProjects->first();
+            $parent = $primaryProject->parent;
+
+            // Formulate composite title: e.g. "Education (Literacy & After Class)"
+            if ($isLinkedGroup && $parent) {
+                $names = $unitProjects->pluck('name')->all();
+                $last = array_pop($names);
+                $joined = !empty($names) ? implode(', ', $names) . ' & ' . $last : $last;
+                $displayName = "{$parent->name} ({$joined})";
+            } elseif ($parent) {
+                $displayName = "{$parent->name} ↳ {$primaryProject->name}";
+            } else {
+                $displayName = $primaryProject->name;
             }
-            $entries = $entriesQuery->get();
+
+            $officerNames = $unitProjects->flatMap(function ($p) {
+                return $p->users->pluck('name');
+            })->unique()->filter()->implode(', ');
+
+            if (empty($officerNames)) {
+                $officerNames = $primaryProject->lead_officer_name;
+            }
+
+            $location = $primaryProject->location ?? $parent?->location ?? 'Zambia';
 
             // Structure to hold aggregated bullet points, 3 sub-sections, and narrative per theme
             $themePoints = [
@@ -1064,24 +1183,6 @@ class ProgrammesMeetingController extends Controller
             ];
             $themeNarrativeText = [];
 
-            $itemSubKeyMap = [
-                'achievements_milestones' => 'milestones',
-                'achievements_impact' => 'impact',
-                'achievements_stories' => 'stories',
-                'challenges_operational' => 'operational',
-                'challenges_resources' => 'resources',
-                'challenges_risks' => 'risks',
-                'learning_lessons' => 'lessons',
-                'learning_feedback' => 'feedback',
-                'learning_innovation' => 'innovation',
-                'mne_performance' => 'performance',
-                'mne_data_quality' => 'data_quality',
-                'mne_evaluation_plans' => 'evaluation',
-                'collab_projects' => 'project_collab',
-                'collab_partnerships' => 'partnerships',
-                'collab_cross_learning' => 'cross_learning',
-            ];
-
             foreach (self::$slidesConfig as $themeKey => $themeConfig) {
                 $themeSections[$themeKey] = [];
                 foreach ($themeConfig['items'] as $itemKey => $item) {
@@ -1095,79 +1196,98 @@ class ProgrammesMeetingController extends Controller
                 }
             }
 
-            foreach ($entries as $entry) {
-                $actTitle = trim($entry->activity_title ?? '');
+            $totalEntriesCount = 0;
 
-                foreach (self::$slidesConfig as $themeKey => $themeConfig) {
-                    $pField = $themeConfig['points_field'];
-                    $nField = $themeConfig['narrative_field'];
-                    $pillarNum = $themeConfig['number'];
+            foreach ($unitProjects as $pItem) {
+                $entriesQuery = $pItem->activityEntries();
+                if ($interval !== 'all') {
+                    $entriesQuery->filterInterval($interval, $filterParams);
+                }
+                $entries = $entriesQuery->get();
+                $totalEntriesCount += $entries->count();
 
-                    // Aggregate per sub-section
-                    foreach ($themeConfig['items'] as $itemKey => $item) {
-                        $subKey = $itemSubKeyMap[$itemKey] ?? null;
+                foreach ($entries as $entry) {
+                    $actTitle = trim($entry->activity_title ?? '');
 
-                        if ($subKey) {
-                            $subPts = $entry->getPillarBullets($pillarNum, $subKey);
-                            if (!empty($subPts)) {
-                                foreach ($subPts as $pt) {
-                                    $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
-                                        ? "{$actTitle}: {$pt}"
-                                        : $pt;
-                                    $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                    foreach (self::$slidesConfig as $themeKey => $themeConfig) {
+                        $pField = $themeConfig['points_field'];
+                        $nField = $themeConfig['narrative_field'];
+                        $pillarNum = $themeConfig['number'];
+
+                        // Aggregate per sub-section
+                        foreach ($themeConfig['items'] as $itemKey => $item) {
+                            $subKey = $itemSubKeyMap[$itemKey] ?? null;
+
+                            if ($subKey) {
+                                $subPts = $entry->getPillarBullets($pillarNum, $subKey);
+                                if (!empty($subPts)) {
+                                    foreach ($subPts as $pt) {
+                                        $formattedPt = $isLinkedGroup
+                                            ? Project::formatLinkedBullet($pt, $actTitle, $pItem->name)
+                                            : (!empty($actTitle) && !str_starts_with($pt, "{$actTitle}:") ? "{$actTitle}: {$pt}" : $pt);
+                                        $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                    }
                                 }
-                            }
 
-                            $subNarrative = $entry->getSubPillarNarrative($pillarNum, $subKey);
-                            if (!empty($subNarrative) && !in_array($subNarrative, $themeSections[$themeKey][$itemKey]['narratives'])) {
-                                $themeSections[$themeKey][$itemKey]['narratives'][] = $subNarrative;
-                            }
-                        } elseif (!empty($entry->{$itemKey})) {
-                            $pts = ActivityEntry::extractBulletPoints($entry->{$itemKey});
-                            if (!empty($pts)) {
-                                foreach ($pts as $pt) {
-                                    $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
-                                        ? "{$actTitle}: {$pt}"
-                                        : $pt;
-                                    $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                $subNarrative = $entry->getSubPillarNarrative($pillarNum, $subKey);
+                                if (!empty($subNarrative)) {
+                                    $narrWithProj = $isLinkedGroup ? "{$pItem->name}: {$subNarrative}" : $subNarrative;
+                                    if (!in_array($narrWithProj, $themeSections[$themeKey][$itemKey]['narratives'])) {
+                                        $themeSections[$themeKey][$itemKey]['narratives'][] = $narrWithProj;
+                                    }
+                                }
+                            } elseif (!empty($entry->{$itemKey})) {
+                                $pts = ActivityEntry::extractBulletPoints($entry->{$itemKey});
+                                if (!empty($pts)) {
+                                    foreach ($pts as $pt) {
+                                        $formattedPt = $isLinkedGroup
+                                            ? Project::formatLinkedBullet($pt, $actTitle, $pItem->name)
+                                            : (!empty($actTitle) && !str_starts_with($pt, "{$actTitle}:") ? "{$actTitle}: {$pt}" : $pt);
+                                        $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Also aggregate general points
-                    $pts = $entry->getPoints($pField);
-                    if (!empty($pts)) {
-                        foreach ($pts as $pt) {
-                            $formattedPt = !empty($actTitle) && !str_starts_with($pt, "{$actTitle}:")
-                                ? "{$actTitle}: {$pt}"
-                                : $pt;
-                            $themePoints[$themeKey][] = $formattedPt;
+                        // Also aggregate general points
+                        $pts = $entry->getPoints($pField);
+                        if (!empty($pts)) {
+                            foreach ($pts as $pt) {
+                                $formattedPt = $isLinkedGroup
+                                    ? Project::formatLinkedBullet($pt, $actTitle, $pItem->name)
+                                    : (!empty($actTitle) && !str_starts_with($pt, "{$actTitle}:") ? "{$actTitle}: {$pt}" : $pt);
+                                $themePoints[$themeKey][] = $formattedPt;
+                            }
                         }
-                    }
 
-                    if (!empty($entry->{$nField})) {
-                        $narrativeVal = trim($entry->{$nField});
-                        if (!empty($narrativeVal) && !in_array($narrativeVal, $themeNarratives[$themeKey])) {
-                            $themeNarratives[$themeKey][] = $narrativeVal;
+                        if (!empty($entry->{$nField})) {
+                            $narrativeVal = trim($entry->{$nField});
+                            if (!empty($narrativeVal)) {
+                                $narrWithProj = $isLinkedGroup ? "{$pItem->name}: {$narrativeVal}" : $narrativeVal;
+                                if (!in_array($narrWithProj, $themeNarratives[$themeKey])) {
+                                    $themeNarratives[$themeKey][] = $narrWithProj;
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            // Fallback to legacy project_submission if no continuous entries found yet
-            if (empty(array_filter($themePoints)) && empty(array_filter(array_map(fn($t) => array_filter(array_column($t, 'points')), $themeSections)))) {
-                $legacy = ProjectSubmission::where('project_name', $project->name)->first();
-                if ($legacy) {
-                    foreach (self::$slidesConfig as $themeKey => $themeConfig) {
-                        foreach ($themeConfig['items'] as $itemKey => $item) {
-                            $pts = $legacy->getPoints($itemKey);
-                            if (!empty($pts)) {
-                                $themeSections[$themeKey][$itemKey]['points'] = array_merge(
-                                    $themeSections[$themeKey][$itemKey]['points'],
-                                    $pts
-                                );
-                                $themePoints[$themeKey] = array_merge($themePoints[$themeKey], $pts);
+                // Fallback to legacy project_submission if no continuous entries found yet
+                if ($entries->isEmpty()) {
+                    $legacy = ProjectSubmission::where('project_name', $pItem->name)->first();
+                    if ($legacy) {
+                        foreach (self::$slidesConfig as $themeKey => $themeConfig) {
+                            foreach ($themeConfig['items'] as $itemKey => $item) {
+                                $pts = $legacy->getPoints($itemKey);
+                                if (!empty($pts)) {
+                                    foreach ($pts as $pt) {
+                                        $formattedPt = $isLinkedGroup
+                                            ? Project::formatLinkedBullet($pt, '', $pItem->name)
+                                            : $pt;
+                                        $themeSections[$themeKey][$itemKey]['points'][] = $formattedPt;
+                                        $themePoints[$themeKey][] = $formattedPt;
+                                    }
+                                }
                             }
                         }
                     }
@@ -1185,15 +1305,17 @@ class ProgrammesMeetingController extends Controller
             }
 
             $projectDataList[] = [
-                'project' => $project,
-                'project_name' => $project->name,
-                'officer_name' => $project->lead_officer_name,
-                'location' => $project->location ?? 'Zambia',
+                'project' => $primaryProject,
+                'projects' => $unitProjects,
+                'is_linked_group' => $isLinkedGroup,
+                'project_name' => $displayName,
+                'officer_name' => $officerNames,
+                'location' => $location,
                 'theme_points' => $themePoints,
                 'theme_sections' => $themeSections,
                 'theme_narratives' => $themeNarratives,
                 'theme_narrative_text' => $themeNarrativeText,
-                'entries_count' => $entries->count(),
+                'entries_count' => $totalEntriesCount,
             ];
         }
 

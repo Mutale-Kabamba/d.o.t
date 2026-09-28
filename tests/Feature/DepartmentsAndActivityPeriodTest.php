@@ -278,4 +278,182 @@ class DepartmentsAndActivityPeriodTest extends TestCase
         $this->assertEquals('Ehub Tech Center Renamed', $sub->name);
         $this->assertEquals($dept->id, $sub->parent_id);
     }
+
+    /**
+     * Test parent departments are NOT counted as projects in metrics and statistics.
+     */
+    public function test_parent_departments_are_not_counted_as_projects(): void
+    {
+        $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+
+        // Create 2 departments
+        $dept1 = Project::create(['name' => 'Education', 'is_department' => true, 'status' => 'active']);
+        $dept2 = Project::create(['name' => 'Health', 'is_department' => true, 'status' => 'active']);
+
+        // Create 2 children under Education
+        $child1 = Project::create(['name' => 'Literacy', 'parent_id' => $dept1->id, 'is_department' => false, 'status' => 'active']);
+        $child2 = Project::create(['name' => 'After Class', 'parent_id' => $dept1->id, 'is_department' => false, 'status' => 'active']);
+
+        // Create 1 standalone project
+        $standalone = Project::create(['name' => 'Football for Good', 'is_department' => false, 'status' => 'active']);
+
+        // Operational projects scope should exclude departments
+        $this->assertEquals(3, Project::onlyProjects()->count());
+        $this->assertEquals(2, Project::departments()->count());
+
+        // Check Hub response metrics
+        $resHub = $this->actingAs($superAdmin)->get(route('programmes.hub'));
+        $resHub->assertStatus(200);
+        $metrics = $resHub->viewData('metrics');
+        $this->assertEquals(3, $metrics['total_projects'], 'Parent departments must NOT be counted in total_projects');
+        $this->assertEquals(3, $metrics['active_projects'], 'Parent departments must NOT be counted in active_projects');
+        $this->assertEquals(2, $metrics['total_departments']);
+
+        // Check Admin Teams response metrics
+        $resTeams = $this->actingAs($superAdmin)->get(route('admin.teams.index'));
+        $resTeams->assertStatus(200);
+        $this->assertEquals(3, $resTeams->viewData('totalProjects'));
+        $this->assertEquals(3, $resTeams->viewData('activeProjects'));
+        $this->assertEquals(2, $resTeams->viewData('totalDepartments'));
+    }
+
+    /**
+     * Test linking sibling projects under a parent department via controller and model helpers.
+     */
+    public function test_linking_sibling_projects_under_parent_department(): void
+    {
+        $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+
+        // 1. Create Parent Department: Education
+        $dept = Project::create(['name' => 'Education', 'is_department' => true, 'status' => 'active']);
+
+        // 2. Create first child project: Literacy
+        $res1 = $this->actingAs($superAdmin)->post(route('programmes.projects.store'), [
+            'name' => 'Literacy',
+            'parent_id' => $dept->id,
+            'is_department' => '0',
+            'status' => 'active',
+        ]);
+        $res1->assertRedirect();
+        $literacy = Project::where('name', 'Literacy')->first();
+        $this->assertNotNull($literacy);
+        $this->assertFalse($literacy->isLinked());
+
+        // 3. Create second child project: After Class, linked to Literacy
+        $res2 = $this->actingAs($superAdmin)->post(route('programmes.projects.store'), [
+            'name' => 'After Class',
+            'parent_id' => $dept->id,
+            'linked_project_id' => $literacy->id,
+            'is_department' => '0',
+            'status' => 'active',
+        ]);
+        $res2->assertRedirect();
+
+        $afterClass = Project::where('name', 'After Class')->first();
+        $this->assertNotNull($afterClass);
+        $literacy->refresh();
+
+        // Both must be linked with the same link_group
+        $this->assertTrue($literacy->isLinked());
+        $this->assertTrue($afterClass->isLinked());
+        $this->assertNotNull($literacy->link_group);
+        $this->assertEquals($literacy->link_group, $afterClass->link_group);
+
+        // Combined presentation title
+        $this->assertEquals('Education (After Class & Literacy)', $literacy->combined_presentation_title);
+        $this->assertEquals('Education (After Class & Literacy)', $afterClass->combined_presentation_title);
+    }
+
+    /**
+     * Test bullet points formatting for linked projects.
+     */
+    public function test_bullet_formatting_for_linked_projects(): void
+    {
+        // 1. Bullet with colon prefix (e.g. "Sessions: 20 sessions done")
+        $b1 = Project::formatLinkedBullet("• Sessions: 20 sessions done", null, "Literacy");
+        $this->assertEquals("Sessions (Literacy): 20 sessions done", $b1);
+
+        $b2 = Project::formatLinkedBullet("Sessions: 20 sessions done", null, "After Class");
+        $this->assertEquals("Sessions (After Class): 20 sessions done", $b2);
+
+        // 2. Bullet without colon prefix
+        $b3 = Project::formatLinkedBullet("20 sessions done", "Sessions", "Literacy");
+        $this->assertEquals("Sessions (Literacy): 20 sessions done", $b3);
+
+        $b4 = Project::formatLinkedBullet("Completed quarterly curriculum", null, "Literacy");
+        $this->assertEquals("Completed quarterly curriculum (Literacy)", $b4);
+    }
+
+    /**
+     * Test combined presentation data outputs single combined slide under parent department.
+     */
+    public function test_combined_presentation_data_groups_linked_projects_on_single_slide(): void
+    {
+        $superAdmin = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+
+        $dept = Project::create(['name' => 'Education', 'is_department' => true, 'status' => 'active']);
+        $groupKey = 'grp_edu_123';
+
+        $literacy = Project::create([
+            'name' => 'Literacy',
+            'parent_id' => $dept->id,
+            'link_group' => $groupKey,
+            'is_department' => false,
+            'status' => 'active',
+        ]);
+
+        $afterClass = Project::create([
+            'name' => 'After Class',
+            'parent_id' => $dept->id,
+            'link_group' => $groupKey,
+            'is_department' => false,
+            'status' => 'active',
+        ]);
+
+        // Log activity entries with specific milestone bullets
+        ActivityEntry::create([
+            'project_id' => $literacy->id,
+            'user_id' => $superAdmin->id,
+            'activity_title' => 'Literacy Reading Clubs',
+            'activity_date' => '2026-06-10',
+            'reporting_period' => 'Quarter 2 2026',
+            'achievements_points' => "• Sessions: 20 sessions done",
+        ]);
+
+        ActivityEntry::create([
+            'project_id' => $afterClass->id,
+            'user_id' => $superAdmin->id,
+            'activity_title' => 'After Class Homework Center',
+            'activity_date' => '2026-06-12',
+            'reporting_period' => 'Quarter 2 2026',
+            'achievements_points' => "• Sessions: 20 sessions done",
+        ]);
+
+        $controller = app(\App\Http\Controllers\ProgrammesMeetingController::class);
+        $request = new \Illuminate\Http\Request();
+        $presentationData = $controller->getAggregatedPresentationData($request);
+
+        $projectDataList = $presentationData['projectDataList'];
+
+        // Parent department itself is NOT an empty slide
+        $projectNames = collect($projectDataList)->pluck('project_name')->all();
+        $this->assertNotContains('Education', $projectNames);
+
+        // Literacy & After Class are grouped into 1 composite unit
+        $this->assertCount(1, $projectDataList);
+        $combinedUnit = $projectDataList[0];
+        $this->assertEquals('Education (After Class & Literacy)', $combinedUnit['project_name']);
+
+        // Achievements points on the combined slide
+        $achievementPoints = $combinedUnit['theme_points']['achievements'];
+        $this->assertContains('Sessions (Literacy): 20 sessions done', $achievementPoints);
+        $this->assertContains('Sessions (After Class): 20 sessions done', $achievementPoints);
+
+        // Also verify live web projector view displays the combined slide
+        $resProjector = $this->actingAs($superAdmin)->get(route('programmes.projector'));
+        $resProjector->assertStatus(200);
+        $resProjector->assertSee('Education (After Class &amp; Literacy)', false);
+        $resProjector->assertSee('Sessions (Literacy): 20 sessions done');
+        $resProjector->assertSee('Sessions (After Class): 20 sessions done');
+    }
 }

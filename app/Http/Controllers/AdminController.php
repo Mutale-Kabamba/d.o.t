@@ -403,18 +403,20 @@ class AdminController extends Controller
 
         $teams = $query->paginate(12)->withQueryString();
 
-        // Statistics
-        $totalProjects = Project::count();
-        $activeProjects = Project::where('status', 'active')->count();
-        $archivedProjects = Project::where('status', 'archived')->count();
+        // Statistics: Parent departments/areas are not counted as projects
+        $totalProjects = Project::where('is_department', false)->count();
+        $activeProjects = Project::where('is_department', false)->where('status', 'active')->count();
+        $archivedProjects = Project::where('is_department', false)->where('status', 'archived')->count();
+        $totalDepartments = Project::where('is_department', true)->count();
         $allStaff = User::orderBy('name')->get();
-        $departments = Project::where('is_department', true)->orWhereNull('parent_id')->orderBy('name')->get();
+        $departments = Project::where('is_department', true)->with('children')->orderBy('name')->get();
 
         return view('admin.teams.index', [
             'teams' => $teams,
             'totalProjects' => $totalProjects,
             'activeProjects' => $activeProjects,
             'archivedProjects' => $archivedProjects,
+            'totalDepartments' => $totalDepartments,
             'allStaff' => $allStaff,
             'departments' => $departments,
             'search' => $search,
@@ -434,20 +436,42 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:projects,id',
             'is_department' => 'nullable|boolean',
+            'link_group' => 'nullable|string|max:100',
+            'linked_project_id' => 'nullable|exists:projects,id',
+            'linked_project_ids' => 'nullable|array',
             'status' => 'nullable|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
         ]);
+
+        $parentId = $validated['parent_id'] ?? null;
+        $isDept = $request->boolean('is_department');
+        $linkGroup = $validated['link_group'] ?? null;
 
         $project = Project::create([
             'name' => $validated['name'],
             'code' => $validated['code'] ?? null,
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
-            'parent_id' => $validated['parent_id'] ?? null,
-            'is_department' => $request->boolean('is_department'),
+            'parent_id' => $parentId,
+            'link_group' => $linkGroup,
+            'is_department' => $isDept,
             'status' => $validated['status'] ?? 'active',
         ]);
+
+        // Link with selected sibling project if provided
+        $linkedWithIds = array_filter((array) ($request->input('linked_project_ids', [])));
+        if ($request->input('linked_project_id')) {
+            $linkedWithIds[] = $request->input('linked_project_id');
+        }
+        $linkedWithIds = array_diff($linkedWithIds, [$project->id]);
+
+        if (!empty($linkedWithIds) && $parentId && !$isDept) {
+            $existingGroup = Project::whereIn('id', $linkedWithIds)->whereNotNull('link_group')->value('link_group');
+            $grp = $existingGroup ?: ('grp_' . Str::random(8));
+            $project->update(['link_group' => $grp]);
+            Project::whereIn('id', $linkedWithIds)->where('parent_id', $parentId)->update(['link_group' => $grp]);
+        }
 
         if (!empty($validated['user_ids'])) {
             $project->users()->sync($validated['user_ids']);
@@ -468,6 +492,9 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:projects,id',
             'is_department' => 'nullable|boolean',
+            'link_group' => 'nullable|string|max:100',
+            'linked_project_id' => 'nullable',
+            'linked_project_ids' => 'nullable|array',
             'status' => 'required|in:active,archived',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
@@ -478,6 +505,36 @@ class AdminController extends Controller
         if ($parentId && (int) $parentId === (int) $project->id) {
             $parentId = null;
         }
+        $isDept = $request->boolean('is_department');
+        $linkGroup = $validated['link_group'] ?? $project->link_group;
+
+        // Process link with sibling projects under the parent
+        $linkedWithIds = array_filter((array) ($request->input('linked_project_ids', [])));
+        if ($request->filled('linked_project_id')) {
+            $linkedWithIds[] = $request->input('linked_project_id');
+        }
+        $linkedWithIds = array_diff($linkedWithIds, [$project->id]);
+
+        if (!empty($linkedWithIds) && $parentId && !$isDept) {
+            $existingGroup = Project::whereIn('id', array_merge([$project->id], $linkedWithIds))
+                ->whereNotNull('link_group')
+                ->value('link_group');
+            $linkGroup = $existingGroup ?: ('grp_' . Str::random(8));
+
+            Project::whereIn('id', $linkedWithIds)
+                ->where('parent_id', $parentId)
+                ->update(['link_group' => $linkGroup]);
+        } elseif ($request->has('linked_project_id') || $request->has('linked_project_ids')) {
+            // User explicitly cleared the link
+            $oldGroup = $project->link_group;
+            $linkGroup = null;
+            if ($oldGroup) {
+                $rem = Project::where('link_group', $oldGroup)->where('id', '!=', $project->id)->get();
+                if ($rem->count() <= 1) {
+                    Project::where('link_group', $oldGroup)->update(['link_group' => null]);
+                }
+            }
+        }
 
         $project->update([
             'name' => $validated['name'],
@@ -485,7 +542,8 @@ class AdminController extends Controller
             'location' => $validated['location'] ?? null,
             'description' => $validated['description'] ?? null,
             'parent_id' => $parentId,
-            'is_department' => $request->boolean('is_department'),
+            'link_group' => $linkGroup,
+            'is_department' => $isDept,
             'status' => $validated['status'],
         ]);
 
