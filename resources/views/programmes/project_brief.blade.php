@@ -46,7 +46,7 @@
         </div>
 
         <!-- PowerPoint Import Quick-Fill Banner -->
-        <div class="bg-linear-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-5 mb-8 shadow-xs">
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-5 mb-8 shadow-xs">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-3.5">
                     <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">

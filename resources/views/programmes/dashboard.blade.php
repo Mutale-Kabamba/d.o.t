@@ -90,7 +90,7 @@
                         <svg class="w-4 h-4 {{ $currentTab === 'departments' ? 'text-white' : 'text-purple-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
-                        <span>Parent Projects (Departments)</span>
+                        <span>Departments</span>
                     </div>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-black {{ $currentTab === 'departments' ? 'bg-purple-700/50 text-white' : 'bg-purple-50 text-purple-700' }}">
                         {{ $departments->count() }}
@@ -192,6 +192,7 @@
                     <span>/</span>
                     <span class="text-blue-600 font-bold">
                         @if($currentTab === 'projects') Projects Directory
+                        @elseif($currentTab === 'departments') Departments Directory
                         @elseif($currentTab === 'staff') Team &amp; Staff Management
                         @elseif($currentTab === 'matrix') 5 Thematic Pillars Matrix
                         @elseif($currentTab === 'activities') Continuous Activity Logging
@@ -201,6 +202,7 @@
                 </div>
                 <h2 class="text-lg font-black text-slate-900 tracking-tight mt-0.5">
                     @if($currentTab === 'projects') Organizational Projects
+                    @elseif($currentTab === 'departments') Organizational Departments
                     @elseif($currentTab === 'staff') Team &amp; Staff Directory
                     @elseif($currentTab === 'matrix') 5 Thematic Pillars Review
                     @elseif($currentTab === 'activities') Activity Feed &amp; Reports
@@ -954,7 +956,7 @@
 
                     <div class="flex flex-wrap items-center gap-2.5">
                         <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'departments'])) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition">
-                            <span>🏢 Parent Projects (Departments)</span>
+                            <span>🏢 Departments</span>
                             <span class="px-1.5 py-0.2 rounded-full bg-purple-200 text-purple-800 text-[10px] font-black">{{ $departments->count() }}</span>
                         </a>
 
@@ -982,8 +984,8 @@
                     </button>
                 </div>
 
-                <!-- Projects Grid (Styled identically to Department Cards with Blue Theme) -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="projects-grid-container">
+                <!-- Projects Grid (Compact & Sleek with Blue Theme) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="projects-grid-container">
                     @forelse($operationalProjects as $p)
                         @php
                             $isChild = !empty($p->parent_id);
@@ -991,127 +993,108 @@
                             $linkedSiblings = $p->isLinked() ? $p->linkedSiblingProjects()->where('id', '!=', $p->id) : collect();
                         @endphp
 
-                        <div class="project-card bg-white border-2 border-blue-200/80 hover:border-blue-400 rounded-3xl p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-5 bg-linear-to-br from-white via-white to-blue-50/20" data-card-type="{{ $cardType }}">
-                            <div class="space-y-4">
+                        <div class="project-card bg-white border border-blue-200/90 hover:border-blue-400 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-3.5 bg-gradient-to-br from-white via-white to-blue-50/25" data-card-type="{{ $cardType }}">
+                            <div class="space-y-3">
                                 <!-- Top Card Header -->
-                                <div class="flex items-start justify-between gap-3 flex-wrap">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="px-3 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white rounded-lg shadow-2xs flex items-center gap-1.5">
+                                <div class="flex items-center justify-between gap-2 flex-wrap">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white rounded-md shadow-2xs flex items-center gap-1">
                                             <span>📁</span>
                                             <span>PROJECT</span>
                                         </span>
-                                        <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200 rounded-lg">
+                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200 rounded-md">
                                             {{ $p->code ?: 'PROJ' }}
                                         </span>
                                         @if($isChild)
-                                            <span class="px-2.5 py-1 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg flex items-center gap-1" title="Department: {{ $p->parent->name }}">
-                                                <span>🏢</span> Department: {{ $p->parent->name }}
+                                            <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md truncate max-w-[170px]" title="Department: {{ $p->parent->name }}">
+                                                🏢 {{ $p->parent->name }}
                                             </span>
                                             @if($p->isLinked())
-                                                <span class="px-2.5 py-1 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded-lg flex items-center gap-1" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
-                                                    <span>🔗</span> Linked Slide
+                                                <span class="px-1.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded-md" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                                    🔗 Linked
                                                 </span>
                                             @endif
                                         @else
-                                            <span class="px-2.5 py-1 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg flex items-center gap-1">
-                                                <span>📁</span> Standalone Project
+                                            <span class="px-2 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-md">
+                                                📁 Standalone
                                             </span>
                                         @endif
                                     </div>
-                                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full {{ $p->status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $p->status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
                                         ● {{ ucfirst($p->status) }}
                                     </span>
                                 </div>
 
                                 <!-- Project Title & Description -->
                                 <div>
-                                    <h3 class="text-lg font-black text-slate-900 leading-snug tracking-tight">{{ $p->name }}</h3>
-                                    <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                                        {{ $p->description ?: 'Community development and youth empowerment programming.' }}
+                                    <h3 class="text-base font-black text-slate-900 leading-snug tracking-tight">{{ $p->name }}</h3>
+                                    <p class="text-xs text-slate-500 mt-0.5 line-clamp-1 leading-relaxed">
+                                        {{ $p->description ?: 'Operational project delivering community initiatives and field activities.' }}
                                     </p>
                                 </div>
 
-                                <!-- Structured Scope / Department Link Box -->
-                                <div class="bg-blue-50/50 border border-blue-100/80 rounded-2xl p-4 space-y-2">
+                                <!-- Scope / Department Context Pill -->
+                                <div class="bg-blue-50/40 border border-blue-100 rounded-xl px-3 py-2 text-xs flex items-center justify-between gap-2">
                                     @if($isChild)
-                                    <div class="flex items-center justify-between text-xs font-bold text-blue-900">
-                                        <span class="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-blue-700">
-                                            <span>🏢</span>
-                                            <span>Department: {{ $p->parent->name }}</span>
+                                        <span class="flex items-center gap-1.5 text-slate-700 truncate text-[11px]">
+                                            <span class="text-xs">🏢</span>
+                                            <span>Department: <strong class="text-purple-800 font-bold">{{ $p->parent->name }}</strong></span>
                                         </span>
                                         @if($p->isLinked())
-                                            <span class="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[10px] font-bold">
-                                                🔗 Linked Slide with {{ $linkedSiblings->pluck('name')->implode(', ') }}
+                                            <span class="px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-200 rounded text-[9px] font-black shrink-0" title="Linked with {{ $linkedSiblings->pluck('name')->implode(', ') }}">
+                                                🔗 Linked Slide
                                             </span>
                                         @else
-                                            <span class="text-[10px] font-semibold text-blue-600">Sub-project</span>
+                                            <span class="text-[10px] font-semibold text-purple-600 shrink-0">Sub-project</span>
                                         @endif
-                                    </div>
-                                    <p class="text-[11px] text-slate-600">
-                                        Delivered under the <strong class="text-slate-800">{{ $p->parent->name }}</strong> strategic department umbrella.
-                                    </p>
                                     @else
-                                    <div class="flex items-center justify-between text-xs font-bold text-blue-900">
-                                        <span class="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-blue-700">
-                                            <span>📁</span>
-                                            <span>Standalone Initiative</span>
+                                        <span class="flex items-center gap-1.5 text-slate-700 truncate text-[11px]">
+                                            <span class="text-xs">📁</span>
+                                            <span>Standalone Initiative (Direct MEAL Scope)</span>
                                         </span>
-                                        <span class="text-[10px] font-semibold text-blue-600">Direct Scope</span>
-                                    </div>
-                                    <p class="text-[11px] text-slate-600">
-                                        Independent programming initiative reporting directly to executive &amp; MEAL operations.
-                                    </p>
+                                        <span class="text-[10px] font-bold text-blue-700 bg-blue-100/70 px-1.5 py-0.5 rounded shrink-0">Direct Scope</span>
                                     @endif
                                 </div>
 
                                 <!-- Meta Stats Grid -->
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs">
-                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Activities</span>
-                                        <span class="text-base font-black text-slate-900 mt-0.5 block">
-                                            {{ $p->activityEntries->count() }}
-                                        </span>
-                                        <span class="text-[10px] text-slate-400">logged entries</span>
+                                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                    <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Activities</span>
+                                        <span class="text-sm font-black text-slate-900 block leading-tight">{{ $p->activityEntries->count() }}</span>
                                     </div>
-
-                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Location Hub</span>
-                                        <span class="text-xs font-bold text-slate-800 mt-1 block truncate">
-                                            📍 {{ $p->location ?: 'Livingstone' }}
-                                        </span>
+                                    <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Location</span>
+                                        <span class="text-xs font-bold text-slate-800 truncate block mt-0.5" title="{{ $p->location ?: 'Livingstone' }}">📍 {{ $p->location ?: 'Livingstone' }}</span>
                                     </div>
-
-                                    <div class="bg-white border border-slate-200/80 rounded-xl p-3 col-span-2 sm:col-span-1">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Assigned Staff</span>
-                                        <span class="text-xs font-bold text-blue-700 mt-1 block truncate" title="{{ $p->assigned_team_summary }}">
-                                            {{ $p->assigned_team_summary }}
-                                        </span>
+                                    <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Staff</span>
+                                        <span class="text-xs font-bold text-blue-700 truncate block mt-0.5" title="{{ $p->assigned_team_summary }}">{{ $p->assigned_team_summary }}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Project Presentation & Actions Toolbar -->
-                            <div class="pt-4 border-t border-blue-100 flex flex-wrap items-center justify-between gap-2">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition active:scale-95" title="Present this specific project directly">
+                            <div class="pt-3 border-t border-blue-100/90 flex flex-wrap items-center justify-between gap-1.5">
+                                <div class="flex items-center gap-1.5">
+                                    <a href="{{ route('programmes.projects.projector', $p->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this specific project directly">
                                         <span>▶ Project Deck</span>
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition" title="Download Isolated PPTX">
+                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
                                         PPTX
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition" title="Download Isolated PDF">
+                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
                                         PDF
                                     </a>
                                 </div>
 
                                 @if($isSuperAdmin)
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, 0, {{ $p->isLinked() ? ($p->linkedSiblingProjects()->where('id', '!=', $p->id)->first()?->id ?? 'null') : 'null' }})" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition cursor-pointer" title="Edit Project Details">
+                                <div class="flex items-center gap-1">
+                                    <button type="button" onclick="openEditProjectModal({{ $p->id }}, '{{ addslashes($p->name) }}', '{{ addslashes($p->code) }}', '{{ addslashes($p->location) }}', '{{ addslashes($p->description) }}', '{{ $p->status }}', {{ json_encode($p->users->pluck('id')) }}, {{ $p->parent_id ? $p->parent_id : 'null' }}, 0, {{ $p->isLinked() ? ($p->linkedSiblingProjects()->where('id', '!=', $p->id)->first()?->id ?? 'null') : 'null' }})" class="px-2 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition cursor-pointer" title="Edit Project Details">
                                         ⚙️ Edit
                                     </button>
                                     <form action="{{ route('programmes.projects.toggle_status', $p->id) }}" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-xl cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
+                                        <button type="submit" class="p-1.5 text-xs {{ $p->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $p->status === 'active' ? 'Archive Project' : 'Activate Project' }}">
                                             {{ $p->status === 'active' ? '📁' : '⚡' }}
                                         </button>
                                     </form>
@@ -1120,12 +1103,12 @@
                             </div>
                         </div>
                     @empty
-                        <div class="col-span-full bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
-                            <div class="text-4xl">📁</div>
-                            <h3 class="text-base font-bold text-slate-800">No Projects Configured Yet</h3>
+                        <div class="col-span-full bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-3">
+                            <div class="text-3xl">📁</div>
+                            <h3 class="text-sm font-bold text-slate-800">No Projects Configured Yet</h3>
                             <p class="text-xs text-slate-500 max-w-md mx-auto">Create a new standalone or child project to start tracking activities and field achievements.</p>
                             @if($isSuperAdmin)
-                            <button type="button" onclick="document.getElementById('create-project-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <button type="button" onclick="document.getElementById('create-project-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition cursor-pointer">
                                 <span>+ Create First Project</span>
                             </button>
                             @endif
@@ -1134,161 +1117,140 @@
                 </div>
             </div>
             @endif
-            <!-- ==================== TAB: PARENT PROJECTS / DEPARTMENTS DIRECTORY ==================== -->
+            <!-- ==================== TAB: DEPARTMENTS DIRECTORY ==================== -->
             @if($currentTab === 'departments')
             <div class="space-y-6">
-                <!-- Parent Projects Header Toolbar -->
-                <div class="bg-linear-to-r from-purple-900 via-indigo-900 to-purple-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                    <div class="space-y-2 max-w-2xl relative z-10">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 text-xs font-bold uppercase tracking-wider backdrop-blur-xs">
+                <!-- Departments Header Toolbar -->
+                <div class="bg-gradient-to-r from-purple-900 via-indigo-950 to-purple-900 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-purple-800">
+                    <div class="space-y-1.5 max-w-2xl relative z-10">
+                        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 text-[10px] font-bold uppercase tracking-wider">
                             <span>🏢</span>
-                            <span>Strategic Departments &amp; Umbrella Areas</span>
+                            <span>Strategic Departments</span>
                         </div>
-                        <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Parent Projects Directory ({{ $departments->count() }})</h2>
-                        <p class="text-xs sm:text-sm text-purple-200/90 leading-relaxed">
-                            Parent departments act as program umbrellas coordinating operational sub-projects. Departments group related initiatives, pool technical resources, and generate aggregated multi-project presentations.
+                        <h2 class="text-xl sm:text-2xl font-black tracking-tight text-white">Departments Directory ({{ $departments->count() }})</h2>
+                        <p class="text-xs text-purple-200/90 leading-relaxed">
+                            Departments act as program umbrellas coordinating operational sub-projects, pooling technical resources, and generating aggregated presentations.
                         </p>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 relative z-10 shrink-0">
                         @if($isSuperAdmin)
-                        <button type="button" onclick="openCreateDepartmentModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-purple-950 bg-white hover:bg-purple-50 rounded-xl shadow-md transition active:scale-95 cursor-pointer">
-                            <span class="text-sm">🏢</span>
-                            <span>+ Create Parent Department</span>
+                        <button type="button" onclick="openCreateDepartmentModal()" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-purple-950 bg-white hover:bg-purple-50 rounded-xl shadow-xs transition active:scale-95 cursor-pointer">
+                            <span>🏢</span>
+                            <span>+ Create Department</span>
                         </button>
                         @endif
-                        <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'projects'])) }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-purple-700/60 hover:bg-purple-700/80 border border-purple-400/40 rounded-xl transition">
-                            <span>View Child Projects ({{ $projects->where('is_department', false)->count() }})</span>
+                        <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'projects'])) }}" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-purple-800/80 hover:bg-purple-700 border border-purple-400/40 rounded-xl transition">
+                            <span>View Projects ({{ $projects->where('is_department', false)->count() }})</span>
                             <span>→</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- Departments Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     @forelse($departments as $dept)
-                    <div class="bg-white border-2 border-purple-200/80 hover:border-purple-400 rounded-3xl p-6 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-5 bg-linear-to-br from-white via-white to-purple-50/20">
-                        <div class="space-y-4">
+                    <div class="bg-white border border-purple-200/90 hover:border-purple-400 rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-3.5 bg-gradient-to-br from-white via-white to-purple-50/25">
+                        <div class="space-y-3">
                             <!-- Top Card Header -->
-                            <div class="flex items-start justify-between gap-3 flex-wrap">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <span class="px-3 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-lg shadow-2xs flex items-center gap-1.5">
+                            <div class="flex items-center justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white rounded-md shadow-2xs flex items-center gap-1">
                                         <span>🏢</span>
                                         <span>DEPARTMENT</span>
                                     </span>
-                                    <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded-lg">
+                                    <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200 rounded-md">
                                         {{ $dept->code ?: 'DEPT' }}
                                     </span>
-                                    <span class="px-2.5 py-1 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg">
+                                    <span class="px-2 py-0.5 text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-md">
                                         📁 {{ $dept->children->count() }} Sub-{{ Str::plural('Project', $dept->children->count()) }}
                                     </span>
                                 </div>
-                                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full {{ $dept->status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $dept->status === 'active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500' }}">
                                     ● {{ ucfirst($dept->status) }}
                                 </span>
                             </div>
 
                             <!-- Department Title & Details -->
                             <div>
-                                <h3 class="text-lg font-black text-slate-900 leading-snug tracking-tight">{{ $dept->name }}</h3>
-                                <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                <h3 class="text-base font-black text-slate-900 leading-snug tracking-tight">{{ $dept->name }}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5 line-clamp-1 leading-relaxed">
                                     {{ $dept->description ?: 'Umbrella department coordinating thematic projects, partner linkages, and reporting.' }}
                                 </p>
                             </div>
 
-                            <!-- Sub-Projects Listing Box -->
-                            <div class="bg-purple-50/50 border border-purple-100/80 rounded-2xl p-4 space-y-3">
-                                <div class="flex items-center justify-between text-xs font-bold text-purple-900">
-                                    <span class="flex items-center gap-1.5 uppercase text-[10px] tracking-wider text-purple-700">
+                            <!-- Sub-Projects Listing Box (Reduced compact tag style) -->
+                            <div class="bg-purple-50/50 border border-purple-100 rounded-xl p-2.5 space-y-1.5">
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-purple-700">
+                                    <span class="flex items-center gap-1">
                                         <span>↳</span>
-                                        <span>Operational Child Projects</span>
+                                        <span>Operational Sub-Projects</span>
                                     </span>
-                                    <span class="text-[11px] font-semibold text-purple-600">
+                                    <span class="text-[10px] font-semibold text-purple-600">
                                         {{ $dept->children->count() }} registered
                                     </span>
                                 </div>
 
                                 @if($dept->children->isNotEmpty())
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div class="flex flex-wrap gap-1.5">
                                     @foreach($dept->children as $child)
-                                    <div class="bg-white border border-purple-100 rounded-xl p-3 shadow-2xs hover:border-purple-300 transition space-y-1.5">
-                                        <div class="flex items-center justify-between gap-1">
-                                            <span class="text-xs font-bold text-slate-900 truncate">
-                                                {{ $child->name }}
-                                            </span>
-                                            <span class="text-[10px] font-black {{ $child->status === 'active' ? 'text-emerald-600' : 'text-slate-400' }}">
-                                                ●
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center justify-between text-[10px] text-slate-500">
-                                            <span>{{ $child->activityEntries->count() }} activities</span>
-                                            @if($child->isLinked())
-                                                @php
-                                                    $sib = $child->linkedSiblingProjects()->where('id', '!=', $child->id)->first();
-                                                @endphp
-                                                <span class="px-1.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-bold" title="Linked with {{ $sib?->name }}">
-                                                    🔗 Linked
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-purple-200/90 rounded-lg text-xs font-semibold text-slate-800 shadow-2xs hover:border-purple-300 transition">
+                                        <span class="font-bold">{{ $child->name }}</span>
+                                        <span class="text-[10px] text-purple-600 font-bold">({{ $child->activityEntries->count() }} act)</span>
+                                        @if($child->isLinked())
+                                            <span class="text-[9px] text-amber-800 bg-amber-50 px-1 py-0.2 rounded border border-amber-200 font-bold" title="Linked Slide">🔗 Linked</span>
+                                        @endif
+                                    </span>
                                     @endforeach
                                 </div>
                                 @else
-                                <div class="text-xs text-purple-400 italic py-2 text-center bg-white/60 rounded-xl border border-dashed border-purple-200">
-                                    No child projects assigned yet. Edit this department or set parent when creating a project.
+                                <div class="text-[11px] text-purple-400 italic py-1 text-center bg-white/60 rounded-lg border border-dashed border-purple-200">
+                                    No child projects assigned yet.
                                 </div>
                                 @endif
                             </div>
 
                             <!-- Department Meta Stats -->
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 text-xs">
-                                <div class="bg-white border border-slate-200/80 rounded-xl p-3">
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Activities</span>
-                                    <span class="text-base font-black text-slate-900 mt-0.5 block">
-                                        {{ $dept->totalDescendantActivitiesCount() }}
-                                    </span>
-                                    <span class="text-[10px] text-slate-400">across sub-projects</span>
+                            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                                <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Activities</span>
+                                    <span class="text-sm font-black text-slate-900 block leading-tight">{{ $dept->totalDescendantActivitiesCount() }}</span>
                                 </div>
 
-                                <div class="bg-white border border-slate-200/80 rounded-xl p-3">
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Location Hub</span>
-                                    <span class="text-xs font-bold text-slate-800 mt-1 block truncate">
-                                        📍 {{ $dept->location ?: 'Livingstone' }}
-                                    </span>
+                                <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Location</span>
+                                    <span class="text-xs font-bold text-slate-800 truncate block mt-0.5" title="{{ $dept->location ?: 'Livingstone' }}">📍 {{ $dept->location ?: 'Livingstone' }}</span>
                                 </div>
 
-                                <div class="bg-white border border-slate-200/80 rounded-xl p-3 col-span-2 sm:col-span-1">
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Staff / Oversight</span>
-                                    <span class="text-xs font-bold text-purple-700 mt-1 block truncate" title="{{ $dept->assigned_team_summary }}">
-                                        {{ $dept->assigned_team_summary }}
-                                    </span>
+                                <div class="bg-white border border-slate-200/80 rounded-xl py-1.5 px-2">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Oversight</span>
+                                    <span class="text-xs font-bold text-purple-700 truncate block mt-0.5" title="{{ $dept->assigned_team_summary }}">{{ $dept->assigned_team_summary }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Department Presentation & Actions Toolbar -->
-                        <div class="pt-4 border-t border-purple-100 flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <a href="{{ route('programmes.projects.projector', $dept->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition active:scale-95" title="Present all child projects under this department together">
-                                    <span>▶ Project Department Deck</span>
+                        <div class="pt-3 border-t border-purple-100 flex flex-wrap items-center justify-between gap-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <a href="{{ route('programmes.projects.projector', $dept->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this department deck">
+                                    <span>▶ Department Deck</span>
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pptx', $dept->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition" title="Download Department PPTX">
+                                <a href="{{ route('programmes.projects.export_pptx', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
                                     PPTX
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pdf', $dept->id) }}" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition" title="Download Department PDF">
+                                <a href="{{ route('programmes.projects.export_pdf', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
                                     PDF
                                 </a>
                             </div>
 
                             @if($isSuperAdmin)
-                            <div class="flex items-center gap-1.5">
-                                <button type="button" onclick="openEditProjectModal({{ $dept->id }}, '{{ addslashes($dept->name) }}', '{{ addslashes($dept->code) }}', '{{ addslashes($dept->location) }}', '{{ addslashes($dept->description) }}', '{{ $dept->status }}', {{ json_encode($dept->users->pluck('id')) }}, {{ $dept->parent_id ? $dept->parent_id : 'null' }}, 1, null)" class="px-2.5 py-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition cursor-pointer" title="Edit Department Details">
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="openEditProjectModal({{ $dept->id }}, '{{ addslashes($dept->name) }}', '{{ addslashes($dept->code) }}', '{{ addslashes($dept->location) }}', '{{ addslashes($dept->description) }}', '{{ $dept->status }}', {{ json_encode($dept->users->pluck('id')) }}, {{ $dept->parent_id ? $dept->parent_id : 'null' }}, 1, null)" class="px-2 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition cursor-pointer" title="Edit Department Details">
                                     ⚙️ Edit
                                 </button>
                                 <form action="{{ route('programmes.projects.toggle_status', $dept->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="p-1.5 text-xs {{ $dept->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-xl cursor-pointer" title="{{ $dept->status === 'active' ? 'Archive Department' : 'Activate Department' }}">
+                                    <button type="submit" class="p-1.5 text-xs {{ $dept->status === 'active' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} border border-slate-200 rounded-lg cursor-pointer" title="{{ $dept->status === 'active' ? 'Archive Department' : 'Activate Department' }}">
                                         {{ $dept->status === 'active' ? '📁' : '⚡' }}
                                     </button>
                                 </form>
@@ -1297,13 +1259,13 @@
                         </div>
                     </div>
                     @empty
-                    <div class="col-span-full bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
-                        <div class="text-4xl">🏢</div>
-                        <h3 class="text-base font-bold text-slate-800">No Parent Departments Configured Yet</h3>
-                        <p class="text-xs text-slate-500 max-w-md mx-auto">Create a parent department (e.g. Digital Skills, Education) and assign sub-projects under it to coordinate programming and aggregated reviews.</p>
+                    <div class="col-span-full bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-3">
+                        <div class="text-3xl">🏢</div>
+                        <h3 class="text-sm font-bold text-slate-800">No Departments Configured Yet</h3>
+                        <p class="text-xs text-slate-500 max-w-md mx-auto">Create a strategic department to coordinate child projects and generate aggregated presentation decks.</p>
                         @if($isSuperAdmin)
-                        <button type="button" onclick="openCreateDepartmentModal()" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition cursor-pointer">
-                            <span>+ Create First Parent Department</span>
+                        <button type="button" onclick="openCreateDepartmentModal()" class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <span>+ Create First Department</span>
                         </button>
                         @endif
                     </div>
@@ -1311,7 +1273,6 @@
                 </div>
             </div>
             @endif
-
             <!-- ==================== TAB 3: TEAM & STAFF MANAGEMENT (SUPER ADMIN) ==================== -->
             @if($currentTab === 'staff')
             <div class="space-y-6">

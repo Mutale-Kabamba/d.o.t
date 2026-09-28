@@ -504,15 +504,15 @@ class DepartmentsAndActivityPeriodTest extends TestCase
             'reporting_period' => 'Quarter 2 2026',
         ]);
 
-        // 2. Test Hub tab=departments (Separate Parent Projects tab)
+        // 2. Test Hub tab=departments (Separate Departments tab)
         $resDeptTab = $this->actingAs($superAdmin)->get(route('programmes.hub', ['tab' => 'departments']));
         $resDeptTab->assertStatus(200);
-        $resDeptTab->assertSee('Parent Projects Directory');
+        $resDeptTab->assertSee('Departments Directory');
         $resDeptTab->assertSee('DEPARTMENT');
         $resDeptTab->assertSee('Digital Skills');
-        $resDeptTab->assertSee('↳ Ehub');
-        $resDeptTab->assertSee('↳ Going Beyond');
-        $resDeptTab->assertSee('Project Department Deck');
+        $resDeptTab->assertSee('Ehub');
+        $resDeptTab->assertSee('Going Beyond');
+        $resDeptTab->assertSee('Department Deck');
         $resDeptTab->assertSee('2 Sub-Projects');
 
         // 3. Test Hub tab=projects card display (Standalone and Child are all Projects)

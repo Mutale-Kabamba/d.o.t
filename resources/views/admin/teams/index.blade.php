@@ -151,7 +151,7 @@
 
             @if($isDept)
             <!-- ==================== PARENT DEPARTMENT CARD ==================== -->
-            <div class="bg-linear-to-br from-white via-white to-purple-50/25 rounded-2xl border-2 border-purple-300 shadow-xs hover:border-purple-400 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+            <div class="bg-gradient-to-br from-white via-white to-purple-50/25 rounded-2xl border-2 border-purple-300 shadow-xs hover:border-purple-400 hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
                 <div class="space-y-3">
                     <!-- Top Badges -->
                     <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -261,7 +261,7 @@
 
             @else
             <!-- ==================== PROJECT CARD (STANDALONE & CHILD) ==================== -->
-            <div class="bg-linear-to-br from-white via-white to-blue-50/25 rounded-2xl border-2 border-blue-200/80 hover:border-blue-400 shadow-xs hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
+            <div class="bg-gradient-to-br from-white via-white to-blue-50/25 rounded-2xl border-2 border-blue-200/80 hover:border-blue-400 shadow-xs hover:shadow-md transition flex flex-col justify-between p-5 space-y-4">
                 <div class="space-y-3">
                     <!-- Top Badges -->
                     <div class="space-y-1.5">
