@@ -694,10 +694,18 @@ class ActivityEntry extends Model
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
 
+        // Safe HTML formatting tags whitelist (preserve bold, italics, underline, strikethrough, etc.)
+        $safeTagPattern = '/<\/?(?:strong|b|em|i|u|s|strike|del|mark|code|br|span)(?:\s+[^>]*)?>|<a\s+(?:href=["\'][^"\']*["\']|target=["\'][^"\']*["\']|rel=["\'][^"\']*["\']|\s)+>|<\/a>/i';
+        $tokens = [];
+        $tokenized = preg_replace_callback($safeTagPattern, function ($m) use (&$tokens) {
+            $tokens[] = $m[0];
+            return '___SAFE_TAG_' . (count($tokens) - 1) . '___';
+        }, $text);
+
         // Check for custom styled badge: ( [Icon] Name - Type ) URL or [ [Icon] Name - Type ](URL)
         $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
-        if (preg_match($badgePattern, $text)) {
-            return preg_replace_callback($badgePattern, function ($m) use ($isPdf) {
+        if (preg_match($badgePattern, $tokenized)) {
+            $formatted = preg_replace_callback($badgePattern, function ($m) use ($isPdf) {
                 $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
                 $url = $m[3];
 
@@ -706,14 +714,20 @@ class ActivityEntry extends Model
                 }
 
                 return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 2px 4px; vertical-align: middle;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
-            }, htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+            }, $tokenized);
+
+            // Restore safe tokens
+            foreach ($tokens as $idx => $tag) {
+                $formatted = str_replace('___SAFE_TAG_' . $idx . '___', $tag, $formatted);
+            }
+            return $formatted;
         }
 
         // Regex pattern for URLs
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 
         // Check if the point is strictly a standalone URL
-        if (preg_match('/^https?:\/\/[^\s<>"\'\)]+$/i', $text, $matches)) {
+        if (preg_match('/^https?:\/\/[^\s<>"\'\)]+$/i', trim($text), $matches)) {
             $url = $matches[0];
             $label = self::getSmartUrlLabel($url);
 
@@ -724,18 +738,29 @@ class ActivityEntry extends Model
             return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 1px 0; max-width: 100%;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
         }
 
-        // If URL is embedded inside text, escape non-URL text and hyperlink the URL cleanly
-        $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-        return preg_replace_callback($pattern, function ($matches) use ($isPdf) {
-            $url = $matches[0];
-            $label = self::getSmartUrlLabel($url);
+        // Split by tokens, escape non-tag text, and hyperlink URLs
+        $parts = preg_split('/(___SAFE_TAG_\d+___)/', $tokenized, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $escapedParts = [];
+        foreach ($parts as $p) {
+            if (preg_match('/^___SAFE_TAG_(\d+)___$/', $p, $mTag)) {
+                $escapedParts[] = $tokens[(int)$mTag[1]];
+            } else {
+                $escaped = htmlspecialchars($p, ENT_QUOTES, 'UTF-8');
+                $escaped = preg_replace_callback($pattern, function ($matches) use ($isPdf) {
+                    $url = $matches[0];
+                    $label = self::getSmartUrlLabel($url);
 
-            if ($isPdf) {
-                return '<a href="' . $url . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                    if ($isPdf) {
+                        return '<a href="' . $url . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                    }
+
+                    return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; word-break: break-all; display: inline-block;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ' ↗]</a>';
+                }, $escaped);
+                $escapedParts[] = $escaped;
             }
+        }
 
-            return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; word-break: break-all; display: inline-block;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ' ↗]</a>';
-        }, $escaped);
+        return implode('', $escapedParts);
     }
 
     /**
@@ -743,7 +768,7 @@ class ActivityEntry extends Model
      */
     public static function formatPointText(string $text): string
     {
-        $text = trim($text);
+        $text = strip_tags(trim($text));
         if (empty($text)) {
             return '';
         }

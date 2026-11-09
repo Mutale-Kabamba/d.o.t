@@ -1608,13 +1608,65 @@ $entryFormConfig = [
 
                         <!-- Modal Body with Free Large Text Area and Drive Media Link Drawer -->
                         <div class="space-y-3">
-                            <!-- Helper toolbar / point controls -->
-                            <div class="flex items-center justify-between">
+                            <!-- Helper toolbar / point controls with smart text styling actions -->
+                            <div class="flex items-center justify-between flex-wrap gap-2">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold text-slate-700">Points &amp; Key Highlights</span>
                                     <span id="point-modal-badge" class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">0 points</span>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <!-- Smart text styling actions toolbar (Bold, Italics, Underline, Strike, Clear) -->
+                                    <div class="inline-flex items-center bg-slate-100/90 border border-slate-200 rounded-xl p-0.5 gap-0.5 shadow-2xs" role="toolbar" aria-label="Text Formatting">
+                                        <!-- Bold -->
+                                        <button type="button"
+                                                onmousedown="event.preventDefault(); applyTextStyle('bold')"
+                                                id="btn-format-bold"
+                                                title="Bold (Ctrl+B)"
+                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black text-slate-700 hover:bg-white hover:text-blue-600 transition cursor-pointer"
+                                                aria-label="Bold">
+                                            B
+                                        </button>
+                                        <!-- Italic -->
+                                        <button type="button"
+                                                onmousedown="event.preventDefault(); applyTextStyle('italic')"
+                                                id="btn-format-italic"
+                                                title="Italics (Ctrl+I)"
+                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-serif italic font-bold text-slate-700 hover:bg-white hover:text-blue-600 transition cursor-pointer"
+                                                aria-label="Italics">
+                                            I
+                                        </button>
+                                        <!-- Underline -->
+                                        <button type="button"
+                                                onmousedown="event.preventDefault(); applyTextStyle('underline')"
+                                                id="btn-format-underline"
+                                                title="Underline (Ctrl+U)"
+                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs underline font-semibold text-slate-700 hover:bg-white hover:text-blue-600 transition cursor-pointer"
+                                                aria-label="Underline">
+                                            U
+                                        </button>
+                                        <!-- Strikethrough -->
+                                        <button type="button"
+                                                onmousedown="event.preventDefault(); applyTextStyle('strikeThrough')"
+                                                id="btn-format-strike"
+                                                title="Strikethrough"
+                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs line-through font-semibold text-slate-700 hover:bg-white hover:text-blue-600 transition cursor-pointer"
+                                                aria-label="Strikethrough">
+                                            S
+                                        </button>
+                                        <div class="h-4 w-px bg-slate-300 mx-0.5"></div>
+                                        <!-- Clear Formatting -->
+                                        <button type="button"
+                                                onmousedown="event.preventDefault(); applyTextStyle('removeFormat')"
+                                                id="btn-format-clear"
+                                                title="Clear formatting"
+                                                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-slate-500 hover:bg-white hover:text-rose-600 transition cursor-pointer"
+                                                aria-label="Clear formatting">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
                                     <!-- Icon-only link button with tooltip -->
                                     <button type="button"
                                             onclick="toggleDriveLinkArea()"
@@ -1782,7 +1834,7 @@ $entryFormConfig = [
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 pt-1 gap-2">
                                 <span class="flex items-center gap-1.5">
                                     <span>💡</span>
-                                    <span>Each line is recorded as a distinct point. Press <strong>Enter</strong> to start a new bullet. Click <span class="inline-flex items-center justify-center w-5 h-5 bg-white border border-slate-300 rounded text-slate-600">🔗</span> to paste a Drive link.</span>
+                                    <span>Each line is recorded as a distinct point. Press <strong>Enter</strong> for new bullet. Select text to style (<strong>B</strong>, <em>I</em>, <u>U</u>) or paste formatted text directly.</span>
                                 </span>
                                 <span class="hidden sm:inline shrink-0">Press <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Ctrl</kbd> + <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Enter</kbd> to save</span>
                             </div>
@@ -2286,6 +2338,277 @@ function parseLinkString(raw) {
     return null;
 }
 
+
+// --- Smart Text Styling & Formatting Helpers ---
+function applyTextStyle(command) {
+    const editor = document.getElementById('point-modal-editor');
+    if (!editor) return;
+    editor.focus();
+    document.execCommand(command, false, null);
+    updateToolbarActiveStates();
+}
+
+function updateToolbarActiveStates() {
+    const boldBtn = document.getElementById('btn-format-bold');
+    const italicBtn = document.getElementById('btn-format-italic');
+    const underlineBtn = document.getElementById('btn-format-underline');
+    const strikeBtn = document.getElementById('btn-format-strike');
+
+    function setBtnActive(btn, isActive) {
+        if (!btn) return;
+        if (isActive) {
+            btn.classList.add('bg-blue-600', 'text-white', 'shadow-2xs');
+            btn.classList.remove('text-slate-700', 'hover:bg-white', 'hover:text-blue-600');
+        } else {
+            btn.classList.remove('bg-blue-600', 'text-white', 'shadow-2xs');
+            btn.classList.add('text-slate-700', 'hover:bg-white', 'hover:text-blue-600');
+        }
+    }
+
+    try {
+        setBtnActive(boldBtn, document.queryCommandState('bold'));
+        setBtnActive(italicBtn, document.queryCommandState('italic'));
+        setBtnActive(underlineBtn, document.queryCommandState('underline'));
+        setBtnActive(strikeBtn, document.queryCommandState('strikeThrough'));
+    } catch (err) {
+        // queryCommandState may be unavailable or throw in non-editable selection
+    }
+}
+
+function sanitizePointHtml(html) {
+    if (!html || typeof html !== 'string') return '';
+    
+    // Clean leading bullet markers (•, -, *, 1., etc.)
+    let cleaned = html.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
+    cleaned = cleaned.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString('<div>' + cleaned + '</div>', 'text/html');
+        const container = doc.body.firstElementChild;
+        if (!container) return '';
+
+        // Strip dangerous tags completely
+        container.querySelectorAll('script, style, iframe, object, embed, form, input, button, meta, link').forEach(el => el.remove());
+
+        const allowedTags = new Set(['strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'mark', 'span', 'a', 'code', 'br']);
+
+        function sanitizeEl(el) {
+            const children = Array.from(el.childNodes);
+            children.forEach(child => {
+                if (child.nodeType === Node.ELEMENT_NODE) {
+                    const tag = child.tagName.toLowerCase();
+                    if (!allowedTags.has(tag)) {
+                        while (child.firstChild) {
+                            el.insertBefore(child.firstChild, child);
+                        }
+                        el.removeChild(child);
+                    } else {
+                        const attrs = Array.from(child.attributes);
+                        attrs.forEach(attr => {
+                            const name = attr.name.toLowerCase();
+                            if (tag === 'a' && (name === 'href' || name === 'target' || name === 'rel')) {
+                                if (name === 'href' && (attr.value.startsWith('javascript:') || attr.value.startsWith('data:'))) {
+                                    child.removeAttribute(attr.name);
+                                }
+                            } else {
+                                child.removeAttribute(attr.name);
+                            }
+                        });
+                        sanitizeEl(child);
+                    }
+                }
+            });
+        }
+
+        sanitizeEl(container);
+        return container.innerHTML.trim();
+    } catch (e) {
+        return cleaned.trim();
+    }
+}
+
+function parsePastedHtmlToLines(html) {
+    try {
+        const parser = new DOMParser();
+        // Remove Word conditional comments and mso junk
+        let cleanedHtml = html.replace(/<!--[\s\S]*?-->/gi, '');
+        const doc = parser.parseFromString(cleanedHtml, 'text/html');
+
+        doc.querySelectorAll('script, style, meta, link, object, embed, iframe, form, button, input, [style*="mso-list:Ignore"]').forEach(el => el.remove());
+
+        // Normalize inline styles into semantic tags
+        Array.from(doc.body.querySelectorAll('*')).forEach(node => {
+            const tag = node.tagName.toLowerCase();
+            const style = node.style || {};
+            const isBold = tag === 'b' || tag === 'strong' || style.fontWeight === 'bold' || parseInt(style.fontWeight, 10) >= 600;
+            const isItalic = tag === 'i' || tag === 'em' || style.fontStyle === 'italic';
+            const isUnderline = tag === 'u' || (style.textDecoration && style.textDecoration.includes('underline'));
+            const isStrike = tag === 's' || tag === 'strike' || tag === 'del' || (style.textDecoration && style.textDecoration.includes('line-through'));
+
+            let wrapper = null;
+            if (isBold && tag !== 'strong') {
+                wrapper = document.createElement('strong');
+            }
+            if (isItalic && tag !== 'em') {
+                const em = document.createElement('em');
+                if (wrapper) em.appendChild(wrapper); else wrapper = em;
+            }
+            if (isUnderline && tag !== 'u') {
+                const u = document.createElement('u');
+                if (wrapper) u.appendChild(wrapper); else wrapper = u;
+            }
+            if (isStrike && tag !== 's') {
+                const s = document.createElement('s');
+                if (wrapper) s.appendChild(wrapper); else wrapper = s;
+            }
+
+            if (wrapper && (tag === 'span' || tag === 'font')) {
+                while (node.firstChild) {
+                    wrapper.appendChild(node.firstChild);
+                }
+                node.parentNode.replaceChild(wrapper, node);
+            }
+        });
+
+        const lines = [];
+        const blocks = doc.body.querySelectorAll('p, li, tr, h1, h2, h3, h4, h5, h6, blockquote');
+        if (blocks.length > 0) {
+            blocks.forEach(b => {
+                let clean = sanitizePointHtml(b.innerHTML);
+                clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
+                clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+                clean = clean.trim();
+                const plain = (b.innerText || b.textContent || '').replace(/\u00A0/g, ' ').trim();
+                if (plain.length > 0) {
+                    lines.push(clean);
+                }
+            });
+        } else {
+            const rawHtml = doc.body.innerHTML;
+            const segments = rawHtml.split(/<br\s*[\/]?>/i);
+            segments.forEach(seg => {
+                let clean = sanitizePointHtml(seg);
+                clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
+                clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+                clean = clean.trim();
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = clean;
+                if ((tempDiv.innerText || tempDiv.textContent || '').trim().length > 0) {
+                    lines.push(clean);
+                }
+            });
+        }
+
+        return lines;
+    } catch (err) {
+        return [];
+    }
+}
+
+function parsePastedTextToLines(text) {
+    if (!text || typeof text !== 'string') return [];
+    const lines = [];
+    text.split(/\r?\n/).forEach(raw => {
+        let clean = raw.trim();
+        if (clean.length === 0) return;
+        clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
+        clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+        clean = clean.trim();
+        if (clean.length === 0) return;
+
+        // Auto-convert markdown bold and italics
+        clean = clean.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        clean = clean.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+        lines.push(clean);
+    });
+    return lines;
+}
+
+function insertPastedLinesIntoEditor(lines) {
+    const editor = document.getElementById('point-modal-editor');
+    if (!editor || lines.length === 0) return;
+
+    const sel = window.getSelection();
+    let currentBlock = null;
+    if (sel && sel.rangeCount > 0) {
+        currentBlock = sel.getRangeAt(0).startContainer;
+        while (currentBlock && currentBlock.parentNode !== editor) {
+            currentBlock = currentBlock.parentNode;
+        }
+    }
+
+    if (!currentBlock || currentBlock === editor) {
+        currentBlock = editor.lastElementChild;
+    }
+
+    if (lines.length === 1 && sel && sel.rangeCount > 0 && currentBlock && currentBlock.parentNode === editor) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const temp = document.createElement('div');
+        temp.innerHTML = lines[0];
+        const frag = document.createDocumentFragment();
+        let lastNode = null;
+        while (temp.firstChild) {
+            lastNode = temp.firstChild;
+            frag.appendChild(temp.firstChild);
+        }
+        range.insertNode(frag);
+        if (lastNode) {
+            range.setStartAfter(lastNode);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+        return;
+    }
+
+    const isCurrentEmpty = !currentBlock || (currentBlock.innerText || '').trim().length === 0;
+    let insertAfter = currentBlock;
+
+    lines.forEach((lineHtml, idx) => {
+        if (idx === 0 && isCurrentEmpty && currentBlock) {
+            currentBlock.innerHTML = lineHtml || '<br>';
+            insertAfter = currentBlock;
+        } else {
+            const newDiv = document.createElement('div');
+            newDiv.innerHTML = lineHtml || '<br>';
+            if (insertAfter && insertAfter.parentNode === editor) {
+                insertAfter.parentNode.insertBefore(newDiv, insertAfter.nextSibling);
+            } else {
+                editor.appendChild(newDiv);
+            }
+            insertAfter = newDiv;
+        }
+    });
+
+    if (insertAfter) {
+        setCaretToEnd(insertAfter);
+    }
+}
+
+function handleEditorPaste(e) {
+    e.preventDefault();
+    const clipboard = e.clipboardData;
+    if (!clipboard) return;
+
+    const html = clipboard.getData('text/html');
+    const text = clipboard.getData('text/plain');
+
+    let lines = [];
+    if (html && html.trim().length > 0) {
+        lines = parsePastedHtmlToLines(html);
+    }
+    if (!lines || lines.length === 0) {
+        lines = parsePastedTextToLines(text);
+    }
+    if (lines.length === 0) return;
+
+    insertPastedLinesIntoEditor(lines);
+    updateModalPointsBadge();
+    updateToolbarActiveStates();
+}
+
 function openPointModal(pillarNum, subKey) {
     currentModalPillar = pillarNum;
     currentModalKey = subKey;
@@ -2359,13 +2682,13 @@ function openPointModal(pillarNum, subKey) {
         });
     }
 
-    // Populate editor with clean points (no bullets in text; CSS ::before handles bullets!)
+    // Populate editor with clean points (maintaining source format; CSS ::before handles bullets!)
     if (editor) {
         editor.innerHTML = '';
         if (cleanPoints.length > 0) {
             cleanPoints.forEach(p => {
                 const div = document.createElement('div');
-                div.textContent = p;
+                div.innerHTML = sanitizePointHtml(p) || '<br>';
                 editor.appendChild(div);
             });
         } else {
@@ -2374,6 +2697,7 @@ function openPointModal(pillarNum, subKey) {
             editor.appendChild(div);
         }
     }
+    updateToolbarActiveStates();
 
     renderModalAttachedLinks();
     updateModalPointsBadge();
@@ -2430,16 +2754,17 @@ function savePointModal() {
 
     const points = [];
     editor.querySelectorAll(':scope > div').forEach(div => {
+        const clean = sanitizePointHtml(div.innerHTML);
         const text = (div.innerText || div.textContent || '').replace(/\u00A0/g, ' ').trim();
         if (text.length > 0) {
-            points.push(text);
+            points.push(clean);
         }
     });
 
     if (points.length === 0) {
         const raw = (editor.innerText || editor.textContent || '').replace(/\u00A0/g, ' ').trim();
         raw.split('\n').forEach(l => {
-            const clean = l.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+            const clean = sanitizePointHtml(l);
             if (clean.length > 0) points.push(clean);
         });
     }
@@ -2643,14 +2968,14 @@ function refreshPointSummaries() {
                 const firstTwoHtml = firstTwo.map(b => `
                     <div class="flex items-start gap-2.5 py-1 border-b border-slate-100/80">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
-                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${escapeHtml(b)}</div>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${sanitizePointHtml(b)}</div>
                     </div>
                 `).join('');
 
                 const remainingHtml = remaining.map((b, idx) => `
                     <div class="flex items-start gap-2.5 py-1 ${idx < remaining.length - 1 ? 'border-b border-slate-100/80' : ''}">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
-                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${escapeHtml(b)}</div>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${sanitizePointHtml(b)}</div>
                     </div>
                 `).join('');
 
@@ -2958,7 +3283,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Point modal editor Enter & keyboard shortcuts
+    // Point modal editor Enter, formatting shortcuts & paste handling
     const editor = document.getElementById('point-modal-editor');
     if (editor) {
         editor.addEventListener('keydown', function(e) {
@@ -2966,6 +3291,27 @@ document.addEventListener('DOMContentLoaded', function() {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
                 savePointModal();
+                return;
+            }
+
+            // Ctrl/Cmd + B for Bold
+            if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                applyTextStyle('bold');
+                return;
+            }
+
+            // Ctrl/Cmd + I for Italic
+            if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'i') {
+                e.preventDefault();
+                applyTextStyle('italic');
+                return;
+            }
+
+            // Ctrl/Cmd + U for Underline
+            if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'u') {
+                e.preventDefault();
+                applyTextStyle('underline');
                 return;
             }
 
@@ -3020,6 +3366,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         editor.addEventListener('input', updateModalPointsBadge);
+        editor.addEventListener('paste', handleEditorPaste);
+        editor.addEventListener('keyup', updateToolbarActiveStates);
+        editor.addEventListener('mouseup', updateToolbarActiveStates);
+        document.addEventListener('selectionchange', function() {
+            if (document.activeElement === editor || editor.contains(document.activeElement)) {
+                updateToolbarActiveStates();
+            }
+        });
     }
 
     // Drive link input Enter key triggers "Done"
