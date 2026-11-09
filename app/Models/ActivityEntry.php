@@ -656,7 +656,7 @@ class ActivityEntry extends Model
         $text = trim($text);
 
         // Check for custom styled badge: ( [Icon] Name - Type ) URL or [ [Icon] Name - Type ](URL)
-        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
         if (preg_match($badgePattern, $text)) {
             return preg_replace_callback($badgePattern, function ($m) use ($isPdf) {
                 $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
@@ -666,7 +666,7 @@ class ActivityEntry extends Model
                     return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
                 }
 
-                return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 1px 0;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
+                return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 2px 4px; vertical-align: middle;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
             }, htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
         }
 
@@ -713,7 +713,7 @@ class ActivityEntry extends Model
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
 
-        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
         if (preg_match($badgePattern, $text)) {
             return preg_replace_callback($badgePattern, function ($m) {
                 $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
@@ -735,30 +735,55 @@ class ActivityEntry extends Model
      */
     public static function getSmartUrlLabel(string $url): string
     {
-        $host = parse_url($url, PHP_URL_HOST) ?? '';
+        $uLower = strtolower($url);
 
+        // 1. Photos & Images (Drive images, Google Photos, direct image links)
+        if (
+            str_contains($uLower, 'photos.google.com') ||
+            str_contains($uLower, 'googleusercontent.com') ||
+            preg_match('/\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|tiff)(\?|$)/i', $url) ||
+            preg_match('/(?:photo|image|picture|screenshot|img_)/i', $url)
+        ) {
+            return '🖼️ Image';
+        }
+
+        // 2. Google Workspace
         if (str_contains($url, 'docs.google.com/document')) {
-            return '📄 Google Document';
+            return '📄 Google Doc';
         }
         if (str_contains($url, 'docs.google.com/spreadsheets')) {
-            return '📊 Google Spreadsheet';
+            return '📊 Google Sheets';
         }
         if (str_contains($url, 'docs.google.com/presentation')) {
-            return '📑 Google Presentation';
+            return '📑 Google Slides';
         }
-        if (str_contains($url, 'drive.google.com/drive/folders') || str_contains($url, 'drive.google.com/drive/u/') || str_contains($url, 'drive.google.com/file')) {
-            return '📁 Google Drive Folder';
+
+        // 3. Drive Folders & Files
+        if (str_contains($url, 'drive.google.com/drive/folders')) {
+            return '📁 Drive Folder';
         }
+        if (str_contains($url, 'drive.google.com/file') || str_contains($url, 'drive.google.com/open')) {
+            return '📁 Drive File';
+        }
+        if (str_contains($url, 'drive.google.com')) {
+            return '📁 Google Drive';
+        }
+
+        // 4. Media & Docs
         if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
             return '🎥 Video Link';
         }
+        if (preg_match('/\.pdf(\?|$)/i', $url)) {
+            return '📕 PDF Document';
+        }
         if (str_contains($url, 'dropbox.com')) {
-            return '📦 Dropbox Attachment';
+            return '📦 Dropbox';
         }
         if (str_contains($url, 'onedrive') || str_contains($url, 'sharepoint.com')) {
-            return '📁 OneDrive Attachment';
+            return '📁 OneDrive';
         }
 
+        $host = parse_url($url, PHP_URL_HOST) ?? '';
         $cleanHost = preg_replace('/^www\./i', '', $host);
         return !empty($cleanHost) ? '🔗 ' . $cleanHost : '🔗 View Attachment';
     }

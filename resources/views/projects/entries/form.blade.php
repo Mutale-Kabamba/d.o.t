@@ -1481,7 +1481,7 @@ $entryFormConfig = [
                                         </span>
                                         <div>
                                             <h5 class="text-xs font-bold text-slate-900">Add Media Link from Drive</h5>
-                                            <p class="text-[11px] text-slate-500">Auto-detects document type and creates a clickable link</p>
+                                            <p class="text-[11px] text-slate-500">Auto-detects document/media type or click a pill to choose</p>
                                         </div>
                                     </div>
                                     <button type="button"
@@ -1498,14 +1498,56 @@ $entryFormConfig = [
                                     <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
                                         <span>Google Drive / Document Link <span class="text-rose-500">*</span></span>
                                         <span id="drive-detected-badge" class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded-md hidden">
-                                            📁 Google Drive
+                                            🖼️ Image
                                         </span>
                                     </label>
                                     <input type="url"
                                            id="drive-link-input"
-                                           placeholder="Paste link: https://docs.google.com/spreadsheets/d/... or Google Doc / Drive link"
+                                           placeholder="Paste link: https://drive.google.com/... or Google Doc / Image / Sheet link"
                                            class="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
                                            oninput="onDriveUrlInput()">
+                                </div>
+
+                                <!-- Quick Type Selector Chips -->
+                                <div class="space-y-1.5 pt-1">
+                                    <div class="flex items-center justify-between text-[11px]">
+                                        <span class="text-slate-500 font-medium">Media / Document Type:</span>
+                                        <span class="text-[10px] text-slate-400">Auto-detected or click to choose</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap" id="drive-type-chips">
+                                        <button type="button" onclick="setManualLinkType('🖼️', 'Image')" data-type="Image"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            🖼️ Image
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📄', 'Google Doc')" data-type="Google Doc"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📄 Doc
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📊', 'Google Sheets')" data-type="Google Sheets"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📊 Sheet
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📑', 'Google Slides')" data-type="Google Slides"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📑 Slides
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📁', 'Drive Folder')" data-type="Drive Folder"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📁 Folder
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📁', 'Drive File')" data-type="Drive File"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📁 File
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('🎥', 'Video')" data-type="Video"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            🎥 Video
+                                        </button>
+                                        <button type="button" onclick="setManualLinkType('📕', 'PDF')" data-type="PDF"
+                                                class="type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs">
+                                            📕 PDF
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Live Preview Badge -->
@@ -1513,20 +1555,36 @@ $entryFormConfig = [
                                     <div class="flex items-center gap-2">
                                         <span class="text-slate-500 font-medium">Link preview:</span>
                                         <span id="drive-link-preview-badge" class="font-semibold text-blue-800 bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-2xs">
-                                            ( 📁 Drive Link )
+                                            ( 🖼️ Image )
                                         </span>
                                     </div>
-                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into the text area as a clickable link</span>
+                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into the text area as a clickable badge</span>
                                 </div>
                             </div>
 
                             <!-- Free Large Text Area with Clickable Links Support -->
+                            <style>
+                                #point-modal-editor {
+                                    line-height: 1.85 !important;
+                                }
+                                #point-modal-editor > div {
+                                    padding-top: 8px !important;
+                                    padding-bottom: 8px !important;
+                                    margin-bottom: 6px !important;
+                                    border-bottom: 1px dashed rgba(226, 232, 240, 0.8) !important;
+                                    min-height: 36px !important;
+                                }
+                                #point-modal-editor > div:last-child {
+                                    border-bottom: none !important;
+                                    margin-bottom: 0 !important;
+                                }
+                            </style>
                             <div class="relative">
                                 <div id="point-modal-editor"
                                      contenteditable="true"
                                      role="textbox"
                                      aria-multiline="true"
-                                     class="w-full text-xs sm:text-sm font-normal text-slate-800 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-relaxed outline-none min-h-[240px] max-h-[50vh] overflow-y-auto bg-white whitespace-pre-wrap select-text"
+                                     class="w-full text-xs sm:text-sm font-normal text-slate-800 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-loose outline-none min-h-[240px] max-h-[50vh] overflow-y-auto bg-white whitespace-pre-wrap select-text"
                                      data-placeholder="• e.g. 5 Coach Clinics conducted across 3 zones&#10;• e.g. 40 youth peer educators trained and certified"></div>
                             </div>
 
@@ -1806,11 +1864,23 @@ const pointSectionMeta = {
 let currentModalPillar = 1;
 let currentModalKey = 'milestones';
 let lastSavedRange = null;
+let currentLinkType = { icon: '🖼️', type: 'Image' };
 
 function detectDocumentInfo(url) {
     if (!url) return { icon: '📁', type: 'Drive Link' };
     const u = url.toLowerCase();
 
+    // 1. Photos & Images (Drive images, Google Photos, web images, image extensions)
+    if (
+        u.includes('photos.google.com') ||
+        u.includes('googleusercontent.com') ||
+        /\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|tiff)(\?|$)/i.test(url) ||
+        /(photo|image|picture|screenshot|img_)/i.test(url)
+    ) {
+        return { icon: '🖼️', type: 'Image' };
+    }
+
+    // 2. Google Workspace
     if (u.includes('docs.google.com/spreadsheets')) {
         return { icon: '📊', type: 'Google Sheets' };
     }
@@ -1820,6 +1890,8 @@ function detectDocumentInfo(url) {
     if (u.includes('docs.google.com/presentation')) {
         return { icon: '📑', type: 'Google Slides' };
     }
+
+    // 3. Drive Folders & Files
     if (u.includes('drive.google.com/drive/folders')) {
         return { icon: '📁', type: 'Drive Folder' };
     }
@@ -1829,8 +1901,13 @@ function detectDocumentInfo(url) {
     if (u.includes('drive.google.com')) {
         return { icon: '📁', type: 'Google Drive' };
     }
+
+    // 4. Media & Docs
     if (u.includes('youtube.com') || u.includes('youtu.be')) {
         return { icon: '🎥', type: 'Video' };
+    }
+    if (/\.pdf(\?|$)/i.test(url)) {
+        return { icon: '📕', type: 'PDF' };
     }
     if (u.includes('dropbox.com')) {
         return { icon: '📦', type: 'Dropbox' };
@@ -1838,7 +1915,32 @@ function detectDocumentInfo(url) {
     if (u.includes('onedrive') || u.includes('sharepoint.com')) {
         return { icon: '📁', type: 'OneDrive' };
     }
+
     return { icon: '🔗', type: 'Media Link' };
+}
+
+function updateActiveTypeChip(type) {
+    document.querySelectorAll('#drive-type-chips .type-chip').forEach(btn => {
+        if (btn.getAttribute('data-type') === type) {
+            btn.className = 'type-chip px-2.5 py-1 text-xs font-bold rounded-lg border border-blue-600 bg-blue-600 text-white shadow-xs transition cursor-pointer flex items-center gap-1 scale-[1.02]';
+        } else {
+            btn.className = 'type-chip px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-600 transition cursor-pointer flex items-center gap-1 shadow-2xs';
+        }
+    });
+}
+
+function setManualLinkType(icon, type) {
+    currentLinkType = { icon, type };
+    updateActiveTypeChip(type);
+    const badge = document.getElementById('drive-detected-badge');
+    const preview = document.getElementById('drive-link-preview-badge');
+    if (badge) {
+        badge.textContent = `${icon} ${type}`;
+        badge.classList.remove('hidden');
+    }
+    if (preview) {
+        preview.textContent = `( ${icon} ${type} )`;
+    }
 }
 
 function onDriveUrlInput() {
@@ -1850,6 +1952,8 @@ function onDriveUrlInput() {
     const url = input.value.trim();
     if (url.length > 0) {
         const info = detectDocumentInfo(url);
+        currentLinkType = info;
+        updateActiveTypeChip(info.type);
         if (badge) {
             badge.textContent = `${info.icon} ${info.type}`;
             badge.classList.remove('hidden');
@@ -1859,7 +1963,7 @@ function onDriveUrlInput() {
         }
     } else {
         if (badge) badge.classList.add('hidden');
-        if (preview) preview.textContent = '( 📁 Drive Link )';
+        if (preview) preview.textContent = `( ${currentLinkType.icon} ${currentLinkType.type} )`;
     }
 }
 
@@ -1895,7 +1999,7 @@ function applyDriveLinkAndClose() {
     if (urlInput && editor) {
         const url = urlInput.value.trim();
         if (url.length > 0) {
-            const info = detectDocumentInfo(url);
+            const info = currentLinkType || detectDocumentInfo(url);
             
             // Create clickable link badge element: ( Drive Icon: Document Type )
             const linkA = document.createElement('a');
@@ -1903,9 +2007,11 @@ function applyDriveLinkAndClose() {
             linkA.target = '_blank';
             linkA.rel = 'noopener noreferrer';
             linkA.contentEditable = 'false';
-            linkA.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-xs no-underline mx-1 align-baseline transition cursor-pointer select-none';
+            linkA.setAttribute('data-icon', info.icon);
+            linkA.setAttribute('data-type', info.type);
+            linkA.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs';
             linkA.title = `Open ${info.type} in new tab`;
-            linkA.innerHTML = `${info.icon} ${info.type} <span class="text-[10px] opacity-70">↗</span>`;
+            linkA.innerHTML = `<span>${info.icon} ${info.type}</span> <span class="text-[10px] opacity-75 font-bold">↗</span>`;
 
             editor.focus();
             const sel = window.getSelection();
@@ -1922,7 +2028,7 @@ function applyDriveLinkAndClose() {
                 range.insertNode(linkA);
 
                 // Add non-breaking space after link and place cursor after
-                const space = document.createTextNode(' ');
+                const space = document.createTextNode('\u00A0');
                 linkA.parentNode.insertBefore(space, linkA.nextSibling);
 
                 range.setStartAfter(space);
@@ -1931,7 +2037,7 @@ function applyDriveLinkAndClose() {
                 sel.addRange(range);
             } else {
                 editor.appendChild(linkA);
-                editor.appendChild(document.createTextNode(' '));
+                editor.appendChild(document.createTextNode('\u00A0'));
             }
 
             urlInput.value = '';
@@ -1952,7 +2058,7 @@ function insertBulletPoint() {
     const sel = window.getSelection();
     
     const div = document.createElement('div');
-    div.innerHTML = '• ';
+    div.innerHTML = '•\u00A0';
 
     if (sel && sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
@@ -1988,6 +2094,10 @@ function openPointModal(pillarNum, subKey) {
     if (linkBox) linkBox.classList.add('hidden');
     if (linkInput) linkInput.value = '';
 
+    // Reset default active chip
+    currentLinkType = { icon: '🖼️', type: 'Image' };
+    updateActiveTypeChip('Image');
+
     const colorClasses = {
         blue: 'bg-blue-600 hover:bg-blue-700',
         amber: 'bg-amber-600 hover:bg-amber-700',
@@ -2017,15 +2127,30 @@ function openPointModal(pillarNum, subKey) {
             existingPoints.forEach(p => {
                 let text = p.startsWith('•') ? p.substring(1).trim() : p;
                 
-                // Extract URL if present
-                const urlMatch = text.match(/https?:\/\/[^\s<>"')]+/i);
+                // Extract custom badge and URL if present
+                const badgeRegex = /(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"')]+)\s*\)?/u;
+                const badgeMatch = text.match(badgeRegex);
+
                 let linkHtml = '';
-                if (urlMatch) {
-                    const url = urlMatch[0];
-                    const info = detectDocumentInfo(url);
-                    // Remove any old badge or url from the text so it does not duplicate
-                    text = text.replace(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])?\s*https?:\/\/[^\s<>"')]+/iu, '').trim();
-                    linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-xs no-underline mx-1 align-baseline transition cursor-pointer select-none" title="Open ${info.type} in new tab">${info.icon} ${info.type} <span class="text-[10px] opacity-70">↗</span></a>\u00A0`;
+                if (badgeMatch) {
+                    const label = (badgeMatch[1] || badgeMatch[2]).trim();
+                    const url = badgeMatch[3];
+                    text = text.replace(badgeMatch[0], '').trim();
+                    
+                    // Separate icon from type if present
+                    const iconMatch = label.match(/^([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎])\s*(.*)$/u);
+                    const icon = iconMatch ? iconMatch[1] : '🔗';
+                    const type = iconMatch ? iconMatch[2] : label;
+
+                    linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" data-icon="${icon}" data-type="${escapeHtmlAttr(type)}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs" title="Open ${escapeHtmlAttr(type)} in new tab"><span>${icon} ${escapeHtml(type)}</span> <span class="text-[10px] opacity-75 font-bold">↗</span></a>\u00A0`;
+                } else {
+                    const urlMatch = text.match(/https?:\/\/[^\s<>"')]+/i);
+                    if (urlMatch) {
+                        const url = urlMatch[0];
+                        const info = detectDocumentInfo(url);
+                        text = text.replace(urlMatch[0], '').trim();
+                        linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" data-icon="${info.icon}" data-type="${escapeHtmlAttr(info.type)}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs" title="Open ${info.type} in new tab"><span>${info.icon} ${info.type}</span> <span class="text-[10px] opacity-75 font-bold">↗</span></a>\u00A0`;
+                    }
                 }
 
                 const lineDiv = document.createElement('div');
@@ -2106,6 +2231,18 @@ function savePointModal() {
         lineElements.forEach(lineEl => {
             const linkA = lineEl.querySelector('a[href]');
             const url = linkA ? linkA.getAttribute('href') : null;
+            let icon = linkA ? linkA.getAttribute('data-icon') : null;
+            let type = linkA ? linkA.getAttribute('data-type') : null;
+
+            if (linkA && (!icon || !type)) {
+                const textBadge = linkA.innerText || linkA.textContent || '';
+                const clean = textBadge.replace(/↗/g, '').trim();
+                const m = clean.match(/^([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎])\s*(.*)$/u);
+                if (m) {
+                    icon = m[1];
+                    type = m[2];
+                }
+            }
 
             const clone = lineEl.cloneNode(true);
             const cloneA = clone.querySelector('a');
@@ -2115,8 +2252,12 @@ function savePointModal() {
             text = text.replace(/\u00A0/g, ' ').replace(/^[•\-\*\d+\.]\s*/, '').trim();
 
             if (url) {
-                const info = detectDocumentInfo(url);
-                const badge = `( ${info.icon} ${info.type} )`;
+                if (!icon || !type) {
+                    const info = detectDocumentInfo(url);
+                    icon = info.icon;
+                    type = info.type;
+                }
+                const badge = `( ${icon} ${type} )`;
                 const combined = text ? `${text} ${badge} ${url}` : `${badge} ${url}`;
                 points.push(combined);
             } else if (text.length > 0) {
@@ -2165,12 +2306,12 @@ function escapeHtml(text) {
 
 function renderPointPreview(pt) {
     // 1. Check for custom badge + url pattern: ( Icon Name - Type ) URL
-    const badgeMatch = pt.match(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
+    const badgeMatch = pt.match(/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
     if (badgeMatch) {
         const label = badgeMatch[1] || badgeMatch[2];
         const url = badgeMatch[3];
         const textOnly = pt.replace(badgeMatch[0], '').trim();
-        const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
+        const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs align-middle mx-1.5 my-0.5">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
         return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
     }
 
@@ -2184,7 +2325,7 @@ function renderPointPreview(pt) {
     const info = detectDocumentInfo(url);
     const label = `${info.icon} ${info.type}`;
 
-    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
+    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs align-middle mx-1.5 my-0.5">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
 
     return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
 }
@@ -2266,11 +2407,11 @@ function refreshPointSummaries() {
                 summaryEl.className = 'text-xs text-slate-400 italic';
                 summaryEl.innerHTML = 'Not yet filled';
             } else {
-                summaryEl.className = 'text-xs text-slate-700 space-y-1.5 pt-1';
+                summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
                 summaryEl.innerHTML = bullets.map(b => `
-                    <div class="flex items-start gap-2">
-                        <span class="text-slate-400 font-bold">•</span>
-                        <div class="font-normal text-slate-700 leading-snug flex-1">${renderPointPreview(b)}</div>
+                    <div class="flex items-start gap-2.5 py-1 border-b border-slate-100/80 last:border-b-0">
+                        <span class="text-blue-500 font-bold leading-relaxed">•</span>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
                     </div>
                 `).join('');
             }
