@@ -216,6 +216,24 @@ $entryFormConfig = [
     <!-- Main Container -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
+        @php
+            $backUrl = route('programmes.hub');
+            if (!empty($programme)) {
+                $backUrl = route('programmes.activities.index', $programme->slug);
+            } elseif (!empty($project)) {
+                $backUrl = route('projects.entries.index', $project);
+            }
+        @endphp
+
+        <div class="flex items-center justify-between">
+            <a href="{{ $backUrl }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                <span>Back</span>
+            </a>
+        </div>
+
         @if($errors->any())
         <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl text-xs shadow-xs">
             <div class="font-bold mb-1 flex items-center gap-1.5">
@@ -417,888 +435,1394 @@ $entryFormConfig = [
                 </div>
             </div>
 
-            <!-- 2. Smart Stepper & Tabbed Pillar Navigation Bar -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs sticky top-18 z-30 space-y-3">
-                <!-- Stepper Pills -->
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                    <!-- Pillar 1 -->
-                    <button type="button" onclick="switchPillar(1)" id="pillar-tab-1"
-                            data-active-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                            data-inactive-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
-                            class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-blue-600 text-white shadow-md shadow-blue-500/20">
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-black uppercase tracking-wider opacity-80">Pillar 1</div>
-                            <div class="text-xs font-bold truncate">Achievements</div>
-                        </div>
-                        <span id="pillar-tab-count-1" class="text-xs shrink-0 ml-1">0 pts</span>
-                    </button>
-
-                    <!-- Pillar 2 -->
-                    <button type="button" onclick="switchPillar(2)" id="pillar-tab-2"
-                            data-active-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-amber-600 text-white shadow-md shadow-amber-500/20"
-                            data-inactive-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
-                            class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200">
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-black uppercase tracking-wider opacity-80">Pillar 2</div>
-                            <div class="text-xs font-bold truncate">Challenges &amp; Risks</div>
-                        </div>
-                        <span id="pillar-tab-count-2" class="text-xs shrink-0 ml-1">0 pts</span>
-                    </button>
-
-                    <!-- Pillar 3 -->
-                    <button type="button" onclick="switchPillar(3)" id="pillar-tab-3"
-                            data-active-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-purple-600 text-white shadow-md shadow-purple-500/20"
-                            data-inactive-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
-                            class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200">
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-black uppercase tracking-wider opacity-80">Pillar 3</div>
-                            <div class="text-xs font-bold truncate">Learning</div>
-                        </div>
-                        <span id="pillar-tab-count-3" class="text-xs shrink-0 ml-1">0 pts</span>
-                    </button>
-
-                    <!-- Pillar 4 -->
-                    <button type="button" onclick="switchPillar(4)" id="pillar-tab-4"
-                            data-active-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
-                            data-inactive-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
-                            class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200">
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-black uppercase tracking-wider opacity-80">Pillar 4</div>
-                            <div class="text-xs font-bold truncate">M&amp;E Metrics</div>
-                        </div>
-                        <span id="pillar-tab-count-4" class="text-xs shrink-0 ml-1">0 pts</span>
-                    </button>
-
-                    <!-- Pillar 5 -->
-                    <button type="button" onclick="switchPillar(5)" id="pillar-tab-5"
-                            data-active-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-emerald-600 text-white shadow-md shadow-emerald-500/20 col-span-2 sm:col-span-1"
-                            data-inactive-class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 col-span-2 sm:col-span-1"
-                            class="p-2.5 rounded-xl text-left transition flex items-center justify-between cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 col-span-2 sm:col-span-1">
-                        <div class="min-w-0">
-                            <div class="text-[10px] font-black uppercase tracking-wider opacity-80">Pillar 5</div>
-                            <div class="text-xs font-bold truncate">Collaboration</div>
-                        </div>
-                        <span id="pillar-tab-count-5" class="text-xs shrink-0 ml-1">0 pts</span>
-                    </button>
-                </div>
-
-                <!-- Progress Bar -->
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div id="pillar-progress-bar" class="h-full transition-all duration-300 ease-out bg-blue-600" style="width: 20%;"></div>
-                </div>
+            <!-- Hidden compatibility elements for legacy scripts & counters -->
+            <div class="hidden" aria-hidden="true" style="display: none !important;">
+                <div id="pillar-progress-bar"></div>
+                <button type="button" id="btn-prev-pillar"></button>
+                <button type="button" id="btn-next-pillar"><span id="btn-next-pillar-label"></span></button>
+                <div id="pillar-tab-1" data-active-class="" data-inactive-class=""></div>
+                <div id="pillar-tab-2" data-active-class="" data-inactive-class=""></div>
+                <div id="pillar-tab-3" data-active-class="" data-inactive-class=""></div>
+                <div id="pillar-tab-4" data-active-class="" data-inactive-class=""></div>
+                <div id="pillar-tab-5" data-active-class="" data-inactive-class=""></div>
+                <span id="pillar-tab-count-1"></span>
+                <span id="pillar-tab-count-2"></span>
+                <span id="pillar-tab-count-3"></span>
+                <span id="pillar-tab-count-4"></span>
+                <span id="pillar-tab-count-5"></span>
             </div>
 
             <!-- ==================== PILLAR 1: PROJECT ACHIEVEMENTS ==================== -->
-            <div id="pillar-panel-1" class="space-y-6">
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div id="pillar-card-1" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 transition-all duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                 1
                             </span>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-900">Pillar 1: Project Achievements</h3>
-                                <p class="text-xs text-slate-500">Capture discrete milestones, quantitative impact evidence, and positive human stories.</p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 1: Project Achievements</h3>
                         </div>
-                        <span class="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full shrink-0">
-                            Step 1 of 5
-                        </span>
+                        <p class="text-xs text-slate-500 max-w-2xl">Capture discrete milestones, quantitative impact evidence, and positive human stories.</p>
                     </div>
+                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <button type="button"
+                                onclick="togglePillarEdit(1)"
+                                id="btn-toggle-pillar-1"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <span id="btn-toggle-label-1">Collapse</span>
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Qualitative Narrative Entries -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Sub-Section 1: Key Milestones -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                                        <span>1. Key Milestones</span>
+                <!-- Status / Preview summary (visible when collapsed) -->
+                <div id="pillar-summary-1" class="text-xs text-slate-400 italic hidden">
+                    Not yet filled
+                </div>
+
+                <!-- Editing panel (progressive disclosure) -->
+                <div id="pillar-edit-area-1" class="space-y-6 pt-4 border-t border-slate-100">
+                    <div id="pillar-panel-1" class="space-y-6">
+                        <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Progressive Card Layout -->
+                        <div class="space-y-4">
+                            <!-- Sub-Section 1: Key Milestones -->
+                            <div id="point-card-1-milestones" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">1. Key Milestones</h4>
+                                            <span id="badge-count-1-milestones" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Major operational, structural, or program activities completed this cycle.</p>
                                     </div>
-                                    <span id="badge-count-1-milestones" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Major operational, structural, or program activities completed this cycle.</p>
-
-                                <div id="bullet-container-1-milestones" class="space-y-2">
-                                    @foreach($initialPillars[1]['milestones']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_1_achievements[milestones][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. 5 Coach Clinics conducted across 3 zones"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
-                                               data-pillar="1" data-key="milestones">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(1, 'milestones')"
+                                                id="btn-toggle-point-1-milestones"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-1-milestones">Collapse</span>
                                         </button>
                                     </div>
-                                    @endforeach
                                 </div>
 
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(1, 'milestones', 'e.g. 5 Coach Clinics conducted across 3 zones', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Milestone Point</span>
-                                    </button>
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-1-milestones" class="text-xs text-slate-400 italic hidden">
+                                    Not yet filled
                                 </div>
 
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_1_achievements[milestones][narrative]" value="{{ $initialPillars[1]['milestones']['narrative'] }}">
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-1-milestones" class="space-y-3 pt-3 border-t border-slate-200/70">
+                                    <div id="bullet-container-1-milestones" class="space-y-2">
+                                        @foreach($initialPillars[1]['milestones']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_1_achievements[milestones][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. 5 Coach Clinics conducted across 3 zones"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
+                                                   data-pillar="1" data-key="milestones">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(1, 'milestones', 'e.g. 5 Coach Clinics conducted across 3 zones', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Milestone Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_1_achievements[milestones][narrative]" value="{{ $initialPillars[1]['milestones']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(1, 'milestones')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(1, 'milestones')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 2: Impact Evidence -->
+                            <div id="point-card-1-impact" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">2. Impact Evidence</h4>
+                                            <span id="badge-count-1-impact" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Tangible changes, participant numbers, percentages (e.g. 98% passed), or survey data.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(1, 'impact')"
+                                                id="btn-toggle-point-1-impact"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-1-impact">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-1-impact" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-1-impact" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-1-impact" class="space-y-2">
+                                        @foreach($initialPillars[1]['impact']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_1_achievements[impact][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. 94% retention rate achieved among girls cohort"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
+                                                   data-pillar="1" data-key="impact">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(1, 'impact', 'e.g. 94% retention rate achieved among girls cohort', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Impact Evidence</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_1_achievements[impact][narrative]" value="{{ $initialPillars[1]['impact']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(1, 'impact')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(1, 'impact')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 3: Success Stories -->
+                            <div id="point-card-1-stories" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">3. Success Stories</h4>
+                                            <span id="badge-count-1-stories" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Individual or community transformation highlights, quotes, and peer role model wins.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(1, 'stories')"
+                                                id="btn-toggle-point-1-stories"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-1-stories">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-1-stories" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-1-stories" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-1-stories" class="space-y-2">
+                                        @foreach($initialPillars[1]['stories']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_1_achievements[stories][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Chanda secured tertiary scholarship after leadership training"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
+                                                   data-pillar="1" data-key="stories">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(1, 'stories', 'e.g. Chanda secured tertiary scholarship after leadership training', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Success Story</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_1_achievements[stories][narrative]" value="{{ $initialPillars[1]['stories']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(1, 'stories')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(1, 'stories')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sub-Section 2: Impact Evidence -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                                        <span>2. Impact Evidence</span>
-                                    </div>
-                                    <span id="badge-count-1-impact" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Tangible changes, participant numbers, percentages (e.g. 98% passed), or survey data.</p>
-
-                                <div id="bullet-container-1-impact" class="space-y-2">
-                                    @foreach($initialPillars[1]['impact']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_1_achievements[impact][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. 94% retention rate achieved among girls cohort"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
-                                               data-pillar="1" data-key="impact">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(1, 'impact', 'e.g. 94% retention rate achieved among girls cohort', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Impact Evidence</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_1_achievements[impact][narrative]" value="{{ $initialPillars[1]['impact']['narrative'] }}">
+                        <!-- Pillar 1 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                        <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="pillar_1_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <span>Detailed Summary</span>
+                                    <span class="text-[11px] font-normal text-slate-500">(Detailed Narrative for Pillar 1 Achievements)</span>
+                                </label>
+                                <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 1 Narrative</span>
                             </div>
-                        </div>
-
-                        <!-- Sub-Section 3: Success Stories -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-                                        <span>3. Success Stories</span>
-                                    </div>
-                                    <span id="badge-count-1-stories" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Individual or community transformation highlights, quotes, and peer role model wins.</p>
-
-                                <div id="bullet-container-1-stories" class="space-y-2">
-                                    @foreach($initialPillars[1]['stories']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_1_achievements[stories][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Chanda secured tertiary scholarship after leadership training"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bullet-input"
-                                               data-pillar="1" data-key="stories">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(1, 'stories', 'e.g. Chanda secured tertiary scholarship after leadership training', 'blue')" class="w-full py-1.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Success Story</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_1_achievements[stories][narrative]" value="{{ $initialPillars[1]['stories']['narrative'] }}">
-                            </div>
+                            <textarea id="pillar_1_narrative"
+                                      name="pillar_1_narrative"
+                                      rows="4"
+                                      placeholder="Provide the comprehensive qualitative narrative on operational context, stakeholder execution dynamics, and positive human stories for Pillar 1 Achievements..."
+                                      class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['narrative'] }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Pillar 1 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
-                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label for="pillar_1_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                <span>Detailed Summary</span>
-                                <span class="text-[11px] font-normal text-slate-500">(Detailed Narrative for Pillar 1 Achievements)</span>
-                            </label>
-                            <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 1 Narrative</span>
-                        </div>
-                        <textarea id="pillar_1_narrative"
-                                  name="pillar_1_narrative"
-                                  rows="4"
-                                  placeholder="Provide the comprehensive qualitative narrative on operational context, stakeholder execution dynamics, and positive human stories for Pillar 1 Achievements..."
-                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['narrative'] }}</textarea>
-                    </div>
+                    <!-- Progressive Bottom Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" onclick="togglePillarEdit(1)" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                            Done Editing
+                        </button>
+                        <button type="button" onclick="goToNextPillar(1)" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <span>Continue to Pillar 2 →</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- ==================== PILLAR 2: CHALLENGES & RISKS ==================== -->
-            <div id="pillar-panel-2" class="space-y-6 hidden">
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-xl bg-amber-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div id="pillar-card-2" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 transition-all duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-amber-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                 2
                             </span>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-900">Pillar 2: Challenges &amp; Risks</h3>
-                                <p class="text-xs text-slate-500">Document operational hurdles, resource constraints, and proactive risk monitoring protocols.</p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 2: Challenges &amp; Risks</h3>
                         </div>
-                        <span class="text-xs font-bold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full shrink-0">
-                            Step 2 of 5
-                        </span>
+                        <p class="text-xs text-slate-500 max-w-2xl">Document operational hurdles, resource constraints, and proactive risk monitoring protocols.</p>
                     </div>
+                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <button type="button"
+                                onclick="togglePillarEdit(2)"
+                                id="btn-toggle-pillar-2"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <span id="btn-toggle-label-2">Update</span>
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Qualitative Narrative Entries -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Sub-Section 1: Operational Challenges -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-amber-600"></span>
-                                        <span>1. Operational Challenges</span>
+                <!-- Status / Preview summary (visible when collapsed) -->
+                <div id="pillar-summary-2" class="text-xs text-slate-400 italic">
+                    Not yet filled
+                </div>
+
+                <!-- Editing panel (progressive disclosure) -->
+                <div id="pillar-edit-area-2" class="space-y-6 pt-4 border-t border-slate-100 hidden">
+                    <div id="pillar-panel-2" class="space-y-6">
+                        <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Progressive Card Layout -->
+                        <div class="space-y-4">
+                            <!-- Sub-Section 1: Operational Challenges -->
+                            <div id="point-card-2-operational" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">1. Operational Challenges</h4>
+                                            <span id="badge-count-2-operational" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Field execution bottlenecks, transport, scheduling, or attendance barriers.</p>
                                     </div>
-                                    <span id="badge-count-2-operational" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Field execution bottlenecks, transport, scheduling, or attendance barriers.</p>
-
-                                <div id="bullet-container-2-operational" class="space-y-2">
-                                    @foreach($initialPillars[2]['operational']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_2_challenges[operational][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Heavy seasonal rains delayed week 4 fixtures"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
-                                               data-pillar="2" data-key="operational">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(2, 'operational')"
+                                                id="btn-toggle-point-2-operational"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-2-operational">Collapse</span>
                                         </button>
                                     </div>
-                                    @endforeach
                                 </div>
 
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(2, 'operational', 'e.g. Heavy seasonal rains delayed week 4 fixtures', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Operational Point</span>
-                                    </button>
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-2-operational" class="text-xs text-slate-400 italic hidden">
+                                    Not yet filled
                                 </div>
 
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_2_challenges[operational][narrative]" value="{{ $initialPillars[2]['operational']['narrative'] }}">
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-2-operational" class="space-y-3 pt-3 border-t border-slate-200/70">
+                                    <div id="bullet-container-2-operational" class="space-y-2">
+                                        @foreach($initialPillars[2]['operational']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_2_challenges[operational][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Heavy seasonal rains delayed week 4 fixtures"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
+                                                   data-pillar="2" data-key="operational">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(2, 'operational', 'e.g. Heavy seasonal rains delayed week 4 fixtures', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Operational Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_2_challenges[operational][narrative]" value="{{ $initialPillars[2]['operational']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(2, 'operational')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(2, 'operational')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 2: Resource Gaps -->
+                            <div id="point-card-2-resources" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">2. Resource Gaps</h4>
+                                            <span id="badge-count-2-resources" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Deficits in kit, sports equipment, learning materials, or venue accessibility.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(2, 'resources')"
+                                                id="btn-toggle-point-2-resources"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-2-resources">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-2-resources" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-2-resources" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-2-resources" class="space-y-2">
+                                        @foreach($initialPillars[2]['resources']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_2_challenges[resources][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Additional size 4 footballs and bibs required for junior hub"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
+                                                   data-pillar="2" data-key="resources">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(2, 'resources', 'e.g. Additional size 4 footballs and bibs required for junior hub', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Resource Gap</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_2_challenges[resources][narrative]" value="{{ $initialPillars[2]['resources']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(2, 'resources')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(2, 'resources')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 3: Risk Monitoring -->
+                            <div id="point-card-2-risks" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">3. Risk Monitoring</h4>
+                                            <span id="badge-count-2-risks" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Safeguarding, child protection, health risks, or external dependencies with mitigation.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(2, 'risks')"
+                                                id="btn-toggle-point-2-risks"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-2-risks">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-2-risks" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-2-risks" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-2-risks" class="space-y-2">
+                                        @foreach($initialPillars[2]['risks']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_2_challenges[risks][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Safeguarding refreshers completed for all volunteer referees"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
+                                                   data-pillar="2" data-key="risks">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(2, 'risks', 'e.g. Safeguarding refreshers completed for all volunteer referees', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Risk Monitoring Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_2_challenges[risks][narrative]" value="{{ $initialPillars[2]['risks']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(2, 'risks')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(2, 'risks')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sub-Section 2: Resource Gaps -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-amber-600"></span>
-                                        <span>2. Resource Gaps</span>
-                                    </div>
-                                    <span id="badge-count-2-resources" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Deficits in kit, sports equipment, learning materials, or venue accessibility.</p>
-
-                                <div id="bullet-container-2-resources" class="space-y-2">
-                                    @foreach($initialPillars[2]['resources']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_2_challenges[resources][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Additional size 4 footballs and bibs required for junior hub"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
-                                               data-pillar="2" data-key="resources">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(2, 'resources', 'e.g. Additional size 4 footballs and bibs required for junior hub', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Resource Gap</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_2_challenges[resources][narrative]" value="{{ $initialPillars[2]['resources']['narrative'] }}">
+                        <!-- Pillar 2 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                        <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="pillar_2_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <span>Detailed Summary</span>
+                                    <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 2 Challenges &amp; Risks)</span>
+                                </label>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 2 Narrative</span>
                             </div>
-                        </div>
-
-                        <!-- Sub-Section 3: Risk Monitoring -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-amber-600"></span>
-                                        <span>3. Risk Monitoring</span>
-                                    </div>
-                                    <span id="badge-count-2-risks" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Safeguarding, child protection, health risks, or external dependencies with mitigation.</p>
-
-                                <div id="bullet-container-2-risks" class="space-y-2">
-                                    @foreach($initialPillars[2]['risks']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_2_challenges[risks][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Safeguarding refreshers completed for all volunteer referees"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bullet-input"
-                                               data-pillar="2" data-key="risks">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(2, 'risks', 'e.g. Safeguarding refreshers completed for all volunteer referees', 'amber')" class="w-full py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Risk Monitoring Point</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_2_challenges[risks][narrative]" value="{{ $initialPillars[2]['risks']['narrative'] }}">
-                            </div>
+                            <textarea id="pillar_2_narrative"
+                                      name="pillar_2_narrative"
+                                      rows="4"
+                                      placeholder="Provide the comprehensive qualitative narrative on operational bottlenecks, resource constraints, and active risk mitigation protocols for Pillar 2 Challenges..."
+                                      class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['narrative'] }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Pillar 2 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
-                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label for="pillar_2_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                <span>Detailed Summary</span>
-                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 2 Challenges &amp; Risks)</span>
-                            </label>
-                            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 2 Narrative</span>
-                        </div>
-                        <textarea id="pillar_2_narrative"
-                                  name="pillar_2_narrative"
-                                  rows="4"
-                                  placeholder="Provide the comprehensive qualitative narrative on operational bottlenecks, resource constraints, and active risk mitigation protocols for Pillar 2 Challenges..."
-                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['narrative'] }}</textarea>
-                    </div>
+                    <!-- Progressive Bottom Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" onclick="togglePillarEdit(2)" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                            Done Editing
+                        </button>
+                        <button type="button" onclick="goToNextPillar(2)" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <span>Continue to Pillar 3 →</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- ==================== PILLAR 3: LEARNING & ADAPTATION ==================== -->
-            <div id="pillar-panel-3" class="space-y-6 hidden">
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-xl bg-purple-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div id="pillar-card-3" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 transition-all duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                 3
                             </span>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-900">Pillar 3: Learning &amp; Adaptation</h3>
-                                <p class="text-xs text-slate-500">Record insights, direct participant stakeholder feedback, and novel innovation experiments.</p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 3: Learning &amp; Adaptation</h3>
                         </div>
-                        <span class="text-xs font-bold px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full shrink-0">
-                            Step 3 of 5
-                        </span>
+                        <p class="text-xs text-slate-500 max-w-2xl">Record insights, direct participant stakeholder feedback, and novel innovation experiments.</p>
                     </div>
+                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <button type="button"
+                                onclick="togglePillarEdit(3)"
+                                id="btn-toggle-pillar-3"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <span id="btn-toggle-label-3">Update</span>
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Qualitative Narrative Entries -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Sub-Section 1: Lessons Learned -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-purple-600"></span>
-                                        <span>1. Lessons Learned</span>
+                <!-- Status / Preview summary (visible when collapsed) -->
+                <div id="pillar-summary-3" class="text-xs text-slate-400 italic">
+                    Not yet filled
+                </div>
+
+                <!-- Editing panel (progressive disclosure) -->
+                <div id="pillar-edit-area-3" class="space-y-6 pt-4 border-t border-slate-100 hidden">
+                    <div id="pillar-panel-3" class="space-y-6">
+                        <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Progressive Card Layout -->
+                        <div class="space-y-4">
+                            <!-- Sub-Section 1: Lessons Learned -->
+                            <div id="point-card-3-lessons" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">1. Lessons Learned</h4>
+                                            <span id="badge-count-3-lessons" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Key takeaways from this activity that will shape future delivery.</p>
                                     </div>
-                                    <span id="badge-count-3-lessons" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Key takeaways from this activity that will shape future delivery.</p>
-
-                                <div id="bullet-container-3-lessons" class="space-y-2">
-                                    @foreach($initialPillars[3]['lessons']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_3_learning[lessons][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Afternoon sessions increased girl attendance by 40%"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
-                                               data-pillar="3" data-key="lessons">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(3, 'lessons')"
+                                                id="btn-toggle-point-3-lessons"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-3-lessons">Collapse</span>
                                         </button>
                                     </div>
-                                    @endforeach
                                 </div>
 
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(3, 'lessons', 'e.g. Afternoon sessions increased girl attendance by 40%', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Lesson Learned</span>
-                                    </button>
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-3-lessons" class="text-xs text-slate-400 italic hidden">
+                                    Not yet filled
                                 </div>
 
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_3_learning[lessons][narrative]" value="{{ $initialPillars[3]['lessons']['narrative'] }}">
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-3-lessons" class="space-y-3 pt-3 border-t border-slate-200/70">
+                                    <div id="bullet-container-3-lessons" class="space-y-2">
+                                        @foreach($initialPillars[3]['lessons']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_3_learning[lessons][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Afternoon sessions increased girl attendance by 40%"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
+                                                   data-pillar="3" data-key="lessons">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(3, 'lessons', 'e.g. Afternoon sessions increased girl attendance by 40%', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Lesson Learned</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_3_learning[lessons][narrative]" value="{{ $initialPillars[3]['lessons']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(3, 'lessons')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(3, 'lessons')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 2: Community Feedback -->
+                            <div id="point-card-3-feedback" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">2. Community Feedback</h4>
+                                            <span id="badge-count-3-feedback" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Direct feedback received from youth participants, parents, and community leaders.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(3, 'feedback')"
+                                                id="btn-toggle-point-3-feedback"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-3-feedback">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-3-feedback" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-3-feedback" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-3-feedback" class="space-y-2">
+                                        @foreach($initialPillars[3]['feedback']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_3_learning[feedback][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Parents requested additional financial literacy modules"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
+                                                   data-pillar="3" data-key="feedback">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(3, 'feedback', 'e.g. Parents requested additional financial literacy modules', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Feedback Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_3_learning[feedback][narrative]" value="{{ $initialPillars[3]['feedback']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(3, 'feedback')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(3, 'feedback')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 3: Innovation -->
+                            <div id="point-card-3-innovation" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">3. Innovation</h4>
+                                            <span id="badge-count-3-innovation" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Piloted novel tools, digital apps, peer-led workshops, or creative models.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(3, 'innovation')"
+                                                id="btn-toggle-point-3-innovation"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-3-innovation">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-3-innovation" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-3-innovation" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-3-innovation" class="space-y-2">
+                                        @foreach($initialPillars[3]['innovation']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_3_learning[innovation][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Piloted SMS attendance tracker with youth peer captains"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
+                                                   data-pillar="3" data-key="innovation">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(3, 'innovation', 'e.g. Piloted SMS attendance tracker with youth peer captains', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Innovation Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_3_learning[innovation][narrative]" value="{{ $initialPillars[3]['innovation']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(3, 'innovation')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(3, 'innovation')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sub-Section 2: Community Feedback -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-purple-600"></span>
-                                        <span>2. Community Feedback</span>
-                                    </div>
-                                    <span id="badge-count-3-feedback" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Direct feedback received from youth participants, parents, and community leaders.</p>
-
-                                <div id="bullet-container-3-feedback" class="space-y-2">
-                                    @foreach($initialPillars[3]['feedback']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_3_learning[feedback][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Parents requested additional financial literacy modules"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
-                                               data-pillar="3" data-key="feedback">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(3, 'feedback', 'e.g. Parents requested additional financial literacy modules', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Feedback Point</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_3_learning[feedback][narrative]" value="{{ $initialPillars[3]['feedback']['narrative'] }}">
+                        <!-- Pillar 3 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                        <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="pillar_3_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                    </svg>
+                                    <span>Detailed Summary</span>
+                                    <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 3 Learning &amp; Adaptation)</span>
+                                </label>
+                                <span class="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 3 Narrative</span>
                             </div>
-                        </div>
-
-                        <!-- Sub-Section 3: Innovation -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-purple-600"></span>
-                                        <span>3. Innovation</span>
-                                    </div>
-                                    <span id="badge-count-3-innovation" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Piloted novel tools, digital apps, peer-led workshops, or creative models.</p>
-
-                                <div id="bullet-container-3-innovation" class="space-y-2">
-                                    @foreach($initialPillars[3]['innovation']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_3_learning[innovation][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Piloted SMS attendance tracker with youth peer captains"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 bullet-input"
-                                               data-pillar="3" data-key="innovation">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(3, 'innovation', 'e.g. Piloted SMS attendance tracker with youth peer captains', 'purple')" class="w-full py-1.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Innovation Point</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_3_learning[innovation][narrative]" value="{{ $initialPillars[3]['innovation']['narrative'] }}">
-                            </div>
+                            <textarea id="pillar_3_narrative"
+                                      name="pillar_3_narrative"
+                                      rows="4"
+                                      placeholder="Provide the comprehensive qualitative narrative on key lessons learned, participant feedback loops, and innovation experiments for Pillar 3 Learning..."
+                                      class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['narrative'] }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Pillar 3 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
-                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label for="pillar_3_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                </svg>
-                                <span>Detailed Summary</span>
-                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 3 Learning &amp; Adaptation)</span>
-                            </label>
-                            <span class="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 3 Narrative</span>
-                        </div>
-                        <textarea id="pillar_3_narrative"
-                                  name="pillar_3_narrative"
-                                  rows="4"
-                                  placeholder="Provide the comprehensive qualitative narrative on key lessons learned, participant feedback loops, and innovation experiments for Pillar 3 Learning..."
-                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['narrative'] }}</textarea>
-                    </div>
+                    <!-- Progressive Bottom Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" onclick="togglePillarEdit(3)" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                            Done Editing
+                        </button>
+                        <button type="button" onclick="goToNextPillar(3)" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <span>Continue to Pillar 4 →</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- ==================== PILLAR 4: MONITORING & EVALUATION ==================== -->
-            <div id="pillar-panel-4" class="space-y-6 hidden">
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div id="pillar-card-4" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 transition-all duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                 4
                             </span>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-900">Pillar 4: Monitoring &amp; Evaluation</h3>
-                                <p class="text-xs text-slate-500">Track target vs actual performance, data verification checks, and scheduled evaluation plans.</p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 4: Monitoring &amp; Evaluation</h3>
                         </div>
-                        <span class="text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full shrink-0">
-                            Step 4 of 5
-                        </span>
+                        <p class="text-xs text-slate-500 max-w-2xl">Track target vs actual performance, data verification checks, and scheduled evaluation plans.</p>
                     </div>
+                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <button type="button"
+                                onclick="togglePillarEdit(4)"
+                                id="btn-toggle-pillar-4"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <span id="btn-toggle-label-4">Update</span>
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Qualitative Narrative Entries -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Sub-Section 1: Performance -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-                                        <span>1. Performance</span>
+                <!-- Status / Preview summary (visible when collapsed) -->
+                <div id="pillar-summary-4" class="text-xs text-slate-400 italic">
+                    Not yet filled
+                </div>
+
+                <!-- Editing panel (progressive disclosure) -->
+                <div id="pillar-edit-area-4" class="space-y-6 pt-4 border-t border-slate-100 hidden">
+                    <div id="pillar-panel-4" class="space-y-6">
+                        <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Progressive Card Layout -->
+                        <div class="space-y-4">
+                            <!-- Sub-Section 1: Performance -->
+                            <div id="point-card-4-performance" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">1. Performance</h4>
+                                            <span id="badge-count-4-performance" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Progress against quarterly workplan targets and KPIs.</p>
                                     </div>
-                                    <span id="badge-count-4-performance" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Progress against quarterly workplan targets and KPIs.</p>
-
-                                <div id="bullet-container-4-performance" class="space-y-2">
-                                    @foreach($initialPillars[4]['performance']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_4_monitoring[performance][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Achieved 96% of quarterly outreach target (480/500 youth)"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
-                                               data-pillar="4" data-key="performance">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(4, 'performance')"
+                                                id="btn-toggle-point-4-performance"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-4-performance">Collapse</span>
                                         </button>
                                     </div>
-                                    @endforeach
                                 </div>
 
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(4, 'performance', 'e.g. Achieved 96% of quarterly outreach target (480/500 youth)', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Performance Metric</span>
-                                    </button>
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-4-performance" class="text-xs text-slate-400 italic hidden">
+                                    Not yet filled
                                 </div>
 
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_4_monitoring[performance][narrative]" value="{{ $initialPillars[4]['performance']['narrative'] }}">
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-4-performance" class="space-y-3 pt-3 border-t border-slate-200/70">
+                                    <div id="bullet-container-4-performance" class="space-y-2">
+                                        @foreach($initialPillars[4]['performance']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_4_monitoring[performance][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Achieved 96% of quarterly outreach target (480/500 youth)"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
+                                                   data-pillar="4" data-key="performance">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(4, 'performance', 'e.g. Achieved 96% of quarterly outreach target (480/500 youth)', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Performance Metric</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_4_monitoring[performance][narrative]" value="{{ $initialPillars[4]['performance']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(4, 'performance')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(4, 'performance')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 2: Data Quality -->
+                            <div id="point-card-4-data_quality" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">2. Data Quality</h4>
+                                            <span id="badge-count-4-data_quality" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Verification checks, attendance audit logs, and data integrity reconciliations.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(4, 'data_quality')"
+                                                id="btn-toggle-point-4-data_quality"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-4-data_quality">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-4-data_quality" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-4-data_quality" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-4-data_quality" class="space-y-2">
+                                        @foreach($initialPillars[4]['data_quality']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_4_monitoring[data_quality][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. 100% physical registers digitized and audited against mobile app"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
+                                                   data-pillar="4" data-key="data_quality">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(4, 'data_quality', 'e.g. 100% physical registers digitized and audited against mobile app', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Data Quality Check</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_4_monitoring[data_quality][narrative]" value="{{ $initialPillars[4]['data_quality']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(4, 'data_quality')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(4, 'data_quality')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 3: Evaluation Plans -->
+                            <div id="point-card-4-evaluation" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">3. Evaluation Plans</h4>
+                                            <span id="badge-count-4-evaluation" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Midterm assessments, focus groups, survey cycles, or longitudinal reviews.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(4, 'evaluation')"
+                                                id="btn-toggle-point-4-evaluation"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-4-evaluation">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-4-evaluation" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-4-evaluation" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-4-evaluation" class="space-y-2">
+                                        @foreach($initialPillars[4]['evaluation']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_4_monitoring[evaluation][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Endline survey scheduled for June 28 with 50 sample households"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
+                                                   data-pillar="4" data-key="evaluation">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(4, 'evaluation', 'e.g. Endline survey scheduled for June 28 with 50 sample households', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Evaluation Plan</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_4_monitoring[evaluation][narrative]" value="{{ $initialPillars[4]['evaluation']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(4, 'evaluation')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(4, 'evaluation')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sub-Section 2: Data Quality -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-                                        <span>2. Data Quality</span>
-                                    </div>
-                                    <span id="badge-count-4-data_quality" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Verification checks, attendance audit logs, and data integrity reconciliations.</p>
-
-                                <div id="bullet-container-4-data_quality" class="space-y-2">
-                                    @foreach($initialPillars[4]['data_quality']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_4_monitoring[data_quality][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. 100% physical registers digitized and audited against mobile app"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
-                                               data-pillar="4" data-key="data_quality">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(4, 'data_quality', 'e.g. 100% physical registers digitized and audited against mobile app', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Data Quality Check</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_4_monitoring[data_quality][narrative]" value="{{ $initialPillars[4]['data_quality']['narrative'] }}">
+                        <!-- Pillar 4 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                        <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="pillar_4_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    <span>Detailed Summary</span>
+                                    <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 4 Monitoring &amp; Evaluation)</span>
+                                </label>
+                                <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 4 Narrative</span>
                             </div>
-                        </div>
-
-                        <!-- Sub-Section 3: Evaluation Plans -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
-                                        <span>3. Evaluation Plans</span>
-                                    </div>
-                                    <span id="badge-count-4-evaluation" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Midterm assessments, focus groups, survey cycles, or longitudinal reviews.</p>
-
-                                <div id="bullet-container-4-evaluation" class="space-y-2">
-                                    @foreach($initialPillars[4]['evaluation']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_4_monitoring[evaluation][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Endline survey scheduled for June 28 with 50 sample households"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bullet-input"
-                                               data-pillar="4" data-key="evaluation">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(4, 'evaluation', 'e.g. Endline survey scheduled for June 28 with 50 sample households', 'indigo')" class="w-full py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Evaluation Plan</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_4_monitoring[evaluation][narrative]" value="{{ $initialPillars[4]['evaluation']['narrative'] }}">
-                            </div>
+                            <textarea id="pillar_4_narrative"
+                                      name="pillar_4_narrative"
+                                      rows="4"
+                                      placeholder="Provide the comprehensive qualitative narrative on KPI performance metrics, data quality assurance, and scheduled evaluation plans for Pillar 4 M&E..."
+                                      class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['narrative'] }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Pillar 4 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
-                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label for="pillar_4_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                <span>Detailed Summary</span>
-                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 4 Monitoring &amp; Evaluation)</span>
-                            </label>
-                            <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 4 Narrative</span>
-                        </div>
-                        <textarea id="pillar_4_narrative"
-                                  name="pillar_4_narrative"
-                                  rows="4"
-                                  placeholder="Provide the comprehensive qualitative narrative on KPI performance metrics, data quality assurance, and scheduled evaluation plans for Pillar 4 M&E..."
-                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['narrative'] }}</textarea>
-                    </div>
+                    <!-- Progressive Bottom Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" onclick="togglePillarEdit(4)" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                            Done Editing
+                        </button>
+                        <button type="button" onclick="goToNextPillar(4)" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer">
+                            <span>Continue to Pillar 5 →</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- ==================== PILLAR 5: COLLABORATION & COORDINATION ==================== -->
-            <div id="pillar-panel-5" class="space-y-6 hidden">
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div id="pillar-card-5" class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 transition-all duration-200">
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
                                 5
                             </span>
-                            <div>
-                                <h3 class="text-lg font-black text-slate-900">Pillar 5: Collaboration &amp; Coordination</h3>
-                                <p class="text-xs text-slate-500">Capture cross-project partnerships, civic stakeholder alliances, and shared learnings.</p>
-                            </div>
+                            <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 5: Collaboration &amp; Coordination</h3>
                         </div>
-                        <span class="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full shrink-0">
-                            Step 5 of 5
-                        </span>
+                        <p class="text-xs text-slate-500 max-w-2xl">Capture cross-project partnerships, civic stakeholder alliances, and shared learnings.</p>
                     </div>
+                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                        <button type="button"
+                                onclick="togglePillarEdit(5)"
+                                id="btn-toggle-pillar-5"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <span id="btn-toggle-label-5">Update</span>
+                        </button>
+                    </div>
+                </div>
 
-                    <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Qualitative Narrative Entries -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Sub-Section 1: Project Collaboration -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                        <span>1. Project Collaboration</span>
+                <!-- Status / Preview summary (visible when collapsed) -->
+                <div id="pillar-summary-5" class="text-xs text-slate-400 italic">
+                    Not yet filled
+                </div>
+
+                <!-- Editing panel (progressive disclosure) -->
+                <div id="pillar-edit-area-5" class="space-y-6 pt-4 border-t border-slate-100 hidden">
+                    <div id="pillar-panel-5" class="space-y-6">
+                        <!-- 3 Dynamic Sub-Focus Bullet Builders with Dedicated Progressive Card Layout -->
+                        <div class="space-y-4">
+                            <!-- Sub-Section 1: Project Collaboration -->
+                            <div id="point-card-5-project_collab" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">1. Project Collaboration</h4>
+                                            <span id="badge-count-5-project_collab" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Resource sharing and joint activities conducted with adjacent PIFZ projects.</p>
                                     </div>
-                                    <span id="badge-count-5-project_collab" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Resource sharing and joint activities conducted with adjacent PIFZ projects.</p>
-
-                                <div id="bullet-container-5-project_collab" class="space-y-2">
-                                    @foreach($initialPillars[5]['project_collab']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_5_collaboration[project_collab][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Shared pitch resources and referees with Disability Sports project"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
-                                               data-pillar="5" data-key="project_collab">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(5, 'project_collab')"
+                                                id="btn-toggle-point-5-project_collab"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-5-project_collab">Collapse</span>
                                         </button>
                                     </div>
-                                    @endforeach
                                 </div>
 
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(5, 'project_collab', 'e.g. Shared pitch resources and referees with Disability Sports project', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Project Collab Point</span>
-                                    </button>
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-5-project_collab" class="text-xs text-slate-400 italic hidden">
+                                    Not yet filled
                                 </div>
 
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_5_collaboration[project_collab][narrative]" value="{{ $initialPillars[5]['project_collab']['narrative'] }}">
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-5-project_collab" class="space-y-3 pt-3 border-t border-slate-200/70">
+                                    <div id="bullet-container-5-project_collab" class="space-y-2">
+                                        @foreach($initialPillars[5]['project_collab']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_5_collaboration[project_collab][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Shared pitch resources and referees with Disability Sports project"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
+                                                   data-pillar="5" data-key="project_collab">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(5, 'project_collab', 'e.g. Shared pitch resources and referees with Disability Sports project', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Project Collab Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_5_collaboration[project_collab][narrative]" value="{{ $initialPillars[5]['project_collab']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(5, 'project_collab')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(5, 'project_collab')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 2: Partnerships -->
+                            <div id="point-card-5-partnerships" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">2. Partnerships</h4>
+                                            <span id="badge-count-5-partnerships" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Civic, ministry, local school, health center, and community leadership agreements.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(5, 'partnerships')"
+                                                id="btn-toggle-point-5-partnerships"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-5-partnerships">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-5-partnerships" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-5-partnerships" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-5-partnerships" class="space-y-2">
+                                        @foreach($initialPillars[5]['partnerships']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_5_collaboration[partnerships][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Formalized MOU with Maramba Clinic for monthly health screenings"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
+                                                   data-pillar="5" data-key="partnerships">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(5, 'partnerships', 'e.g. Formalized MOU with Maramba Clinic for monthly health screenings', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Partnership Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_5_collaboration[partnerships][narrative]" value="{{ $initialPillars[5]['partnerships']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(5, 'partnerships')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(5, 'partnerships')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Section 3: Cross Learning -->
+                            <div id="point-card-5-cross_learning" class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5 transition-all duration-200 space-y-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                            <h4 class="text-xs font-bold text-slate-900">3. Cross Learning</h4>
+                                            <span id="badge-count-5-cross_learning" class="text-[10px] font-bold text-slate-400 ml-1">0 points</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-500 leading-snug">Knowledge shared across project officers, peer coaches, and regional team summits.</p>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                                        <button type="button"
+                                                onclick="togglePointSection(5, 'cross_learning')"
+                                                id="btn-toggle-point-5-cross_learning"
+                                                class="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer">
+                                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                            </svg>
+                                            <span id="btn-toggle-point-label-5-cross_learning">Update</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Collapsed summary preview -->
+                                <div id="point-summary-5-cross_learning" class="text-xs text-slate-400 italic">
+                                    Not yet filled
+                                </div>
+
+                                <!-- Expanded edit area -->
+                                <div id="point-edit-area-5-cross_learning" class="space-y-3 pt-3 border-t border-slate-200/70 hidden">
+                                    <div id="bullet-container-5-cross_learning" class="space-y-2">
+                                        @foreach($initialPillars[5]['cross_learning']['points'] as $idx => $val)
+                                        <div class="flex items-start gap-1.5 group">
+                                            <span class="text-slate-400 font-bold text-xs mt-2">•</span>
+                                            <input type="text"
+                                                   name="pillar_5_collaboration[cross_learning][points][]"
+                                                   value="{{ $val }}"
+                                                   placeholder="e.g. Shared coaching methodology toolkit at provincial quarterly summit"
+                                                   class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
+                                                   data-pillar="5" data-key="cross_learning">
+                                            <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
+                                                ✕
+                                            </button>
+                                        </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <button type="button" onclick="addBulletRow(5, 'cross_learning', 'e.g. Shared coaching methodology toolkit at provincial quarterly summit', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>+ Add Cross Learning Point</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                    <input type="hidden" name="pillar_5_collaboration[cross_learning][narrative]" value="{{ $initialPillars[5]['cross_learning']['narrative'] }}">
+
+                                    <!-- Bottom action bar -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                                        <button type="button" onclick="togglePointSection(5, 'cross_learning')" class="text-[11px] font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1 rounded-lg hover:bg-slate-200/60 transition cursor-pointer">
+                                            Done
+                                        </button>
+                                        <button type="button" onclick="togglePointSection(5, 'cross_learning')" class="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                                            Collapse
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Sub-Section 2: Partnerships -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                        <span>2. Partnerships</span>
-                                    </div>
-                                    <span id="badge-count-5-partnerships" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Civic, ministry, local school, health center, and community leadership agreements.</p>
-
-                                <div id="bullet-container-5-partnerships" class="space-y-2">
-                                    @foreach($initialPillars[5]['partnerships']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_5_collaboration[partnerships][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Formalized MOU with Maramba Clinic for monthly health screenings"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
-                                               data-pillar="5" data-key="partnerships">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(5, 'partnerships', 'e.g. Formalized MOU with Maramba Clinic for monthly health screenings', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Partnership Point</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_5_collaboration[partnerships][narrative]" value="{{ $initialPillars[5]['partnerships']['narrative'] }}">
+                        <!-- Pillar 5 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                        <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label for="pillar_5_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                    <span>Detailed Summary</span>
+                                    <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 5 Collaboration &amp; Coordination)</span>
+                                </label>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 5 Narrative</span>
                             </div>
-                        </div>
-
-                        <!-- Sub-Section 3: Cross Learning -->
-                        <div class="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3">
-                            <div class="space-y-3">
-                                <div class="flex items-center justify-between mb-1">
-                                    <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                        <span>3. Cross Learning</span>
-                                    </div>
-                                    <span id="badge-count-5-cross_learning" class="text-[10px] font-bold text-slate-400">0 points</span>
-                                </div>
-                                <p class="text-[11px] text-slate-500 leading-snug">Knowledge shared across project officers, peer coaches, and regional team summits.</p>
-
-                                <div id="bullet-container-5-cross_learning" class="space-y-2">
-                                    @foreach($initialPillars[5]['cross_learning']['points'] as $idx => $val)
-                                    <div class="flex items-start gap-1.5 group">
-                                        <span class="text-slate-400 font-bold text-xs mt-2">•</span>
-                                        <input type="text"
-                                               name="pillar_5_collaboration[cross_learning][points][]"
-                                               value="{{ $val }}"
-                                               placeholder="e.g. Shared coaching methodology toolkit at provincial quarterly summit"
-                                               class="flex-1 text-xs font-medium rounded-xl border border-slate-300 bg-white p-2 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bullet-input"
-                                               data-pillar="5" data-key="cross_learning">
-                                        <button type="button" onclick="removeBulletRow(this)" class="p-2 text-slate-400 hover:text-rose-600 transition cursor-pointer" title="Remove Point">
-                                            ✕
-                                        </button>
-                                    </div>
-                                    @endforeach
-                                </div>
-
-                                <div class="pt-1">
-                                    <button type="button" onclick="addBulletRow(5, 'cross_learning', 'e.g. Shared coaching methodology toolkit at provincial quarterly summit', 'emerald')" class="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
-                                        <span>+ Add Cross Learning Point</span>
-                                    </button>
-                                </div>
-
-                                <!-- Hidden input preserving legacy sub-pillar narrative -->
-                                <input type="hidden" name="pillar_5_collaboration[cross_learning][narrative]" value="{{ $initialPillars[5]['cross_learning']['narrative'] }}">
-                            </div>
+                            <textarea id="pillar_5_narrative"
+                                      name="pillar_5_narrative"
+                                      rows="4"
+                                      placeholder="Provide the comprehensive qualitative narrative on project collaboration, external institutional partnerships, and cross-learning for Pillar 5..."
+                                      class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['narrative'] }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Pillar 5 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
-                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label for="pillar_5_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                </svg>
-                                <span>Detailed Summary</span>
-                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 5 Collaboration &amp; Coordination)</span>
-                            </label>
-                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 5 Narrative</span>
-                        </div>
-                        <textarea id="pillar_5_narrative"
-                                  name="pillar_5_narrative"
-                                  rows="4"
-                                  placeholder="Provide the comprehensive qualitative narrative on project collaboration, external institutional partnerships, and cross-learning for Pillar 5..."
-                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['narrative'] }}</textarea>
-                    </div>
+                    <!-- Progressive Bottom Actions -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button type="button" onclick="togglePillarEdit(5)" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer">
+                            Done Editing
+                        </button>
+                        <button type="button" onclick="togglePillarEdit(5)" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition cursor-pointer">
+                            <span>Done with All Pillars ✓</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1329,22 +1853,19 @@ $entryFormConfig = [
             <input type="hidden" name="collab_cross_learning" id="flat_collab_cross_learning" value="">
             <input type="hidden" name="collab_narrative" id="flat_collab_narrative" value="">
 
-            <!-- Stepper Action Buttons Navigation Footer -->
+            <!-- Action Buttons Footer -->
             <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="button" id="btn-prev-pillar" onclick="prevPillarStep()" class="px-4 py-2.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer flex items-center gap-1.5 hidden">
-                        <span>← Previous Pillar</span>
-                    </button>
-                    <button type="button" onclick="saveDraftManual()" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition cursor-pointer flex items-center gap-1.5">
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <button type="button" onclick="saveDraftManual()" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
                         <span>💾 Save Draft</span>
                     </button>
+                    <span id="draft-status-indicator" class="text-xs text-slate-400"></span>
                 </div>
 
                 <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <button type="button" id="btn-next-pillar" onclick="nextPillarStep()" class="px-6 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/10 transition cursor-pointer flex items-center gap-1.5">
-                        <span id="btn-next-pillar-label">Next: Pillar 2 →</span>
-                    </button>
-
+                    <a href="{{ $backUrl }}" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-800 transition">
+                        Cancel
+                    </a>
                     <button type="submit" class="px-6 py-2.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-500/20 transition cursor-pointer flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
@@ -1377,56 +1898,97 @@ const pillarColors = {
     5: 'bg-emerald-600'
 };
 
+function togglePillarEdit(num) {
+    const editArea = document.getElementById(`pillar-edit-area-${num}`);
+    const summaryArea = document.getElementById(`pillar-summary-${num}`);
+    const btnLabel = document.getElementById(`btn-toggle-label-${num}`);
+    const btn = document.getElementById(`btn-toggle-pillar-${num}`);
+
+    if (!editArea) return;
+
+    const isCurrentlyOpen = !editArea.classList.contains('hidden');
+
+    if (isCurrentlyOpen) {
+        // Close it
+        editArea.classList.add('hidden');
+        if (summaryArea) summaryArea.classList.remove('hidden');
+        if (btnLabel) btnLabel.textContent = 'Update';
+        if (btn) btn.classList.remove('bg-slate-100', 'font-bold');
+    } else {
+        // Open it
+        editArea.classList.remove('hidden');
+        if (summaryArea) summaryArea.classList.add('hidden');
+        if (btnLabel) btnLabel.textContent = 'Collapse';
+        if (btn) btn.classList.add('bg-slate-100', 'font-bold');
+
+        const card = document.getElementById(`pillar-card-${num}`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    refreshPillarSummaries();
+}
+
+function goToNextPillar(currentNum) {
+    // Close current
+    const editArea = document.getElementById(`pillar-edit-area-${currentNum}`);
+    const summaryArea = document.getElementById(`pillar-summary-${currentNum}`);
+    const btnLabel = document.getElementById(`btn-toggle-label-${currentNum}`);
+    const btn = document.getElementById(`btn-toggle-pillar-${currentNum}`);
+
+    if (editArea) editArea.classList.add('hidden');
+    if (summaryArea) summaryArea.classList.remove('hidden');
+    if (btnLabel) btnLabel.textContent = 'Update';
+    if (btn) btn.classList.remove('bg-slate-100', 'font-bold');
+
+    // Open next
+    if (currentNum < 5) {
+        const nextNum = currentNum + 1;
+        const nextEditArea = document.getElementById(`pillar-edit-area-${nextNum}`);
+        const nextSummaryArea = document.getElementById(`pillar-summary-${nextNum}`);
+        const nextBtnLabel = document.getElementById(`btn-toggle-label-${nextNum}`);
+        const nextBtn = document.getElementById(`btn-toggle-pillar-${nextNum}`);
+
+        if (nextEditArea) nextEditArea.classList.remove('hidden');
+        if (nextSummaryArea) nextSummaryArea.classList.add('hidden');
+        if (nextBtnLabel) nextBtnLabel.textContent = 'Collapse';
+        if (nextBtn) nextBtn.classList.add('bg-slate-100', 'font-bold');
+
+        const nextCard = document.getElementById(`pillar-card-${nextNum}`);
+        if (nextCard) {
+            nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    refreshPillarSummaries();
+}
+
 function switchPillar(num) {
     currentActivePillar = num;
     for (let i = 1; i <= 5; i++) {
-        const panel = document.getElementById(`pillar-panel-${i}`);
-        const tab = document.getElementById(`pillar-tab-${i}`);
-        if (panel) {
-            if (i === num) {
-                panel.classList.remove('hidden');
-            } else {
-                panel.classList.add('hidden');
-            }
-        }
-        if (tab) {
-            if (i === num) {
-                tab.className = tab.getAttribute('data-active-class');
-            } else {
-                tab.className = tab.getAttribute('data-inactive-class');
-            }
-        }
-    }
+        const editArea = document.getElementById(`pillar-edit-area-${i}`);
+        const summaryArea = document.getElementById(`pillar-summary-${i}`);
+        const btnLabel = document.getElementById(`btn-toggle-label-${i}`);
+        const btn = document.getElementById(`btn-toggle-pillar-${i}`);
 
-    // Progress bar
-    const bar = document.getElementById('pillar-progress-bar');
-    if (bar) {
-        bar.style.width = (num * 20) + '%';
-        bar.className = 'h-full transition-all duration-300 ease-out ' + (pillarColors[num] || 'bg-blue-600');
-    }
-
-    // Next / Prev buttons
-    const btnPrev = document.getElementById('btn-prev-pillar');
-    const btnNext = document.getElementById('btn-next-pillar');
-    const btnNextLabel = document.getElementById('btn-next-pillar-label');
-
-    if (btnPrev) {
-        if (num > 1) {
-            btnPrev.classList.remove('hidden');
+        if (i === num) {
+            if (editArea) editArea.classList.remove('hidden');
+            if (summaryArea) summaryArea.classList.add('hidden');
+            if (btnLabel) btnLabel.textContent = 'Collapse';
+            if (btn) btn.classList.add('bg-slate-100', 'font-bold');
         } else {
-            btnPrev.classList.add('hidden');
+            if (editArea) editArea.classList.add('hidden');
+            if (summaryArea) summaryArea.classList.remove('hidden');
+            if (btnLabel) btnLabel.textContent = 'Update';
+            if (btn) btn.classList.remove('bg-slate-100', 'font-bold');
         }
     }
-    if (btnNext) {
-        if (num < 5) {
-            btnNext.classList.remove('hidden');
-            if (btnNextLabel) btnNextLabel.textContent = `Next: Pillar ${num + 1} →`;
-        } else {
-            btnNext.classList.add('hidden');
-        }
+    const card = document.getElementById(`pillar-card-${num}`);
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
-    window.scrollTo({ top: 180, behavior: 'smooth' });
+    refreshPillarSummaries();
 }
 
 function nextPillarStep() {
@@ -1439,6 +2001,129 @@ function prevPillarStep() {
     if (currentActivePillar > 1) {
         switchPillar(currentActivePillar - 1);
     }
+}
+
+function refreshPillarSummaries() {
+    const subKeys = {
+        1: ['milestones', 'impact', 'stories'],
+        2: ['operational', 'resources', 'risks'],
+        3: ['lessons', 'feedback', 'innovation'],
+        4: ['performance', 'data_quality', 'evaluation'],
+        5: ['project_collab', 'partnerships', 'cross_learning']
+    };
+
+    for (let p = 1; p <= 5; p++) {
+        let totalCount = 0;
+        subKeys[p].forEach(key => {
+            const container = document.getElementById(`bullet-container-${p}-${key}`);
+            if (container) {
+                container.querySelectorAll('input.bullet-input').forEach(inp => {
+                    if (inp.value && inp.value.trim().length > 0) totalCount++;
+                });
+            }
+        });
+
+        const narrative = document.getElementById(`pillar_${p}_narrative`);
+        const hasNarrative = narrative && narrative.value.trim().length > 0;
+
+        const summaryEl = document.getElementById(`pillar-summary-${p}`);
+        if (summaryEl) {
+            if (totalCount === 0 && !hasNarrative) {
+                summaryEl.innerHTML = '<span class="italic text-slate-400">Not yet filled</span>';
+            } else {
+                let badgeText = '';
+                if (totalCount > 0) {
+                    badgeText += `${totalCount} point${totalCount === 1 ? '' : 's'} recorded`;
+                }
+                if (hasNarrative) {
+                    badgeText += (badgeText ? ' • ' : '') + 'Detailed summary included';
+                }
+                summaryEl.innerHTML = `
+                    <div class="flex items-center gap-2 text-xs text-emerald-700 font-semibold not-italic">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span>${badgeText}</span>
+                    </div>
+                `;
+            }
+        }
+    }
+}
+
+// --- Point Section Progressive Disclosure Logic ---
+function togglePointSection(pillarNum, subKey) {
+    const editArea = document.getElementById(`point-edit-area-${pillarNum}-${subKey}`);
+    const summaryArea = document.getElementById(`point-summary-${pillarNum}-${subKey}`);
+    const btnLabel = document.getElementById(`btn-toggle-point-label-${pillarNum}-${subKey}`);
+    const btn = document.getElementById(`btn-toggle-point-${pillarNum}-${subKey}`);
+
+    if (!editArea) return;
+
+    const isCurrentlyOpen = !editArea.classList.contains('hidden');
+
+    if (isCurrentlyOpen) {
+        // Collapse it
+        editArea.classList.add('hidden');
+        if (summaryArea) summaryArea.classList.remove('hidden');
+        if (btnLabel) btnLabel.textContent = 'Update';
+        if (btn) btn.classList.remove('bg-slate-100', 'font-bold');
+    } else {
+        // Expand it
+        editArea.classList.remove('hidden');
+        if (summaryArea) summaryArea.classList.add('hidden');
+        if (btnLabel) btnLabel.textContent = 'Collapse';
+        if (btn) btn.classList.add('bg-slate-100', 'font-bold');
+
+        const card = document.getElementById(`point-card-${pillarNum}-${subKey}`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    refreshPointSummaries();
+}
+
+function refreshPointSummaries() {
+    const subKeys = {
+        1: ['milestones', 'impact', 'stories'],
+        2: ['operational', 'resources', 'risks'],
+        3: ['lessons', 'feedback', 'innovation'],
+        4: ['performance', 'data_quality', 'evaluation'],
+        5: ['project_collab', 'partnerships', 'cross_learning']
+    };
+
+    for (let p = 1; p <= 5; p++) {
+        subKeys[p].forEach(key => {
+            const container = document.getElementById(`bullet-container-${p}-${key}`);
+            const summaryEl = document.getElementById(`point-summary-${p}-${key}`);
+            if (!container || !summaryEl) return;
+
+            const bullets = [];
+            container.querySelectorAll('input.bullet-input').forEach(inp => {
+                if (inp.value && inp.value.trim().length > 0) {
+                    bullets.push(inp.value.trim());
+                }
+            });
+
+            if (bullets.length === 0) {
+                summaryEl.className = 'text-xs text-slate-400 italic';
+                summaryEl.innerHTML = 'Not yet filled';
+            } else {
+                summaryEl.className = 'text-xs text-slate-700 space-y-1 pt-1';
+                summaryEl.innerHTML = bullets.map(b => `
+                    <div class="flex items-start gap-2">
+                        <span class="text-slate-400 font-bold">•</span>
+                        <span class="font-normal text-slate-700">${escapeHtml(b)}</span>
+                    </div>
+                `).join('');
+            }
+        });
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // --- Bullet Points Addition & Removal ---
@@ -1510,6 +2195,9 @@ function updatePillarCounts() {
         const tabCount = document.getElementById(`pillar-tab-count-${p}`);
         if (tabCount) tabCount.textContent = `${pillarTotal} pts`;
     }
+
+    refreshPillarSummaries();
+    refreshPointSummaries();
 }
 
 // --- Form Serialization & Sync ---
@@ -1730,7 +2418,16 @@ document.addEventListener('DOMContentLoaded', function() {
         inp.addEventListener('input', updatePillarCounts);
     });
 
+    for (let p = 1; p <= 5; p++) {
+        const narr = document.getElementById(`pillar_${p}_narrative`);
+        if (narr) {
+            narr.addEventListener('input', refreshPillarSummaries);
+        }
+    }
+
     updatePillarCounts();
+    refreshPillarSummaries();
+    refreshPointSummaries();
     syncDates();
 });
 </script>
