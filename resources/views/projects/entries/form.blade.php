@@ -35,6 +35,33 @@ $resolveNarrative = function(int $pNum, string $subKey, string $oldKey, $activit
     return '';
 };
 
+$resolvePillarNarrative = function(int $pNum, string $pillarKey, string $flatKey, $activity, array $subKeys = []) {
+    $oldVal = old($pillarKey, old($flatKey));
+    if ($oldVal !== null) {
+        return (string)$oldVal;
+    }
+    if ($activity) {
+        $pNarrative = $activity->getPillarNarrative($pNum);
+        if (!empty($pNarrative)) {
+            return $pNarrative;
+        }
+        if (!empty($activity->{$flatKey})) {
+            return $activity->{$flatKey};
+        }
+        $subNarratives = [];
+        foreach ($subKeys as $sk) {
+            $sub = $activity->getSubPillarNarrative($pNum, $sk);
+            if (!empty($sub)) {
+                $subNarratives[] = $sub;
+            }
+        }
+        if (!empty($subNarratives)) {
+            return implode("\n\n", $subNarratives);
+        }
+    }
+    return '';
+};
+
 $initialPillars = [
     1 => [
         'milestones' => [
@@ -49,7 +76,7 @@ $initialPillars = [
             'points' => $resolvePoints(1, 'stories', 'pillar_1_achievements.stories', $activity),
             'narrative' => $resolveNarrative(1, 'stories', 'pillar_1_achievements.stories', $activity),
         ],
-        'narrative' => old('pillar_1_narrative', $activity->pillar_1_narrative ?? $activity->achievements_narrative ?? ''),
+        'narrative' => $resolvePillarNarrative(1, 'pillar_1_narrative', 'achievements_narrative', $activity, ['milestones', 'impact', 'stories']),
     ],
     2 => [
         'operational' => [
@@ -64,7 +91,7 @@ $initialPillars = [
             'points' => $resolvePoints(2, 'risks', 'pillar_2_challenges.risks', $activity),
             'narrative' => $resolveNarrative(2, 'risks', 'pillar_2_challenges.risks', $activity),
         ],
-        'narrative' => old('pillar_2_narrative', $activity->pillar_2_narrative ?? $activity->challenges_narrative ?? ''),
+        'narrative' => $resolvePillarNarrative(2, 'pillar_2_narrative', 'challenges_narrative', $activity, ['operational', 'resources', 'risks']),
     ],
     3 => [
         'lessons' => [
@@ -79,7 +106,7 @@ $initialPillars = [
             'points' => $resolvePoints(3, 'innovation', 'pillar_3_learning.innovation', $activity),
             'narrative' => $resolveNarrative(3, 'innovation', 'pillar_3_learning.innovation', $activity),
         ],
-        'narrative' => old('pillar_3_narrative', $activity->pillar_3_narrative ?? $activity->learning_narrative ?? ''),
+        'narrative' => $resolvePillarNarrative(3, 'pillar_3_narrative', 'learning_narrative', $activity, ['lessons', 'feedback', 'innovation']),
     ],
     4 => [
         'performance' => [
@@ -94,7 +121,7 @@ $initialPillars = [
             'points' => $resolvePoints(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
             'narrative' => $resolveNarrative(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
         ],
-        'narrative' => old('pillar_4_narrative', $activity->pillar_4_narrative ?? $activity->mne_narrative ?? ''),
+        'narrative' => $resolvePillarNarrative(4, 'pillar_4_narrative', 'mne_narrative', $activity, ['performance', 'data_quality', 'evaluation']),
     ],
     5 => [
         'project_collab' => [
@@ -109,7 +136,7 @@ $initialPillars = [
             'points' => $resolvePoints(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
             'narrative' => $resolveNarrative(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
         ],
-        'narrative' => old('pillar_5_narrative', $activity->pillar_5_narrative ?? $activity->collab_narrative ?? ''),
+        'narrative' => $resolvePillarNarrative(5, 'pillar_5_narrative', 'collab_narrative', $activity, ['project_collab', 'partnerships', 'cross_learning']),
     ],
 ];
 
@@ -516,22 +543,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Milestones Context</span>
-                                    </div>
-                                    <textarea name="pillar_1_achievements[milestones][narrative]"
-                                              rows="3"
-                                              placeholder="Provide qualitative narrative on operational context, stakeholder execution, and underlying drivers behind these milestones..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['milestones']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_1_achievements[milestones][narrative]" value="{{ $initialPillars[1]['milestones']['narrative'] }}">
                             </div>
                         </div>
 
@@ -570,22 +583,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Impact Deep-Dive</span>
-                                    </div>
-                                    <textarea name="pillar_1_achievements[impact][narrative]"
-                                              rows="3"
-                                              placeholder="Detail qualitative change observations, participant testimonials, behavioral shifts, and baseline comparisons..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['impact']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_1_achievements[impact][narrative]" value="{{ $initialPillars[1]['impact']['narrative'] }}">
                             </div>
                         </div>
 
@@ -624,24 +623,30 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">Human Story</span>
-                                    </div>
-                                    <textarea name="pillar_1_achievements[stories][narrative]"
-                                              rows="3"
-                                              placeholder="Share the full human story, participant biography, direct quotes, and long-term trajectory..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['stories']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_1_achievements[stories][narrative]" value="{{ $initialPillars[1]['stories']['narrative'] }}">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Pillar 1 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="pillar_1_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span>Detailed Summary</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Detailed Narrative for Pillar 1 Achievements)</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 1 Narrative</span>
+                        </div>
+                        <textarea id="pillar_1_narrative"
+                                  name="pillar_1_narrative"
+                                  rows="4"
+                                  placeholder="Provide the comprehensive qualitative narrative on operational context, stakeholder execution dynamics, and positive human stories for Pillar 1 Achievements..."
+                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[1]['narrative'] }}</textarea>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -701,22 +706,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Operational Context</span>
-                                    </div>
-                                    <textarea name="pillar_2_challenges[operational][narrative]"
-                                              rows="3"
-                                              placeholder="Detail operational bottlenecks encountered, root-cause analyses, and concrete on-ground resolution steps taken..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['operational']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_2_challenges[operational][narrative]" value="{{ $initialPillars[2]['operational']['narrative'] }}">
                             </div>
                         </div>
 
@@ -755,22 +746,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Resource Needs</span>
-                                    </div>
-                                    <textarea name="pillar_2_challenges[resources][narrative]"
-                                              rows="3"
-                                              placeholder="Elaborate on specific resource deficits, programmatic implications, and procurement/partner mobilization plans..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['resources']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_2_challenges[resources][narrative]" value="{{ $initialPillars[2]['resources']['narrative'] }}">
                             </div>
                         </div>
 
@@ -809,24 +786,30 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Risk Analysis</span>
-                                    </div>
-                                    <textarea name="pillar_2_challenges[risks][narrative]"
-                                              rows="3"
-                                              placeholder="Provide detailed narrative on safeguarding risk monitoring, external environment changes, and active mitigation protocols..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['risks']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_2_challenges[risks][narrative]" value="{{ $initialPillars[2]['risks']['narrative'] }}">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Pillar 2 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="pillar_2_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <span>Detailed Summary</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 2 Challenges &amp; Risks)</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 2 Narrative</span>
+                        </div>
+                        <textarea id="pillar_2_narrative"
+                                  name="pillar_2_narrative"
+                                  rows="4"
+                                  placeholder="Provide the comprehensive qualitative narrative on operational bottlenecks, resource constraints, and active risk mitigation protocols for Pillar 2 Challenges..."
+                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[2]['narrative'] }}</textarea>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -886,22 +869,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">Adaptive Insight</span>
-                                    </div>
-                                    <textarea name="pillar_3_learning[lessons][narrative]"
-                                              rows="3"
-                                              placeholder="Provide full qualitative analysis on how lessons learned will refine subsequent programming workflows..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['lessons']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_3_learning[lessons][narrative]" value="{{ $initialPillars[3]['lessons']['narrative'] }}">
                             </div>
                         </div>
 
@@ -940,22 +909,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">Voice Synthesis</span>
-                                    </div>
-                                    <textarea name="pillar_3_learning[feedback][narrative]"
-                                              rows="3"
-                                              placeholder="Synthesize stakeholder voices, focus group feedback, community dialogue sentiments, and actionable adjustments..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['feedback']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_3_learning[feedback][narrative]" value="{{ $initialPillars[3]['feedback']['narrative'] }}">
                             </div>
                         </div>
 
@@ -994,24 +949,30 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded">Pilot Context</span>
-                                    </div>
-                                    <textarea name="pillar_3_learning[innovation][narrative]"
-                                              rows="3"
-                                              placeholder="Describe innovative approaches explored, methodology tested, pilot feedback, and scalability potential..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['innovation']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_3_learning[innovation][narrative]" value="{{ $initialPillars[3]['innovation']['narrative'] }}">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Pillar 3 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="pillar_3_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <span>Detailed Summary</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 3 Learning &amp; Adaptation)</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 3 Narrative</span>
+                        </div>
+                        <textarea id="pillar_3_narrative"
+                                  name="pillar_3_narrative"
+                                  rows="4"
+                                  placeholder="Provide the comprehensive qualitative narrative on key lessons learned, participant feedback loops, and innovation experiments for Pillar 3 Learning..."
+                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[3]['narrative'] }}</textarea>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -1071,22 +1032,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">KPI Analysis</span>
-                                    </div>
-                                    <textarea name="pillar_4_monitoring[performance][narrative]"
-                                              rows="3"
-                                              placeholder="Provide detailed narrative on KPI performance drivers, variance analysis, and targets trajectory..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['performance']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_4_monitoring[performance][narrative]" value="{{ $initialPillars[4]['performance']['narrative'] }}">
                             </div>
                         </div>
 
@@ -1125,22 +1072,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">Audit Narrative</span>
-                                    </div>
-                                    <textarea name="pillar_4_monitoring[data_quality][narrative]"
-                                              rows="3"
-                                              placeholder="Detail verification protocols applied, anomalies resolved, attendance validation checks, and data reliability notes..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['data_quality']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_4_monitoring[data_quality][narrative]" value="{{ $initialPillars[4]['data_quality']['narrative'] }}">
                             </div>
                         </div>
 
@@ -1179,24 +1112,30 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">Evaluation Scope</span>
-                                    </div>
-                                    <textarea name="pillar_4_monitoring[evaluation][narrative]"
-                                              rows="3"
-                                              placeholder="Detail evaluation methodology, sample design, focus group plans, and research timelines..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['evaluation']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_4_monitoring[evaluation][narrative]" value="{{ $initialPillars[4]['evaluation']['narrative'] }}">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Pillar 4 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="pillar_4_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <span>Detailed Summary</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 4 Monitoring &amp; Evaluation)</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 4 Narrative</span>
+                        </div>
+                        <textarea id="pillar_4_narrative"
+                                  name="pillar_4_narrative"
+                                  rows="4"
+                                  placeholder="Provide the comprehensive qualitative narrative on KPI performance metrics, data quality assurance, and scheduled evaluation plans for Pillar 4 M&E..."
+                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[4]['narrative'] }}</textarea>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -1256,22 +1195,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Project Synergy</span>
-                                    </div>
-                                    <textarea name="pillar_5_collaboration[project_collab][narrative]"
-                                              rows="3"
-                                              placeholder="Elaborate on joint sessions delivered, resource pooling efficiencies, and cross-project coordination dynamics..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['project_collab']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_5_collaboration[project_collab][narrative]" value="{{ $initialPillars[5]['project_collab']['narrative'] }}">
                             </div>
                         </div>
 
@@ -1310,22 +1235,8 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Partner Alliance</span>
-                                    </div>
-                                    <textarea name="pillar_5_collaboration[partnerships][narrative]"
-                                              rows="3"
-                                              placeholder="Provide detailed narrative on external partner engagement, institutional alliances, and joint sustainability roadmaps..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['partnerships']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_5_collaboration[partnerships][narrative]" value="{{ $initialPillars[5]['partnerships']['narrative'] }}">
                             </div>
                         </div>
 
@@ -1364,24 +1275,30 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <!-- Respective Sub-Pillar Detailed Narrative & Qualitative Summary -->
-                                <div class="pt-3 border-t border-slate-200/80 space-y-1.5">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                            </svg>
-                                            <span>Detailed Summary</span>
-                                        </label>
-                                        <span class="text-[9.5px] uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Knowledge Transfer</span>
-                                    </div>
-                                    <textarea name="pillar_5_collaboration[cross_learning][narrative]"
-                                              rows="3"
-                                              placeholder="Share qualitative insights on cross-team learning exchanges, peer mentor transfers, and organizational scaling..."
-                                              class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-2.5 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['cross_learning']['narrative'] }}</textarea>
-                                </div>
+                                <!-- Hidden input preserving legacy sub-pillar narrative -->
+                                <input type="hidden" name="pillar_5_collaboration[cross_learning][narrative]" value="{{ $initialPillars[5]['cross_learning']['narrative'] }}">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Pillar 5 Detailed Summary (Qualitative Narrative for this Pillar Section) -->
+                    <div class="pt-5 border-t border-slate-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="pillar_5_narrative" class="text-xs font-bold text-slate-900 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                <span>Detailed Summary</span>
+                                <span class="text-[11px] font-normal text-slate-500">(Qualitative narrative for Pillar 5 Collaboration &amp; Coordination)</span>
+                            </label>
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md uppercase tracking-wider">Pillar 5 Narrative</span>
+                        </div>
+                        <textarea id="pillar_5_narrative"
+                                  name="pillar_5_narrative"
+                                  rows="4"
+                                  placeholder="Provide the comprehensive qualitative narrative on project collaboration, external institutional partnerships, and cross-learning for Pillar 5..."
+                                  class="w-full text-xs font-normal rounded-xl border border-slate-300 bg-white p-3 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 leading-relaxed placeholder:text-slate-400 shadow-2xs">{{ $initialPillars[5]['narrative'] }}</textarea>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -1619,26 +1536,36 @@ document.getElementById('activity-entry-form').addEventListener('submit', functi
     document.getElementById('flat_achievements_milestones').value = getBulletLines(1, 'milestones');
     document.getElementById('flat_achievements_impact').value = getBulletLines(1, 'impact');
     document.getElementById('flat_achievements_stories').value = getBulletLines(1, 'stories');
+    const p1Narr = document.getElementById('pillar_1_narrative');
+    if (p1Narr) document.getElementById('flat_achievements_narrative').value = p1Narr.value.trim();
 
     // Pillar 2
     document.getElementById('flat_challenges_operational').value = getBulletLines(2, 'operational');
     document.getElementById('flat_challenges_resources').value = getBulletLines(2, 'resources');
     document.getElementById('flat_challenges_risks').value = getBulletLines(2, 'risks');
+    const p2Narr = document.getElementById('pillar_2_narrative');
+    if (p2Narr) document.getElementById('flat_challenges_narrative').value = p2Narr.value.trim();
 
     // Pillar 3
     document.getElementById('flat_learning_lessons').value = getBulletLines(3, 'lessons');
     document.getElementById('flat_learning_feedback').value = getBulletLines(3, 'feedback');
     document.getElementById('flat_learning_innovation').value = getBulletLines(3, 'innovation');
+    const p3Narr = document.getElementById('pillar_3_narrative');
+    if (p3Narr) document.getElementById('flat_learning_narrative').value = p3Narr.value.trim();
 
     // Pillar 4
     document.getElementById('flat_mne_performance').value = getBulletLines(4, 'performance');
     document.getElementById('flat_mne_data_quality').value = getBulletLines(4, 'data_quality');
     document.getElementById('flat_mne_evaluation_plans').value = getBulletLines(4, 'evaluation');
+    const p4Narr = document.getElementById('pillar_4_narrative');
+    if (p4Narr) document.getElementById('flat_mne_narrative').value = p4Narr.value.trim();
 
     // Pillar 5
     document.getElementById('flat_collab_projects').value = getBulletLines(5, 'project_collab');
     document.getElementById('flat_collab_partnerships').value = getBulletLines(5, 'partnerships');
     document.getElementById('flat_collab_cross_learning').value = getBulletLines(5, 'cross_learning');
+    const p5Narr = document.getElementById('pillar_5_narrative');
+    if (p5Narr) document.getElementById('flat_collab_narrative').value = p5Narr.value.trim();
 });
 
 // --- LocalStorage Draft Backup ---
