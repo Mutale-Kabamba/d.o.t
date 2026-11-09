@@ -19,14 +19,14 @@
 
             <!-- User Profile Summary -->
             <a href="{{ route('profile.edit') }}" class="p-2.5 bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/70 rounded-xl flex items-center gap-2.5 transition group cursor-pointer" title="Manage your account & profile">
-                <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-slate-300 transition">
+                <div class="w-8 h-8 rounded-lg bg-[#0d6c60]/10 text-[#0d6c60] flex items-center justify-center font-bold text-xs shrink-0 group-hover:bg-[#0d6c60]/15 transition">
                     {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <div class="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition truncate">
+                    <div class="text-xs font-semibold text-slate-900 group-hover:text-[#0d6c60] transition truncate">
                         {{ $currentUser->name ?? 'Supervisor' }}
                     </div>
-                    <span class="text-[10px] text-slate-500 font-medium block truncate">
+                    <span class="text-[10px] text-[#0d6c60] font-medium block truncate">
                         {{ $currentUser ? $currentUser->role_label : 'Staff' }}
                     </span>
                 </div>
@@ -43,66 +43,66 @@
                 @endphp
 
                 <!-- Tab 0: Executive Dashboard -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'dashboard'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ ($currentTab === 'dashboard' || !$currentTab) ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'dashboard'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ ($currentTab === 'dashboard' || !$currentTab) ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ ($currentTab === 'dashboard' || !$currentTab) ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ ($currentTab === 'dashboard' || !$currentTab) ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
                         </svg>
                         <span>Dashboard</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ ($currentTab === 'dashboard' || !$currentTab) ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ ($currentTab === 'dashboard' || !$currentTab) ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         KPIs
                     </span>
                 </a>
 
                 <!-- Tab 1: Activity Logs -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'activities'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'activities' ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'activities'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'activities' ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ $currentTab === 'activities' ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $currentTab === 'activities' ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
                         </svg>
                         <span>Activity Logs</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'activities' ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'activities' ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         {{ $activities->total() }}
                     </span>
                 </a>
 
                 <!-- Tab 2: Projects Directory -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'projects'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'projects' ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'projects'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'projects' ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ $currentTab === 'projects' ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $currentTab === 'projects' ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                         </svg>
                         <span>Projects</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'projects' ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'projects' ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         {{ $projects->where('is_department', false)->count() }}
                     </span>
                 </a>
 
                 <!-- Tab: Parent Projects / Departments -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'departments'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'departments' ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'departments'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'departments' ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ $currentTab === 'departments' ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $currentTab === 'departments' ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                         <span>Departments</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'departments' ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'departments' ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         {{ $departments->count() }}
                     </span>
                 </a>
 
                 <!-- Tab 3: Thematic Pillars Matrix -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'matrix'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'matrix' ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'matrix'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'matrix' ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ $currentTab === 'matrix' ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $currentTab === 'matrix' ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                         </svg>
                         <span>Thematic Matrix</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'matrix' ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'matrix' ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         5 Pillars
                     </span>
                 </a>
@@ -124,14 +124,14 @@
                 </div>
 
                 <!-- Tab 4: Staff & Team Management -->
-                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'staff'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'staff' ? 'bg-slate-900 text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
+                <a href="{{ route('programmes.hub', array_merge($baseQuery, ['tab' => 'staff'])) }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition {{ $currentTab === 'staff' ? 'bg-[#0d6c60] text-white shadow-2xs font-semibold' : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900' }}">
                     <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 {{ $currentTab === 'staff' ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 {{ $currentTab === 'staff' ? 'text-[#4f992f]' : 'text-slate-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                         <span>Team &amp; Staff</span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'staff' ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500' }}">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-medium {{ $currentTab === 'staff' ? 'bg-[#09544a] text-white/90' : 'bg-slate-100 text-slate-500' }}">
                         {{ $allUsers->count() }}
                     </span>
                 </a>
@@ -140,9 +140,9 @@
 
             <!-- Quick Creation Actions -->
             <div class="pt-4 border-t border-slate-100 space-y-2">
-                <a href="{{ route('programmes.activities.create') }}" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                <a href="{{ route('programmes.activities.create') }}" class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-[#0d6c60] hover:bg-[#09544a] rounded-lg shadow-2xs transition active:scale-95 cursor-pointer">
+                    <svg class="w-3.5 h-3.5 text-[#4f992f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
                     </svg>
                     <span>Log New Activity</span>
                 </a>
@@ -184,7 +184,7 @@
                 <div class="flex items-center gap-2 text-xs text-slate-400 font-medium">
                     <span>Play It Forward</span>
                     <span>/</span>
-                    <span class="text-slate-700 font-semibold">
+                    <span class="text-[#0d6c60] font-semibold">
                         @if($currentTab === 'projects') Projects Directory
                         @elseif($currentTab === 'departments') Departments Directory
                         @elseif($currentTab === 'staff') Team &amp; Staff Management
@@ -216,22 +216,22 @@
                 ]);
             @endphp
             <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <a href="{{ route('programmes.projector', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-2xs transition" title="Open Fullscreen Matrix Projector">
-                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{{ route('programmes.projector', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0d6c60] hover:bg-[#09544a] rounded-lg shadow-2xs transition" title="Open Fullscreen Matrix Projector">
+                    <svg class="w-3.5 h-3.5 text-[#4f992f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>Live Projector</span>
                 </a>
 
-                <a href="{{ route('programmes.export_consolidated_pptx', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated PowerPoint Deck">
-                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{{ route('programmes.export_consolidated_pptx', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-[#0d6c60] hover:border-[#0d6c60]/30 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated PowerPoint Deck">
+                    <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0d6c60]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
                     <span>PowerPoint (.pptx)</span>
                 </a>
 
-                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated PDF Report">
+                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-[#0d6c60] hover:border-[#0d6c60]/30 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated PDF Report">
                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
@@ -274,8 +274,9 @@
                 <div class="bg-white border border-slate-200/70 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
                     <div>
                         <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#4f992f]"></span>
                             <h3 class="text-sm font-bold text-slate-900 tracking-tight">Executive Overview</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#0d6c60]/8 text-[#0d6c60] border border-[#0d6c60]/20">
                                 @if($interval === 'month')
                                     {{ \Carbon\Carbon::create($filterParams['year'], $filterParams['month'], 1)->format('F Y') }}
                                 @elseif($interval === 'quarter')
@@ -296,7 +297,7 @@
                         
                         <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
                             @foreach(['all' => 'All', 'quarter' => 'Quarter', 'month' => 'Month', 'year' => 'Year'] as $iKey => $iLabel)
-                                <button type="submit" name="interval" value="{{ $iKey }}" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900' }}">
+                                <button type="submit" name="interval" value="{{ $iKey }}" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-[#0d6c60] shadow-2xs font-bold border border-slate-200/60' : 'text-slate-600 hover:text-slate-900' }}">
                                     {{ $iLabel }}
                                 </button>
                             @endforeach
@@ -341,11 +342,11 @@
                 <!-- ==================== 4 MINIMAL KPI METRIC CARDS ==================== -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Metric Card 1: Active Projects -->
-                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-slate-300 transition flex flex-col justify-between group">
+                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-[#0d6c60]/40 transition flex flex-col justify-between group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium text-slate-500">Total Projects</span>
-                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-lg bg-[#0d6c60]/10 text-[#0d6c60] flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                 </svg>
                             </div>
@@ -353,22 +354,22 @@
                         <div class="my-3">
                             <div class="text-2xl font-bold text-slate-900 tracking-tight">{{ $metrics['total_projects'] }}</div>
                             <div class="text-xs text-slate-500 font-normal mt-0.5">
-                                <span class="font-medium text-slate-700">{{ $metrics['active_projects'] }} active</span> across hubs
+                                <span class="font-semibold text-[#0d6c60]">{{ $metrics['active_projects'] }} active</span> across hubs
                             </div>
                             <div class="text-[11px] text-slate-400 mt-0.5">Excludes {{ $metrics['total_departments'] }} parent departments</div>
                         </div>
-                        <a href="{{ route('programmes.hub', ['tab' => 'projects']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-between group-hover:text-blue-600 transition">
+                        <a href="{{ route('programmes.hub', ['tab' => 'projects']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-[#0d6c60] flex items-center justify-between group-hover:text-[#0d6c60] transition">
                             <span>Manage Projects</span>
                             <span class="group-hover:translate-x-0.5 transition">→</span>
                         </a>
                     </div>
 
                     <!-- Metric Card 2: Activities Logged -->
-                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-slate-300 transition flex flex-col justify-between group">
+                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-[#4f992f]/50 transition flex flex-col justify-between group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium text-slate-500">Activities Logged</span>
-                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-lg bg-[#4f992f]/15 text-[#3e7c25] flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                             </div>
@@ -379,18 +380,18 @@
                                 Continuous entries recorded
                             </div>
                         </div>
-                        <a href="{{ route('programmes.hub', ['tab' => 'activities']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-between group-hover:text-blue-600 transition">
+                        <a href="{{ route('programmes.hub', ['tab' => 'activities']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-[#3e7c25] flex items-center justify-between group-hover:text-[#3e7c25] transition">
                             <span>Open Activity Logs</span>
                             <span class="group-hover:translate-x-0.5 transition">→</span>
                         </a>
                     </div>
 
                     <!-- Metric Card 3: Pillar Reporting Health / Coverage -->
-                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-slate-300 transition flex flex-col justify-between group">
+                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-[#2c6d51]/40 transition flex flex-col justify-between group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium text-slate-500">Pillar Coverage</span>
-                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-lg bg-[#2c6d51]/10 text-[#2c6d51] flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                 </svg>
                             </div>
@@ -398,7 +399,7 @@
                         <div class="my-3">
                             <div class="flex items-baseline gap-2">
                                 <div class="text-2xl font-bold text-slate-900 tracking-tight">{{ $metrics['reporting_coverage_rate'] }}%</div>
-                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded {{ $metrics['reporting_coverage_rate'] >= 80 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ($metrics['reporting_coverage_rate'] >= 50 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200') }}">
+                                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded {{ $metrics['reporting_coverage_rate'] >= 80 ? 'bg-[#4f992f]/15 text-[#3e7c25] border border-[#4f992f]/30' : ($metrics['reporting_coverage_rate'] >= 50 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-[#992f50]/10 text-[#992f50] border border-[#992f50]/20') }}">
                                     @if($metrics['reporting_coverage_rate'] >= 80)
                                         Healthy
                                     @elseif($metrics['reporting_coverage_rate'] >= 50)
@@ -412,18 +413,18 @@
                                 {{ $metrics['fully_reported_projects'] }} of {{ $metrics['active_projects'] }} projects fully updated (5/5)
                             </div>
                         </div>
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-between group-hover:text-blue-600 transition">
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-[#2c6d51] flex items-center justify-between group-hover:text-[#2c6d51] transition">
                             <span>Explore 5 Pillars Matrix</span>
                             <span class="group-hover:translate-x-0.5 transition">→</span>
                         </a>
                     </div>
 
                     <!-- Metric Card 4: Personnel & Officers -->
-                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-slate-300 transition flex flex-col justify-between group">
+                    <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs hover:border-[#992f50]/40 transition flex flex-col justify-between group">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-medium text-slate-500">Team &amp; Personnel</span>
-                            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 rounded-lg bg-[#992f50]/10 text-[#992f50] flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
                             </div>
@@ -435,7 +436,7 @@
                             </div>
                         </div>
                         @if($isSuperAdmin)
-                        <a href="{{ route('programmes.hub', ['tab' => 'staff']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-between group-hover:text-blue-600 transition">
+                        <a href="{{ route('programmes.hub', ['tab' => 'staff']) }}" class="pt-2 text-xs font-medium text-slate-600 hover:text-[#992f50] flex items-center justify-between group-hover:text-[#992f50] transition">
                             <span>Manage Team</span>
                             <span class="group-hover:translate-x-0.5 transition">→</span>
                         </a>
@@ -450,66 +451,69 @@
                 <!-- ==================== STREAMLINED 5 THEMATIC PILLARS SUMMARY ROW ==================== -->
                 <div class="bg-white border border-slate-200/70 rounded-xl p-5 shadow-2xs space-y-4">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                5 Thematic Pillars Distribution
-                            </h3>
-                            <p class="text-xs text-slate-500 mt-0.5 font-normal">Overview of highlights recorded across organizational pillars</p>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#0d6c60]"></span>
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                    5 Thematic Pillars Distribution
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5 font-normal">Overview of highlights recorded across organizational pillars</p>
+                            </div>
                         </div>
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1 transition">
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="text-xs font-medium text-slate-600 hover:text-[#0d6c60] flex items-center gap-1 transition">
                             <span>View Full Matrix</span>
                             <span>→</span>
                         </a>
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                        <!-- Pillar 1 -->
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-xl transition space-y-1 block shadow-2xs group">
+                        <!-- Pillar 1: Achievements (Forward Green) -->
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-[#4f992f]/5 border border-slate-200/70 hover:border-[#4f992f]/50 rounded-xl transition space-y-1 block shadow-2xs group">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pillar 1</span>
-                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                <span class="text-[10px] font-semibold text-[#3e7c25] uppercase tracking-wider">Pillar 1</span>
+                                <span class="w-2 h-2 rounded-full bg-[#4f992f]"></span>
                             </div>
-                            <div class="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition">{{ $metrics['total_achievements'] }}</div>
+                            <div class="text-xl font-bold text-slate-900 group-hover:text-[#3e7c25] transition">{{ $metrics['total_achievements'] }}</div>
                             <div class="text-xs font-medium text-slate-700 truncate">Achievements</div>
                         </a>
 
-                        <!-- Pillar 2 -->
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-xl transition space-y-1 block shadow-2xs group">
+                        <!-- Pillar 2: Challenges & Risks (Berry Crimson) -->
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-[#992f50]/5 border border-slate-200/70 hover:border-[#992f50]/50 rounded-xl transition space-y-1 block shadow-2xs group">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pillar 2</span>
-                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                <span class="text-[10px] font-semibold text-[#992f50] uppercase tracking-wider">Pillar 2</span>
+                                <span class="w-2 h-2 rounded-full bg-[#992f50]"></span>
                             </div>
-                            <div class="text-xl font-bold text-slate-900 group-hover:text-rose-600 transition">{{ $metrics['total_challenges'] }}</div>
+                            <div class="text-xl font-bold text-slate-900 group-hover:text-[#992f50] transition">{{ $metrics['total_challenges'] }}</div>
                             <div class="text-xs font-medium text-slate-700 truncate">Challenges &amp; Risks</div>
                         </a>
 
-                        <!-- Pillar 3 -->
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-xl transition space-y-1 block shadow-2xs group">
+                        <!-- Pillar 3: Learning & Adaptation (Warm Amber) -->
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-amber-50/50 border border-slate-200/70 hover:border-amber-300 rounded-xl transition space-y-1 block shadow-2xs group">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pillar 3</span>
+                                <span class="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Pillar 3</span>
                                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                             </div>
-                            <div class="text-xl font-bold text-slate-900 group-hover:text-amber-600 transition">{{ $metrics['total_learning'] }}</div>
+                            <div class="text-xl font-bold text-slate-900 group-hover:text-amber-700 transition">{{ $metrics['total_learning'] }}</div>
                             <div class="text-xs font-medium text-slate-700 truncate">Learning &amp; Adaptation</div>
                         </a>
 
-                        <!-- Pillar 4 -->
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-xl transition space-y-1 block shadow-2xs group">
+                        <!-- Pillar 4: Monitoring & Eval (Forest Teal) -->
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-[#0d6c60]/5 border border-slate-200/70 hover:border-[#0d6c60]/50 rounded-xl transition space-y-1 block shadow-2xs group">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pillar 4</span>
-                                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                <span class="text-[10px] font-semibold text-[#0d6c60] uppercase tracking-wider">Pillar 4</span>
+                                <span class="w-2 h-2 rounded-full bg-[#0d6c60]"></span>
                             </div>
-                            <div class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition">{{ $metrics['total_mne'] }}</div>
+                            <div class="text-xl font-bold text-slate-900 group-hover:text-[#0d6c60] transition">{{ $metrics['total_mne'] }}</div>
                             <div class="text-xs font-medium text-slate-700 truncate">Monitoring &amp; Eval</div>
                         </a>
 
-                        <!-- Pillar 5 -->
-                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-xl transition space-y-1 block shadow-2xs group">
+                        <!-- Pillar 5: Collaboration (Pine Green) -->
+                        <a href="{{ route('programmes.hub', ['tab' => 'matrix']) }}" class="p-3.5 bg-white hover:bg-[#2c6d51]/5 border border-slate-200/70 hover:border-[#2c6d51]/50 rounded-xl transition space-y-1 block shadow-2xs group">
                             <div class="flex items-center justify-between">
-                                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Pillar 5</span>
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span class="text-[10px] font-semibold text-[#2c6d51] uppercase tracking-wider">Pillar 5</span>
+                                <span class="w-2 h-2 rounded-full bg-[#2c6d51]"></span>
                             </div>
-                            <div class="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition">{{ $metrics['total_collab'] }}</div>
+                            <div class="text-xl font-bold text-slate-900 group-hover:text-[#2c6d51] transition">{{ $metrics['total_collab'] }}</div>
                             <div class="text-xs font-medium text-slate-700 truncate">Collaboration</div>
                         </a>
                     </div>
@@ -524,7 +528,7 @@
                                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Recent Activity Updates
                                 </h3>
-                                <a href="{{ route('programmes.activities.create') }}" class="text-xs font-medium text-blue-600 hover:text-blue-800 transition">
+                                <a href="{{ route('programmes.activities.create') }}" class="text-xs font-medium text-[#0d6c60] hover:text-[#09544a] transition">
                                     + Log Activity
                                 </a>
                             </div>
@@ -539,7 +543,7 @@
                                 <div class="p-3 bg-white hover:bg-slate-50/80 border border-slate-200/60 rounded-lg flex items-center justify-between gap-3 transition">
                                     <div class="min-w-0 flex-1 space-y-0.5">
                                         <div class="flex items-center gap-2">
-                                            <span class="px-1.5 py-0.5 text-[9px] font-semibold uppercase bg-slate-100 text-slate-700 border border-slate-200/70 rounded shrink-0">
+                                            <span class="px-1.5 py-0.5 text-[9px] font-semibold uppercase bg-[#0d6c60]/8 text-[#0d6c60] border border-[#0d6c60]/20 rounded shrink-0">
                                                 {{ $item->project->code ?? 'PROJECT' }}
                                             </span>
                                             <span class="text-xs font-semibold text-slate-900 truncate">{{ $item->activity_title }}</span>
@@ -550,7 +554,7 @@
                                     </div>
                                     <div class="text-right shrink-0">
                                         <div class="text-[10px] text-slate-400 font-medium">{{ \Carbon\Carbon::parse($item->activity_date)->format('M d') }}</div>
-                                        <a href="{{ route('programmes.activities.show', $item->token) }}" class="text-xs font-medium text-slate-600 hover:text-blue-600 transition">View ↗</a>
+                                        <a href="{{ route('programmes.activities.show', $item->token) }}" class="text-xs font-medium text-slate-600 hover:text-[#0d6c60] transition">View ↗</a>
                                     </div>
                                 </div>
                                 @endforeach
@@ -579,52 +583,52 @@
 
                             <div class="space-y-2">
                                 <!-- Projector -->
-                                <a href="{{ route('programmes.projector', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-lg transition shadow-2xs group">
+                                <a href="{{ route('programmes.projector', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-[#0d6c60]/5 border border-slate-200/70 hover:border-[#0d6c60]/40 rounded-lg transition shadow-2xs group">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
-                                            <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="w-8 h-8 rounded-lg bg-[#0d6c60] text-[#4f992f] flex items-center justify-center shrink-0 shadow-2xs">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                         </div>
                                         <div>
-                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition">Live Matrix Projector</div>
+                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-[#0d6c60] transition">Live Matrix Projector</div>
                                             <div class="text-[11px] text-slate-500">16:9 Fullscreen Slide Deck</div>
                                         </div>
                                     </div>
-                                    <span class="text-xs font-medium text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition">→</span>
+                                    <span class="text-xs font-medium text-slate-400 group-hover:text-[#0d6c60] group-hover:translate-x-0.5 transition">→</span>
                                 </a>
 
                                 <!-- PPTX -->
-                                <a href="{{ route('programmes.export_consolidated_pptx', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-lg transition shadow-2xs group">
+                                <a href="{{ route('programmes.export_consolidated_pptx', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-amber-50/40 border border-slate-200/70 hover:border-amber-300 rounded-lg transition shadow-2xs group">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                             </svg>
                                         </div>
                                         <div>
-                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition">PowerPoint Presentation</div>
+                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-amber-800 transition">PowerPoint Presentation</div>
                                             <div class="text-[11px] text-slate-500">Editable .pptx presentation</div>
                                         </div>
                                     </div>
-                                    <span class="text-xs font-medium text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition">→</span>
+                                    <span class="text-xs font-medium text-slate-400 group-hover:text-amber-800 group-hover:translate-x-0.5 transition">→</span>
                                 </a>
 
                                 <!-- PDF -->
-                                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-slate-50 border border-slate-200/70 rounded-lg transition shadow-2xs group">
+                                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="flex items-center justify-between p-3 bg-white hover:bg-[#992f50]/5 border border-slate-200/70 hover:border-[#992f50]/30 rounded-lg transition shadow-2xs group">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                                        <div class="w-8 h-8 rounded-lg bg-[#992f50]/10 text-[#992f50] flex items-center justify-center shrink-0">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                             </svg>
                                         </div>
                                         <div>
-                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition">Executive PDF Brief</div>
+                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-[#992f50] transition">Executive PDF Brief</div>
                                             <div class="text-[11px] text-slate-500">Print-ready 16:9 document</div>
                                         </div>
                                     </div>
-                                    <span class="text-xs font-medium text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition">→</span>
+                                    <span class="text-xs font-medium text-slate-400 group-hover:text-[#992f50] group-hover:translate-x-0.5 transition">→</span>
                                 </a>
                             </div>
                         </div>
