@@ -241,6 +241,14 @@
                                                     </li>
                                                 @endforeach
                                             </ul>
+                                            @if(!empty($sec['media_links']))
+                                                <div style="margin-top: 6px; padding-left: 22px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                                                    <span style="font-size: 12px; font-weight: 700; color: #64748b;">Attached:</span>
+                                                    @foreach($sec['media_links'] as $mLink)
+                                                        {!! \App\Models\ActivityEntry::formatPointHtml($mLink, false) !!}
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
                                         @endif
                                     @endforeach

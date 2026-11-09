@@ -339,6 +339,15 @@
                             </ul>
                         @endif
 
+                        @if(!empty($sec['media_links']))
+                            <div style="margin-top: 4px; padding-top: 3px; border-top: 1px dashed #e2e8f0; font-size: 8px;">
+                                <strong style="color: #64748b; font-size: 7.5px;">Attached:</strong>
+                                @foreach($sec['media_links'] as $mLink)
+                                    {!! \App\Models\ActivityEntry::formatPointHtml($mLink, true) !!}
+                                @endforeach
+                            </div>
+                        @endif
+
                         @if(!empty($sec['narrative']))
                             <div style="margin-top: 4px; padding: 3px 6px; background-color: #f8fafc; border-left: 2.5px solid #2563eb; border-radius: 4px; font-size: 8px; color: #475569; line-height: 1.3;">
                                 <strong style="color: #0f172a; font-size: 7.5px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}

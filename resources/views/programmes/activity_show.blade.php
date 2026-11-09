@@ -186,6 +186,7 @@
                             $subPoints = \App\Models\ActivityEntry::extractBulletPoints($activity->{$itemKey});
                         }
                         $subNarrative = $activity->getSubPillarNarrative($theme['number'], $subKey);
+                        $subMediaLinks = method_exists($activity, 'getSubPillarMediaLinks') ? $activity->getSubPillarMediaLinks($theme['number'], $subKey) : [];
                     @endphp
                     <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3 min-w-0 overflow-hidden">
                         <div class="space-y-2 min-w-0">
@@ -207,6 +208,14 @@
                                             </li>
                                         @endforeach
                                     </ul>
+                                    @if(!empty($subMediaLinks))
+                                        <div class="pt-2 mt-2 border-t border-slate-200/50 flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attached:</span>
+                                            @foreach($subMediaLinks as $mLink)
+                                                {!! \App\Models\ActivityEntry::formatPointHtml($mLink) !!}
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @else
                                     <p class="text-xs text-slate-400 italic">No bullet points recorded.</p>
                                 @endif

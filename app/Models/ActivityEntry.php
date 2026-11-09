@@ -61,6 +61,7 @@ class ActivityEntry extends Model
             $parseSubPillar = function ($data, $fallbackCol = null) use ($entry) {
                 $points = [];
                 $narrative = '';
+                $mediaLinks = [];
 
                 if (is_array($data)) {
                     if (isset($data['points'])) {
@@ -77,6 +78,9 @@ class ActivityEntry extends Model
                     }
                     if (isset($data['narrative'])) {
                         $narrative = trim((string) $data['narrative']);
+                    }
+                    if (isset($data['media_links']) && is_array($data['media_links'])) {
+                        $mediaLinks = array_values(array_filter(array_map('trim', $data['media_links'])));
                     }
                 } elseif (!empty($data) && is_string($data)) {
                     $points = self::extractBulletPoints($data);
@@ -96,6 +100,7 @@ class ActivityEntry extends Model
                 return [
                     'points' => array_values($cleanedPoints),
                     'narrative' => $narrative,
+                    'media_links' => $mediaLinks,
                 ];
             };
 
@@ -526,6 +531,40 @@ class ActivityEntry extends Model
         }
 
         return '';
+    }
+
+    /**
+     * Get attached media links array for a specific sub-pillar section.
+     */
+    public function getSubPillarMediaLinks(int $pillarNumber, string $subField): array
+    {
+        $pillarColumn = match ($pillarNumber) {
+            1 => 'pillar_1_achievements',
+            2 => 'pillar_2_challenges',
+            3 => 'pillar_3_learning',
+            4 => 'pillar_4_monitoring',
+            5 => 'pillar_5_collaboration',
+            default => null,
+        };
+
+        $pillarData = $pillarColumn ? $this->{$pillarColumn} : null;
+
+        if (is_array($pillarData)) {
+            if (!empty($pillarData[$subField]) && is_array($pillarData[$subField]) && isset($pillarData[$subField]['media_links'])) {
+                $links = $pillarData[$subField]['media_links'];
+                return is_array($links) ? array_values(array_filter(array_map('trim', $links))) : [];
+            }
+
+            if ($pillarNumber === 5 && ($subField === 'project_collab' || $subField === 'projects')) {
+                $alt = $subField === 'project_collab' ? 'projects' : 'project_collab';
+                if (!empty($pillarData[$alt]) && is_array($pillarData[$alt]) && isset($pillarData[$alt]['media_links'])) {
+                    $links = $pillarData[$alt]['media_links'];
+                    return is_array($links) ? array_values(array_filter(array_map('trim', $links))) : [];
+                }
+            }
+        }
+
+        return [];
     }
 
     /**

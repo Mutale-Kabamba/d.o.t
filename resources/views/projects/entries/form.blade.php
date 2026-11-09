@@ -62,19 +62,33 @@ $resolvePillarNarrative = function(int $pNum, string $pillarKey, string $flatKey
     return '';
 };
 
+$resolveMediaLinks = function(int $pNum, string $subKey, string $oldKey, $activity) {
+    $oldVal = old($oldKey . '.media_links');
+    if ($oldVal !== null && is_array($oldVal)) {
+        return array_values(array_filter(array_map('trim', $oldVal)));
+    }
+    if ($activity && method_exists($activity, 'getSubPillarMediaLinks')) {
+        return $activity->getSubPillarMediaLinks($pNum, $subKey);
+    }
+    return [];
+};
+
 $initialPillars = [
     1 => [
         'milestones' => [
             'points' => $resolvePoints(1, 'milestones', 'pillar_1_achievements.milestones', $activity),
             'narrative' => $resolveNarrative(1, 'milestones', 'pillar_1_achievements.milestones', $activity),
+            'media_links' => $resolveMediaLinks(1, 'milestones', 'pillar_1_achievements.milestones', $activity),
         ],
         'impact' => [
             'points' => $resolvePoints(1, 'impact', 'pillar_1_achievements.impact', $activity),
             'narrative' => $resolveNarrative(1, 'impact', 'pillar_1_achievements.impact', $activity),
+            'media_links' => $resolveMediaLinks(1, 'impact', 'pillar_1_achievements.impact', $activity),
         ],
         'stories' => [
             'points' => $resolvePoints(1, 'stories', 'pillar_1_achievements.stories', $activity),
             'narrative' => $resolveNarrative(1, 'stories', 'pillar_1_achievements.stories', $activity),
+            'media_links' => $resolveMediaLinks(1, 'stories', 'pillar_1_achievements.stories', $activity),
         ],
         'narrative' => $resolvePillarNarrative(1, 'pillar_1_narrative', 'achievements_narrative', $activity, ['milestones', 'impact', 'stories']),
     ],
@@ -82,14 +96,17 @@ $initialPillars = [
         'operational' => [
             'points' => $resolvePoints(2, 'operational', 'pillar_2_challenges.operational', $activity),
             'narrative' => $resolveNarrative(2, 'operational', 'pillar_2_challenges.operational', $activity),
+            'media_links' => $resolveMediaLinks(2, 'operational', 'pillar_2_challenges.operational', $activity),
         ],
         'resources' => [
             'points' => $resolvePoints(2, 'resources', 'pillar_2_challenges.resources', $activity),
             'narrative' => $resolveNarrative(2, 'resources', 'pillar_2_challenges.resources', $activity),
+            'media_links' => $resolveMediaLinks(2, 'resources', 'pillar_2_challenges.resources', $activity),
         ],
         'risks' => [
             'points' => $resolvePoints(2, 'risks', 'pillar_2_challenges.risks', $activity),
             'narrative' => $resolveNarrative(2, 'risks', 'pillar_2_challenges.risks', $activity),
+            'media_links' => $resolveMediaLinks(2, 'risks', 'pillar_2_challenges.risks', $activity),
         ],
         'narrative' => $resolvePillarNarrative(2, 'pillar_2_narrative', 'challenges_narrative', $activity, ['operational', 'resources', 'risks']),
     ],
@@ -97,14 +114,17 @@ $initialPillars = [
         'lessons' => [
             'points' => $resolvePoints(3, 'lessons', 'pillar_3_learning.lessons', $activity),
             'narrative' => $resolveNarrative(3, 'lessons', 'pillar_3_learning.lessons', $activity),
+            'media_links' => $resolveMediaLinks(3, 'lessons', 'pillar_3_learning.lessons', $activity),
         ],
         'feedback' => [
             'points' => $resolvePoints(3, 'feedback', 'pillar_3_learning.feedback', $activity),
             'narrative' => $resolveNarrative(3, 'feedback', 'pillar_3_learning.feedback', $activity),
+            'media_links' => $resolveMediaLinks(3, 'feedback', 'pillar_3_learning.feedback', $activity),
         ],
         'innovation' => [
             'points' => $resolvePoints(3, 'innovation', 'pillar_3_learning.innovation', $activity),
             'narrative' => $resolveNarrative(3, 'innovation', 'pillar_3_learning.innovation', $activity),
+            'media_links' => $resolveMediaLinks(3, 'innovation', 'pillar_3_learning.innovation', $activity),
         ],
         'narrative' => $resolvePillarNarrative(3, 'pillar_3_narrative', 'learning_narrative', $activity, ['lessons', 'feedback', 'innovation']),
     ],
@@ -112,14 +132,17 @@ $initialPillars = [
         'performance' => [
             'points' => $resolvePoints(4, 'performance', 'pillar_4_monitoring.performance', $activity),
             'narrative' => $resolveNarrative(4, 'performance', 'pillar_4_monitoring.performance', $activity),
+            'media_links' => $resolveMediaLinks(4, 'performance', 'pillar_4_monitoring.performance', $activity),
         ],
         'data_quality' => [
             'points' => $resolvePoints(4, 'data_quality', 'pillar_4_monitoring.data_quality', $activity),
             'narrative' => $resolveNarrative(4, 'data_quality', 'pillar_4_monitoring.data_quality', $activity),
+            'media_links' => $resolveMediaLinks(4, 'data_quality', 'pillar_4_monitoring.data_quality', $activity),
         ],
         'evaluation' => [
             'points' => $resolvePoints(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
             'narrative' => $resolveNarrative(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
+            'media_links' => $resolveMediaLinks(4, 'evaluation', 'pillar_4_monitoring.evaluation', $activity),
         ],
         'narrative' => $resolvePillarNarrative(4, 'pillar_4_narrative', 'mne_narrative', $activity, ['performance', 'data_quality', 'evaluation']),
     ],
@@ -127,14 +150,17 @@ $initialPillars = [
         'project_collab' => [
             'points' => $resolvePoints(5, 'project_collab', 'pillar_5_collaboration.project_collab', $activity),
             'narrative' => $resolveNarrative(5, 'project_collab', 'pillar_5_collaboration.project_collab', $activity),
+            'media_links' => $resolveMediaLinks(5, 'project_collab', 'pillar_5_collaboration.project_collab', $activity),
         ],
         'partnerships' => [
             'points' => $resolvePoints(5, 'partnerships', 'pillar_5_collaboration.partnerships', $activity),
             'narrative' => $resolveNarrative(5, 'partnerships', 'pillar_5_collaboration.partnerships', $activity),
+            'media_links' => $resolveMediaLinks(5, 'partnerships', 'pillar_5_collaboration.partnerships', $activity),
         ],
         'cross_learning' => [
             'points' => $resolvePoints(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
             'narrative' => $resolveNarrative(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
+            'media_links' => $resolveMediaLinks(5, 'cross_learning', 'pillar_5_collaboration.cross_learning', $activity),
         ],
         'narrative' => $resolvePillarNarrative(5, 'pillar_5_narrative', 'collab_narrative', $activity, ['project_collab', 'partnerships', 'cross_learning']),
     ],
@@ -523,6 +549,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-1-milestones" class="hidden">
+                                    @if(!empty($initialPillars[1]['milestones']['media_links']))
+                                        @foreach($initialPillars[1]['milestones']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_1_achievements[milestones][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="1" data-key="milestones">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_1_achievements[milestones][narrative]" value="{{ $initialPillars[1]['milestones']['narrative'] }}">
                             </div>
@@ -562,6 +597,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-1-impact" class="hidden">
+                                    @if(!empty($initialPillars[1]['impact']['media_links']))
+                                        @foreach($initialPillars[1]['impact']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_1_achievements[impact][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="1" data-key="impact">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_1_achievements[impact][narrative]" value="{{ $initialPillars[1]['impact']['narrative'] }}">
                             </div>
@@ -599,6 +643,15 @@ $entryFormConfig = [
                                     @foreach($initialPillars[1]['stories']['points'] as $idx => $val)
                                     <input type="hidden" name="pillar_1_achievements[stories][points][]" value="{{ $val }}" class="bullet-input" data-pillar="1" data-key="stories">
                                     @endforeach
+                                </div>
+
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-1-stories" class="hidden">
+                                    @if(!empty($initialPillars[1]['stories']['media_links']))
+                                        @foreach($initialPillars[1]['stories']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_1_achievements[stories][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="1" data-key="stories">
+                                        @endforeach
+                                    @endif
                                 </div>
 
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
@@ -709,6 +762,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-2-operational" class="hidden">
+                                    @if(!empty($initialPillars[2]['operational']['media_links']))
+                                        @foreach($initialPillars[2]['operational']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_2_challenges[operational][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="2" data-key="operational">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_2_challenges[operational][narrative]" value="{{ $initialPillars[2]['operational']['narrative'] }}">
                             </div>
@@ -748,6 +810,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-2-resources" class="hidden">
+                                    @if(!empty($initialPillars[2]['resources']['media_links']))
+                                        @foreach($initialPillars[2]['resources']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_2_challenges[resources][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="2" data-key="resources">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_2_challenges[resources][narrative]" value="{{ $initialPillars[2]['resources']['narrative'] }}">
                             </div>
@@ -785,6 +856,15 @@ $entryFormConfig = [
                                     @foreach($initialPillars[2]['risks']['points'] as $idx => $val)
                                     <input type="hidden" name="pillar_2_challenges[risks][points][]" value="{{ $val }}" class="bullet-input" data-pillar="2" data-key="risks">
                                     @endforeach
+                                </div>
+
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-2-risks" class="hidden">
+                                    @if(!empty($initialPillars[2]['risks']['media_links']))
+                                        @foreach($initialPillars[2]['risks']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_2_challenges[risks][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="2" data-key="risks">
+                                        @endforeach
+                                    @endif
                                 </div>
 
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
@@ -895,6 +975,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-3-lessons" class="hidden">
+                                    @if(!empty($initialPillars[3]['lessons']['media_links']))
+                                        @foreach($initialPillars[3]['lessons']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_3_learning[lessons][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="3" data-key="lessons">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_3_learning[lessons][narrative]" value="{{ $initialPillars[3]['lessons']['narrative'] }}">
                             </div>
@@ -934,6 +1023,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-3-feedback" class="hidden">
+                                    @if(!empty($initialPillars[3]['feedback']['media_links']))
+                                        @foreach($initialPillars[3]['feedback']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_3_learning[feedback][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="3" data-key="feedback">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_3_learning[feedback][narrative]" value="{{ $initialPillars[3]['feedback']['narrative'] }}">
                             </div>
@@ -971,6 +1069,15 @@ $entryFormConfig = [
                                     @foreach($initialPillars[3]['innovation']['points'] as $idx => $val)
                                     <input type="hidden" name="pillar_3_learning[innovation][points][]" value="{{ $val }}" class="bullet-input" data-pillar="3" data-key="innovation">
                                     @endforeach
+                                </div>
+
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-3-innovation" class="hidden">
+                                    @if(!empty($initialPillars[3]['innovation']['media_links']))
+                                        @foreach($initialPillars[3]['innovation']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_3_learning[innovation][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="3" data-key="innovation">
+                                        @endforeach
+                                    @endif
                                 </div>
 
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
@@ -1081,6 +1188,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-4-performance" class="hidden">
+                                    @if(!empty($initialPillars[4]['performance']['media_links']))
+                                        @foreach($initialPillars[4]['performance']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_4_monitoring[performance][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="4" data-key="performance">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_4_monitoring[performance][narrative]" value="{{ $initialPillars[4]['performance']['narrative'] }}">
                             </div>
@@ -1120,6 +1236,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-4-data_quality" class="hidden">
+                                    @if(!empty($initialPillars[4]['data_quality']['media_links']))
+                                        @foreach($initialPillars[4]['data_quality']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_4_monitoring[data_quality][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="4" data-key="data_quality">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_4_monitoring[data_quality][narrative]" value="{{ $initialPillars[4]['data_quality']['narrative'] }}">
                             </div>
@@ -1157,6 +1282,15 @@ $entryFormConfig = [
                                     @foreach($initialPillars[4]['evaluation']['points'] as $idx => $val)
                                     <input type="hidden" name="pillar_4_monitoring[evaluation][points][]" value="{{ $val }}" class="bullet-input" data-pillar="4" data-key="evaluation">
                                     @endforeach
+                                </div>
+
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-4-evaluation" class="hidden">
+                                    @if(!empty($initialPillars[4]['evaluation']['media_links']))
+                                        @foreach($initialPillars[4]['evaluation']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_4_monitoring[evaluation][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="4" data-key="evaluation">
+                                        @endforeach
+                                    @endif
                                 </div>
 
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
@@ -1267,6 +1401,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-5-project_collab" class="hidden">
+                                    @if(!empty($initialPillars[5]['project_collab']['media_links']))
+                                        @foreach($initialPillars[5]['project_collab']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_5_collaboration[project_collab][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="5" data-key="project_collab">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_5_collaboration[project_collab][narrative]" value="{{ $initialPillars[5]['project_collab']['narrative'] }}">
                             </div>
@@ -1306,6 +1449,15 @@ $entryFormConfig = [
                                     @endforeach
                                 </div>
 
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-5-partnerships" class="hidden">
+                                    @if(!empty($initialPillars[5]['partnerships']['media_links']))
+                                        @foreach($initialPillars[5]['partnerships']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_5_collaboration[partnerships][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="5" data-key="partnerships">
+                                        @endforeach
+                                    @endif
+                                </div>
+
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
                                 <input type="hidden" name="pillar_5_collaboration[partnerships][narrative]" value="{{ $initialPillars[5]['partnerships']['narrative'] }}">
                             </div>
@@ -1343,6 +1495,15 @@ $entryFormConfig = [
                                     @foreach($initialPillars[5]['cross_learning']['points'] as $idx => $val)
                                     <input type="hidden" name="pillar_5_collaboration[cross_learning][points][]" value="{{ $val }}" class="bullet-input" data-pillar="5" data-key="cross_learning">
                                     @endforeach
+                                </div>
+
+                                <!-- Hidden media links container -->
+                                <div id="point-media-links-5-cross_learning" class="hidden">
+                                    @if(!empty($initialPillars[5]['cross_learning']['media_links']))
+                                        @foreach($initialPillars[5]['cross_learning']['media_links'] as $mLink)
+                                        <input type="hidden" name="pillar_5_collaboration[cross_learning][media_links][]" value="{{ $mLink }}" class="media-link-input" data-pillar="5" data-key="cross_learning">
+                                        @endforeach
+                                    @endif
                                 </div>
 
                                 <!-- Hidden input preserving legacy sub-pillar narrative -->
@@ -1558,21 +1719,35 @@ $entryFormConfig = [
                                             ( 🖼️ Image )
                                         </span>
                                     </div>
-                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into the text area as a clickable badge</span>
+                                    <span class="text-slate-400 hidden sm:inline">Will be added to Attached Media Links below</span>
                                 </div>
                             </div>
 
-                            <!-- Free Large Text Area with Clickable Links Support -->
+                            <!-- Free Large Text Area with Bullet Isolation -->
                             <style>
                                 #point-modal-editor {
                                     line-height: 1.85 !important;
                                 }
                                 #point-modal-editor > div {
+                                    position: relative !important;
+                                    padding-left: 26px !important;
                                     padding-top: 8px !important;
                                     padding-bottom: 8px !important;
                                     margin-bottom: 6px !important;
                                     border-bottom: 1px dashed rgba(226, 232, 240, 0.8) !important;
                                     min-height: 36px !important;
+                                }
+                                #point-modal-editor > div::before {
+                                    content: "•" !important;
+                                    position: absolute !important;
+                                    left: 8px !important;
+                                    top: 8px !important;
+                                    color: #3b82f6 !important;
+                                    font-weight: 700 !important;
+                                    font-size: 16px !important;
+                                    line-height: 1.5 !important;
+                                    user-select: none !important;
+                                    pointer-events: none !important;
                                 }
                                 #point-modal-editor > div:last-child {
                                     border-bottom: none !important;
@@ -1584,8 +1759,23 @@ $entryFormConfig = [
                                      contenteditable="true"
                                      role="textbox"
                                      aria-multiline="true"
-                                     class="w-full text-xs sm:text-sm font-normal text-slate-800 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-loose outline-none min-h-[240px] max-h-[50vh] overflow-y-auto bg-white whitespace-pre-wrap select-text"
-                                     data-placeholder="• e.g. 5 Coach Clinics conducted across 3 zones&#10;• e.g. 40 youth peer educators trained and certified"></div>
+                                     class="w-full text-xs sm:text-sm font-normal text-slate-800 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-loose outline-none min-h-[220px] max-h-[45vh] overflow-y-auto bg-white whitespace-pre-wrap select-text"
+                                     data-placeholder="Enter bullet point..."></div>
+                            </div>
+
+                            <!-- Attached Media Links Bottom Section -->
+                            <div id="modal-attached-links-section" class="hidden p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                                        <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs">📎</span>
+                                        <span>Attached Media Links</span>
+                                        <span id="modal-attached-links-count" class="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">0</span>
+                                    </div>
+                                    <span class="text-[10px] text-slate-400">Attached to this section</span>
+                                </div>
+                                <div id="modal-attached-links-list" class="flex items-center gap-2 flex-wrap min-h-[28px]">
+                                    <!-- Dynamic link chips -->
+                                </div>
                             </div>
 
                             <!-- Footer tip -->
@@ -1865,6 +2055,8 @@ let currentModalPillar = 1;
 let currentModalKey = 'milestones';
 let lastSavedRange = null;
 let currentLinkType = { icon: '🖼️', type: 'Image' };
+let modalAttachedLinks = []; // [{ url: string, icon: string, type: string }]
+let expandedPointSections = new Set();
 
 function detectDocumentInfo(url) {
     if (!url) return { icon: '📁', type: 'Drive Link' };
@@ -1975,11 +2167,6 @@ function toggleDriveLinkArea() {
 
     const isHidden = box.classList.contains('hidden');
     if (isHidden) {
-        // Save current editor caret position
-        const sel = window.getSelection();
-        if (sel && sel.rangeCount > 0) {
-            lastSavedRange = sel.getRangeAt(0).cloneRange();
-        }
         box.classList.remove('hidden');
         if (input) {
             input.focus();
@@ -1991,93 +2178,119 @@ function toggleDriveLinkArea() {
     }
 }
 
+function renderModalAttachedLinks() {
+    const section = document.getElementById('modal-attached-links-section');
+    const list = document.getElementById('modal-attached-links-list');
+    const countBadge = document.getElementById('modal-attached-links-count');
+    if (!section || !list) return;
+
+    if (countBadge) {
+        countBadge.textContent = modalAttachedLinks.length;
+    }
+
+    if (modalAttachedLinks.length === 0) {
+        section.classList.add('hidden');
+        list.innerHTML = '';
+        return;
+    }
+
+    section.classList.remove('hidden');
+    list.innerHTML = modalAttachedLinks.map((link, idx) => `
+        <div class="inline-flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-xl bg-white hover:bg-blue-50/60 text-blue-700 border border-blue-200/90 font-semibold text-xs shadow-2xs transition group">
+            <a href="${escapeHtmlAttr(link.url)}" target="_blank" rel="noopener noreferrer" class="hover:underline flex items-center gap-1.5" title="Open ${escapeHtmlAttr(link.type)} in new tab">
+                <span>${link.icon} ${escapeHtml(link.type)}</span>
+                <span class="text-[10px] text-blue-500 font-bold">↗</span>
+            </a>
+            <button type="button"
+                    onclick="removeModalAttachedLink(${idx})"
+                    class="w-4 h-4 rounded-full hover:bg-rose-100 hover:text-rose-600 text-slate-400 flex items-center justify-center transition cursor-pointer text-xs ml-1 font-bold"
+                    title="Remove link">
+                ×
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeModalAttachedLink(index) {
+    modalAttachedLinks.splice(index, 1);
+    renderModalAttachedLinks();
+}
+
 function applyDriveLinkAndClose() {
     const box = document.getElementById('drive-link-box');
     const urlInput = document.getElementById('drive-link-input');
     const editor = document.getElementById('point-modal-editor');
 
-    if (urlInput && editor) {
+    if (urlInput) {
         const url = urlInput.value.trim();
         if (url.length > 0) {
             const info = currentLinkType || detectDocumentInfo(url);
-            
-            // Create clickable link badge element: ( Drive Icon: Document Type )
-            const linkA = document.createElement('a');
-            linkA.href = url;
-            linkA.target = '_blank';
-            linkA.rel = 'noopener noreferrer';
-            linkA.contentEditable = 'false';
-            linkA.setAttribute('data-icon', info.icon);
-            linkA.setAttribute('data-type', info.type);
-            linkA.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs';
-            linkA.title = `Open ${info.type} in new tab`;
-            linkA.innerHTML = `<span>${info.icon} ${info.type}</span> <span class="text-[10px] opacity-75 font-bold">↗</span>`;
-
-            editor.focus();
-            const sel = window.getSelection();
-
-            // Restore saved range if available
-            if (lastSavedRange) {
-                sel.removeAllRanges();
-                sel.addRange(lastSavedRange);
-            }
-
-            if (sel && sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(linkA);
-
-                // Add non-breaking space after link and place cursor after
-                const space = document.createTextNode('\u00A0');
-                linkA.parentNode.insertBefore(space, linkA.nextSibling);
-
-                range.setStartAfter(space);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                editor.appendChild(linkA);
-                editor.appendChild(document.createTextNode('\u00A0'));
-            }
-
+            modalAttachedLinks.push({
+                url: url,
+                icon: info.icon,
+                type: info.type
+            });
             urlInput.value = '';
-            lastSavedRange = null;
+            renderModalAttachedLinks();
         }
     }
 
     if (box) box.classList.add('hidden');
-    if (editor) editor.focus();
-    updateModalPointsBadge();
+    if (editor) {
+        editor.focus();
+        const last = editor.lastElementChild;
+        if (last) setCaretToEnd(last);
+    }
+}
+
+function setCaretToEnd(el) {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
 }
 
 function insertBulletPoint() {
     const editor = document.getElementById('point-modal-editor');
     if (!editor) return;
 
-    editor.focus();
-    const sel = window.getSelection();
-    
     const div = document.createElement('div');
-    div.innerHTML = '•\u00A0';
+    div.innerHTML = '<br>';
+    editor.appendChild(div);
 
-    if (sel && sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(div);
-        range.setStart(div, div.childNodes.length);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-    } else {
-        editor.appendChild(div);
-    }
+    setCaretToEnd(div);
     updateModalPointsBadge();
+}
+
+function parseLinkString(raw) {
+    if (!raw) return null;
+    const badgeRegex = /(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"')]+)\s*\)?/u;
+    const badgeMatch = raw.match(badgeRegex);
+    if (badgeMatch) {
+        const label = (badgeMatch[1] || badgeMatch[2]).trim();
+        const url = badgeMatch[3];
+        const iconMatch = label.match(/^([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎])\s*(.*)$/u);
+        const icon = iconMatch ? iconMatch[1] : '🔗';
+        const type = iconMatch ? iconMatch[2] : label;
+        return { url, icon, type };
+    }
+    const urlMatch = raw.match(/https?:\/\/[^\s<>"')]+/i);
+    if (urlMatch) {
+        const url = urlMatch[0];
+        const info = detectDocumentInfo(url);
+        return { url, icon: info.icon, type: info.type };
+    }
+    return null;
 }
 
 function openPointModal(pillarNum, subKey) {
     currentModalPillar = pillarNum;
     currentModalKey = subKey;
     lastSavedRange = null;
+    modalAttachedLinks = [];
 
     const meta = pointSectionMeta[pillarNum]?.sub[subKey];
     if (!meta) return;
@@ -2094,7 +2307,6 @@ function openPointModal(pillarNum, subKey) {
     if (linkBox) linkBox.classList.add('hidden');
     if (linkInput) linkInput.value = '';
 
-    // Reset default active chip
     currentLinkType = { icon: '🖼️', type: 'Image' };
     updateActiveTypeChip('Image');
 
@@ -2110,60 +2322,60 @@ function openPointModal(pillarNum, subKey) {
         saveBtn.className = `px-5 py-2 text-xs font-bold text-white rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 ${colorClasses[pillarColor] || 'bg-blue-600 hover:bg-blue-700'}`;
     }
 
-    // Populate editor with existing points, rendering clickable link badges
-    const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
-    const existingPoints = [];
-    if (container) {
-        container.querySelectorAll('input.bullet-input').forEach(inp => {
-            if (inp.value && inp.value.trim().length > 0) {
-                existingPoints.push(inp.value.trim());
+    // 1. Load existing media links from point-media-links container
+    const mediaLinksContainer = document.getElementById(`point-media-links-${pillarNum}-${subKey}`);
+    if (mediaLinksContainer) {
+        mediaLinksContainer.querySelectorAll('input.media-link-input').forEach(inp => {
+            const parsed = parseLinkString(inp.value.trim());
+            if (parsed) modalAttachedLinks.push(parsed);
+        });
+    }
+
+    // 2. Load existing points, extracting any legacy inline links into modalAttachedLinks
+    const pointsContainer = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
+    const cleanPoints = [];
+    if (pointsContainer) {
+        pointsContainer.querySelectorAll('input.bullet-input').forEach(inp => {
+            let val = inp.value ? inp.value.trim() : '';
+            if (!val) return;
+            
+            // Check if this point had an embedded link
+            const parsed = parseLinkString(val);
+            if (parsed) {
+                // If not already in modalAttachedLinks, add it
+                if (!modalAttachedLinks.some(l => l.url === parsed.url)) {
+                    modalAttachedLinks.push(parsed);
+                }
+                // Strip badge and url from point text
+                const badgeRegex = /(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])?\s*\(?\s*https?:\/\/[^\s<>"')]+\s*\)?/u;
+                val = val.replace(badgeRegex, '').trim();
+            }
+
+            // Strip any existing bullet character
+            val = val.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+            if (val.length > 0) {
+                cleanPoints.push(val);
             }
         });
     }
 
+    // Populate editor with clean points (no bullets in text; CSS ::before handles bullets!)
     if (editor) {
         editor.innerHTML = '';
-        if (existingPoints.length > 0) {
-            existingPoints.forEach(p => {
-                let text = p.startsWith('•') ? p.substring(1).trim() : p;
-                
-                // Extract custom badge and URL if present
-                const badgeRegex = /(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"')]+)\s*\)?/u;
-                const badgeMatch = text.match(badgeRegex);
-
-                let linkHtml = '';
-                if (badgeMatch) {
-                    const label = (badgeMatch[1] || badgeMatch[2]).trim();
-                    const url = badgeMatch[3];
-                    text = text.replace(badgeMatch[0], '').trim();
-                    
-                    // Separate icon from type if present
-                    const iconMatch = label.match(/^([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎])\s*(.*)$/u);
-                    const icon = iconMatch ? iconMatch[1] : '🔗';
-                    const type = iconMatch ? iconMatch[2] : label;
-
-                    linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" data-icon="${icon}" data-type="${escapeHtmlAttr(type)}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs" title="Open ${escapeHtmlAttr(type)} in new tab"><span>${icon} ${escapeHtml(type)}</span> <span class="text-[10px] opacity-75 font-bold">↗</span></a>\u00A0`;
-                } else {
-                    const urlMatch = text.match(/https?:\/\/[^\s<>"')]+/i);
-                    if (urlMatch) {
-                        const url = urlMatch[0];
-                        const info = detectDocumentInfo(url);
-                        text = text.replace(urlMatch[0], '').trim();
-                        linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" data-icon="${info.icon}" data-type="${escapeHtmlAttr(info.type)}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/90 font-semibold text-xs no-underline mx-2 align-middle transition cursor-pointer select-none shadow-2xs" title="Open ${info.type} in new tab"><span>${info.icon} ${info.type}</span> <span class="text-[10px] opacity-75 font-bold">↗</span></a>\u00A0`;
-                    }
-                }
-
-                const lineDiv = document.createElement('div');
-                lineDiv.innerHTML = `•\u00A0${escapeHtml(text)}${linkHtml}`;
-                editor.appendChild(lineDiv);
+        if (cleanPoints.length > 0) {
+            cleanPoints.forEach(p => {
+                const div = document.createElement('div');
+                div.textContent = p;
+                editor.appendChild(div);
             });
         } else {
-            const lineDiv = document.createElement('div');
-            lineDiv.innerHTML = '•\u00A0';
-            editor.appendChild(lineDiv);
+            const div = document.createElement('div');
+            div.innerHTML = '<br>';
+            editor.appendChild(div);
         }
     }
 
+    renderModalAttachedLinks();
     updateModalPointsBadge();
 
     // Show modal
@@ -2175,9 +2387,14 @@ function openPointModal(pillarNum, subKey) {
 
     setTimeout(() => {
         if (editor) {
-            editor.focus();
+            const first = editor.firstElementChild;
+            if (first) {
+                setCaretToEnd(first);
+            } else {
+                editor.focus();
+            }
         }
-    }, 50);
+    }, 60);
 }
 
 function closePointModal() {
@@ -2194,11 +2411,15 @@ function updateModalPointsBadge() {
     if (!badge || !editor) return;
 
     let count = 0;
-    const lines = editor.innerText.split('\n');
-    lines.forEach(line => {
-        const clean = line.replace(/^[•\-\*\d+\.]\s*/, '').trim();
-        if (clean.length > 0) count++;
+    editor.querySelectorAll(':scope > div').forEach(div => {
+        const text = (div.innerText || div.textContent || '').replace(/\u00A0/g, ' ').trim();
+        if (text.length > 0) count++;
     });
+
+    if (count === 0) {
+        const raw = (editor.innerText || editor.textContent || '').replace(/\u00A0/g, ' ').trim();
+        if (raw.length > 0) count = 1;
+    }
 
     badge.textContent = `${count} point${count === 1 ? '' : 's'}`;
 }
@@ -2208,61 +2429,18 @@ function savePointModal() {
     if (!editor) return;
 
     const points = [];
-    const childNodes = Array.from(editor.childNodes);
-    const lineElements = [];
-
-    childNodes.forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'div') {
-            lineElements.push(node);
-        } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
-            const d = document.createElement('div');
-            d.textContent = node.textContent;
-            lineElements.push(d);
+    editor.querySelectorAll(':scope > div').forEach(div => {
+        const text = (div.innerText || div.textContent || '').replace(/\u00A0/g, ' ').trim();
+        if (text.length > 0) {
+            points.push(text);
         }
     });
 
-    if (lineElements.length === 0) {
-        const raw = editor.innerText || editor.textContent || '';
+    if (points.length === 0) {
+        const raw = (editor.innerText || editor.textContent || '').replace(/\u00A0/g, ' ').trim();
         raw.split('\n').forEach(l => {
             const clean = l.replace(/^[•\-\*\d+\.]\s*/, '').trim();
             if (clean.length > 0) points.push(clean);
-        });
-    } else {
-        lineElements.forEach(lineEl => {
-            const linkA = lineEl.querySelector('a[href]');
-            const url = linkA ? linkA.getAttribute('href') : null;
-            let icon = linkA ? linkA.getAttribute('data-icon') : null;
-            let type = linkA ? linkA.getAttribute('data-type') : null;
-
-            if (linkA && (!icon || !type)) {
-                const textBadge = linkA.innerText || linkA.textContent || '';
-                const clean = textBadge.replace(/↗/g, '').trim();
-                const m = clean.match(/^([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎])\s*(.*)$/u);
-                if (m) {
-                    icon = m[1];
-                    type = m[2];
-                }
-            }
-
-            const clone = lineEl.cloneNode(true);
-            const cloneA = clone.querySelector('a');
-            if (cloneA) cloneA.remove();
-
-            let text = clone.innerText || clone.textContent || '';
-            text = text.replace(/\u00A0/g, ' ').replace(/^[•\-\*\d+\.]\s*/, '').trim();
-
-            if (url) {
-                if (!icon || !type) {
-                    const info = detectDocumentInfo(url);
-                    icon = info.icon;
-                    type = info.type;
-                }
-                const badge = `( ${icon} ${type} )`;
-                const combined = text ? `${text} ${badge} ${url}` : `${badge} ${url}`;
-                points.push(combined);
-            } else if (text.length > 0) {
-                points.push(text);
-            }
         });
     }
 
@@ -2270,14 +2448,33 @@ function savePointModal() {
     const subKey = currentModalKey;
     const field = pointSectionMeta[pillarNum]?.field || 'achievements';
 
-    // Update hidden inputs container
-    const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
-    if (container) {
-        container.innerHTML = points.map(p => `
+    // 1. Update hidden inputs for points (pure clean bullet points)
+    const pointsContainer = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
+    if (pointsContainer) {
+        pointsContainer.innerHTML = points.map(p => `
             <input type="hidden"
                    name="pillar_${pillarNum}_${field}[${subKey}][points][]"
                    value="${escapeHtmlAttr(p)}"
                    class="bullet-input"
+                   data-pillar="${pillarNum}"
+                   data-key="${subKey}">
+        `).join('');
+    }
+
+    // 2. Update hidden inputs for media links (stored cleanly in media_links)
+    let mediaLinksContainer = document.getElementById(`point-media-links-${pillarNum}-${subKey}`);
+    if (!mediaLinksContainer && pointsContainer) {
+        mediaLinksContainer = document.createElement('div');
+        mediaLinksContainer.id = `point-media-links-${pillarNum}-${subKey}`;
+        mediaLinksContainer.className = 'hidden';
+        pointsContainer.parentNode.insertBefore(mediaLinksContainer, pointsContainer.nextSibling);
+    }
+    if (mediaLinksContainer) {
+        mediaLinksContainer.innerHTML = modalAttachedLinks.map(link => `
+            <input type="hidden"
+                   name="pillar_${pillarNum}_${field}[${subKey}][media_links][]"
+                   value="${escapeHtmlAttr(`(${link.icon} ${link.type}) ${link.url}`)}"
+                   class="media-link-input"
                    data-pillar="${pillarNum}"
                    data-key="${subKey}">
         `).join('');
@@ -2304,30 +2501,24 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function renderPointPreview(pt) {
-    // 1. Check for custom badge + url pattern: ( Icon Name - Type ) URL
-    const badgeMatch = pt.match(/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
-    if (badgeMatch) {
-        const label = badgeMatch[1] || badgeMatch[2];
-        const url = badgeMatch[3];
-        const textOnly = pt.replace(badgeMatch[0], '').trim();
-        const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs align-middle mx-1.5 my-0.5">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
-        return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
+function togglePointsExpand(p, key) {
+    const id = `${p}-${key}`;
+    const extraEl = document.getElementById(`point-extra-${p}-${key}`);
+    const btnText = document.getElementById(`btn-expand-text-${p}-${key}`);
+    const btnIcon = document.getElementById(`btn-expand-icon-${p}-${key}`);
+    const count = parseInt(btnText?.getAttribute('data-count') || '0', 10);
+
+    if (expandedPointSections.has(id)) {
+        expandedPointSections.delete(id);
+        if (extraEl) extraEl.classList.add('hidden');
+        if (btnText) btnText.textContent = `View ${count} more point${count === 1 ? '' : 's'}`;
+        if (btnIcon) btnIcon.classList.remove('rotate-180');
+    } else {
+        expandedPointSections.add(id);
+        if (extraEl) extraEl.classList.remove('hidden');
+        if (btnText) btnText.textContent = 'View less';
+        if (btnIcon) btnIcon.classList.add('rotate-180');
     }
-
-    // 2. Check for raw URL
-    const urlMatch = pt.match(/https?:\/\/[^\s<>"')]+/i);
-    if (!urlMatch) {
-        return escapeHtml(pt);
-    }
-    const url = urlMatch[0];
-    const textOnly = pt.replace(url, '').trim();
-    const info = detectDocumentInfo(url);
-    const label = `${info.icon} ${info.type}`;
-
-    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs align-middle mx-1.5 my-0.5">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
-
-    return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
 }
 
 function refreshPillarSummaries() {
@@ -2376,28 +2567,6 @@ function refreshPillarSummaries() {
     }
 }
 
-let expandedPointSections = new Set();
-
-function togglePointsExpand(p, key) {
-    const id = `${p}-${key}`;
-    const extraEl = document.getElementById(`point-extra-${p}-${key}`);
-    const btnText = document.getElementById(`btn-expand-text-${p}-${key}`);
-    const btnIcon = document.getElementById(`btn-expand-icon-${p}-${key}`);
-    const count = parseInt(btnText?.getAttribute('data-count') || '0', 10);
-
-    if (expandedPointSections.has(id)) {
-        expandedPointSections.delete(id);
-        if (extraEl) extraEl.classList.add('hidden');
-        if (btnText) btnText.textContent = `View ${count} more point${count === 1 ? '' : 's'}`;
-        if (btnIcon) btnIcon.classList.remove('rotate-180');
-    } else {
-        expandedPointSections.add(id);
-        if (extraEl) extraEl.classList.remove('hidden');
-        if (btnText) btnText.textContent = 'View less';
-        if (btnIcon) btnIcon.classList.add('rotate-180');
-    }
-}
-
 function refreshPointSummaries() {
     const subKeys = {
         1: ['milestones', 'impact', 'stories'],
@@ -2409,31 +2578,61 @@ function refreshPointSummaries() {
 
     for (let p = 1; p <= 5; p++) {
         subKeys[p].forEach(key => {
-            const container = document.getElementById(`point-inputs-${p}-${key}`);
+            const pointsContainer = document.getElementById(`point-inputs-${p}-${key}`);
+            const mediaLinksContainer = document.getElementById(`point-media-links-${p}-${key}`);
             const summaryEl = document.getElementById(`point-summary-${p}-${key}`);
             const badge = document.getElementById(`badge-count-${p}-${key}`);
-            if (!container || !summaryEl) return;
+            if (!pointsContainer || !summaryEl) return;
 
             const bullets = [];
-            container.querySelectorAll('input.bullet-input').forEach(inp => {
-                if (inp.value && inp.value.trim().length > 0) {
-                    bullets.push(inp.value.trim());
+            pointsContainer.querySelectorAll('input.bullet-input').forEach(inp => {
+                let val = inp.value ? inp.value.trim() : '';
+                if (val.length > 0) {
+                    // Clean off any legacy inline badge + url for pure text display
+                    const badgeRegex = /(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])?\s*\(?\s*https?:\/\/[^\s<>"')]+\s*\)?/u;
+                    val = val.replace(badgeRegex, '').trim();
+                    val = val.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+                    if (val.length > 0) {
+                        bullets.push(val);
+                    }
+                }
+            });
+
+            const mediaLinks = [];
+            if (mediaLinksContainer) {
+                mediaLinksContainer.querySelectorAll('input.media-link-input').forEach(inp => {
+                    const parsed = parseLinkString(inp.value.trim());
+                    if (parsed) mediaLinks.push(parsed);
+                });
+            }
+
+            // Also check if any raw points had links that weren't moved yet
+            pointsContainer.querySelectorAll('input.bullet-input').forEach(inp => {
+                const parsed = parseLinkString(inp.value.trim());
+                if (parsed && !mediaLinks.some(l => l.url === parsed.url)) {
+                    mediaLinks.push(parsed);
                 }
             });
 
             if (badge) {
-                badge.textContent = `${bullets.length} points`;
+                badge.textContent = `${bullets.length} point${bullets.length === 1 ? '' : 's'}`;
             }
 
-            if (bullets.length === 0) {
+            if (bullets.length === 0 && mediaLinks.length === 0) {
                 summaryEl.className = 'text-xs text-slate-400 italic';
                 summaryEl.innerHTML = 'Not yet filled';
-            } else if (bullets.length <= 2) {
-                summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
-                summaryEl.innerHTML = bullets.map((b, idx) => `
+                return;
+            }
+
+            summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
+
+            // 1. Render bullet points (clean text)
+            let pointsHtml = '';
+            if (bullets.length <= 2) {
+                pointsHtml = bullets.map((b, idx) => `
                     <div class="flex items-start gap-2.5 py-1 ${idx < bullets.length - 1 ? 'border-b border-slate-100/80' : ''}">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
-                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${escapeHtml(b)}</div>
                     </div>
                 `).join('');
             } else {
@@ -2444,21 +2643,20 @@ function refreshPointSummaries() {
                 const firstTwoHtml = firstTwo.map(b => `
                     <div class="flex items-start gap-2.5 py-1 border-b border-slate-100/80">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
-                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${escapeHtml(b)}</div>
                     </div>
                 `).join('');
 
                 const remainingHtml = remaining.map((b, idx) => `
                     <div class="flex items-start gap-2.5 py-1 ${idx < remaining.length - 1 ? 'border-b border-slate-100/80' : ''}">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
-                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${escapeHtml(b)}</div>
                     </div>
                 `).join('');
 
                 const btnLabel = isExpanded ? 'View less' : `View ${remaining.length} more point${remaining.length === 1 ? '' : 's'}`;
 
-                summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
-                summaryEl.innerHTML = `
+                pointsHtml = `
                     ${firstTwoHtml}
                     <div id="point-extra-${p}-${key}" class="${isExpanded ? 'space-y-2' : 'hidden space-y-2'}">
                         ${remainingHtml}
@@ -2475,6 +2673,28 @@ function refreshPointSummaries() {
                     </div>
                 `;
             }
+
+            // 2. Render attached media links bottom section
+            let mediaHtml = '';
+            if (mediaLinks.length > 0) {
+                mediaHtml = `
+                    <div class="pt-2 mt-2 border-t border-slate-100 flex items-center gap-2 flex-wrap">
+                        <span class="text-[11px] font-bold text-slate-500 flex items-center gap-1 shrink-0">
+                            <span>📎 Attached Media:</span>
+                        </span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            ${mediaLinks.map(link => `
+                                <a href="${escapeHtmlAttr(link.url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs" title="Open ${escapeHtmlAttr(link.type)} in new tab">
+                                    <span>${link.icon} ${escapeHtml(link.type)}</span>
+                                    <span class="text-[10px] opacity-75 font-bold">↗</span>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            summaryEl.innerHTML = `${pointsHtml}${mediaHtml}`;
         });
     }
 }
@@ -2501,7 +2721,7 @@ function updatePillarCounts() {
                     if (inp.value && inp.value.trim().length > 0) count++;
                 });
             }
-            if (badge) badge.textContent = `${count} points`;
+            if (badge) badge.textContent = `${count} point${count === 1 ? '' : 's'}`;
             pillarTotal += count;
         });
 
@@ -2749,16 +2969,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Normal Enter key creates a new bullet div
+            // Normal Enter key creates a new div line and positions cursor after bullet
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 const sel = window.getSelection();
                 if (sel && sel.rangeCount > 0) {
                     const range = sel.getRangeAt(0);
                     const newDiv = document.createElement('div');
-                    newDiv.innerHTML = '•\u00A0';
+                    newDiv.innerHTML = '<br>';
 
-                    // Insert after current block
                     let currentBlock = range.startContainer;
                     while (currentBlock && currentBlock.parentNode !== editor) {
                         currentBlock = currentBlock.parentNode;
@@ -2770,12 +2989,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         editor.appendChild(newDiv);
                     }
 
-                    range.setStart(newDiv, newDiv.childNodes.length);
-                    range.collapse(true);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
+                    setCaretToEnd(newDiv);
+                    updateModalPointsBadge();
                 }
-                updateModalPointsBadge();
+            }
+
+            // Backspace on empty line: remove line if multiple lines exist
+            if (e.key === 'Backspace') {
+                const lines = editor.querySelectorAll(':scope > div');
+                if (lines.length > 1) {
+                    const sel = window.getSelection();
+                    if (sel && sel.rangeCount > 0) {
+                        const range = sel.getRangeAt(0);
+                        let currentBlock = range.startContainer;
+                        while (currentBlock && currentBlock.parentNode !== editor) {
+                            currentBlock = currentBlock.parentNode;
+                        }
+                        if (currentBlock && (currentBlock.innerText || '').trim().length === 0) {
+                            e.preventDefault();
+                            const prev = currentBlock.previousElementSibling;
+                            currentBlock.remove();
+                            if (prev) {
+                                setCaretToEnd(prev);
+                            }
+                            updateModalPointsBadge();
+                        }
+                    }
+                }
             }
         });
 
