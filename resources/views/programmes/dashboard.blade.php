@@ -1097,10 +1097,10 @@
                                     <a href="{{ route('programmes.projects.projector', $p->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this specific project directly">
                                         <span>▶ Project Deck</span>
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
+                                    <a href="{{ route('programmes.projects.export_pptx', array_merge(['project' => $p->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
                                         PPTX
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
+                                    <a href="{{ route('programmes.projects.export_pdf', array_merge(['project' => $p->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
                                         PDF
                                     </a>
                                 </div>
@@ -1253,10 +1253,10 @@
                                 <a href="{{ route('programmes.projects.projector', $dept->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this department deck">
                                     <span>▶ Department Deck</span>
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pptx', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
+                                <a href="{{ route('programmes.projects.export_pptx', array_merge(['project' => $dept->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
                                     PPTX
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pdf', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
+                                <a href="{{ route('programmes.projects.export_pdf', array_merge(['project' => $dept->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
                                     PDF
                                 </a>
                             </div>
