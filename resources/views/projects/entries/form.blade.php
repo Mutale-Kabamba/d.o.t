@@ -2379,8 +2379,8 @@ function sanitizePointHtml(html) {
     if (!html || typeof html !== 'string') return '';
     
     // Clean leading bullet markers (•, -, *, 1., etc.)
-    let cleaned = html.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
-    cleaned = cleaned.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+    let cleaned = html.replace(/^[\s•\-*–—·\u2022\u25E6>]+\s*/u, '');
+    cleaned = cleaned.replace(/^\s*\(?\d+\)?[.:\-) ]\s*/, '');
 
     try {
         const parser = new DOMParser();
@@ -2476,8 +2476,8 @@ function parsePastedHtmlToLines(html) {
         if (blocks.length > 0) {
             blocks.forEach(b => {
                 let clean = sanitizePointHtml(b.innerHTML);
-                clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
-                clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+                clean = clean.replace(/^[\s•\-*–—·\u2022\u25E6>]+\s*/u, '');
+                clean = clean.replace(/^\s*\(?\d+\)?[.:\-) ]\s*/, '');
                 clean = clean.trim();
                 const plain = (b.innerText || b.textContent || '').replace(/\u00A0/g, ' ').trim();
                 if (plain.length > 0) {
@@ -2489,8 +2489,8 @@ function parsePastedHtmlToLines(html) {
             const segments = rawHtml.split(/<br\s*[\/]?>/i);
             segments.forEach(seg => {
                 let clean = sanitizePointHtml(seg);
-                clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
-                clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+                clean = clean.replace(/^[\s•\-*–—·\u2022\u25E6>]+\s*/u, '');
+                clean = clean.replace(/^\s*\(?\d+\)?[.:\-) ]\s*/, '');
                 clean = clean.trim();
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = clean;
@@ -2512,8 +2512,8 @@ function parsePastedTextToLines(text) {
     text.split(/\r?\n/).forEach(raw => {
         let clean = raw.trim();
         if (clean.length === 0) return;
-        clean = clean.replace(/^[\s\•\-\*\–\—\·\u2022\u25E6\>]+\s*/u, '');
-        clean = clean.replace(/^\s*\(?\d+\)?[.:\-\)]\s+/u, '');
+        clean = clean.replace(/^[\s•\-*–—·\u2022\u25E6>]+\s*/u, '');
+        clean = clean.replace(/^\s*\(?\d+\)?[.:\-) ]\s*/, '');
         clean = clean.trim();
         if (clean.length === 0) return;
 
