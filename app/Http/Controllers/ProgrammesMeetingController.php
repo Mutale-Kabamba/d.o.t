@@ -1384,6 +1384,135 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
+     * Build balanced, paginated slide batches for Consolidated Presentation PDF to prevent DomPDF overflow/blank pages.
+     */
+    public static function buildConsolidatedSlideBatches(array $projectDataList, array $slidesConfig, int $maxPointsPerSection = 4): array
+    {
+        $projectPairs = !empty($projectDataList) ? array_chunk($projectDataList, 2) : [[]];
+        $slideDeck = [];
+
+        foreach ($slidesConfig as $slideKey => $slide) {
+            foreach ($projectPairs as $pairIdx => $pairProjects) {
+                $maxParts = 1;
+                foreach ($pairProjects as $pData) {
+                    $sections = $pData['theme_sections'][$slideKey] ?? [];
+                    foreach ($sections as $sec) {
+                        $cnt = count($sec['points'] ?? []);
+                        $parts = (int) ceil($cnt / $maxPointsPerSection);
+                        if ($parts > $maxParts) {
+                            $maxParts = $parts;
+                        }
+                    }
+                    $themePts = $pData['theme_points'][$slideKey] ?? [];
+                    $ptsParts = (int) ceil(count($themePts) / ($maxPointsPerSection * 2));
+                    if ($ptsParts > $maxParts) {
+                        $maxParts = $ptsParts;
+                    }
+                }
+
+                for ($part = 0; $part < $maxParts; $part++) {
+                    $chunkProjectsData = [];
+                    foreach ($pairProjects as $pData) {
+                        $pCopy = $pData;
+                        $pCopy['theme_sections'][$slideKey] = [];
+                        $sections = $pData['theme_sections'][$slideKey] ?? [];
+
+                        foreach ($sections as $itemKey => $sec) {
+                            $allPts = $sec['points'] ?? [];
+                            $slicePts = array_slice($allPts, $part * $maxPointsPerSection, $maxPointsPerSection);
+                            $secCopy = $sec;
+                            $secCopy['points'] = $slicePts;
+
+                            if ($part !== $maxParts - 1) {
+                                $secCopy['media_links'] = [];
+                            }
+                            if ($part < $maxParts - 1) {
+                                $secCopy['narrative'] = '';
+                            }
+                            $pCopy['theme_sections'][$slideKey][$itemKey] = $secCopy;
+                        }
+
+                        $themePts = $pData['theme_points'][$slideKey] ?? [];
+                        $pCopy['theme_points'][$slideKey] = array_slice($themePts, $part * ($maxPointsPerSection * 2), $maxPointsPerSection * 2);
+
+                        if ($part < $maxParts - 1) {
+                            $pCopy['theme_narrative_text'][$slideKey] = '';
+                        }
+
+                        $chunkProjectsData[] = $pCopy;
+                    }
+
+                    $slideDeck[] = [
+                        'slideKey' => $slideKey,
+                        'slide' => $slide,
+                        'pairIdx' => $pairIdx,
+                        'totalPairs' => count($projectPairs),
+                        'part' => $part + 1,
+                        'totalParts' => $maxParts,
+                        'projects' => $chunkProjectsData,
+                    ];
+                }
+            }
+        }
+
+        return $slideDeck;
+    }
+
+    /**
+     * Build balanced, paginated slide batches for Single Isolated Project PDF to prevent overflow.
+     */
+    public static function buildSingleProjectSlideBatches(array $pData, array $slidesConfig, int $maxPointsPerSection = 6): array
+    {
+        $slideDeck = [];
+
+        foreach ($slidesConfig as $slideKey => $slide) {
+            $sections = $pData['theme_sections'][$slideKey] ?? [];
+            $maxParts = 1;
+            foreach ($sections as $sec) {
+                $cnt = count($sec['points'] ?? []);
+                $parts = (int) ceil($cnt / $maxPointsPerSection);
+                if ($parts > $maxParts) {
+                    $maxParts = $parts;
+                }
+            }
+
+            for ($part = 0; $part < $maxParts; $part++) {
+                $pCopy = $pData;
+                $pCopy['theme_sections'][$slideKey] = [];
+
+                foreach ($sections as $itemKey => $sec) {
+                    $allPts = $sec['points'] ?? [];
+                    $slicePts = array_slice($allPts, $part * $maxPointsPerSection, $maxPointsPerSection);
+                    $secCopy = $sec;
+                    $secCopy['points'] = $slicePts;
+
+                    if ($part !== $maxParts - 1) {
+                        $secCopy['media_links'] = [];
+                    }
+                    if ($part < $maxParts - 1) {
+                        $secCopy['narrative'] = '';
+                    }
+                    $pCopy['theme_sections'][$slideKey][$itemKey] = $secCopy;
+                }
+
+                if ($part < $maxParts - 1) {
+                    $pCopy['theme_narrative_text'][$slideKey] = '';
+                }
+
+                $slideDeck[] = [
+                    'slideKey' => $slideKey,
+                    'slide' => $slide,
+                    'part' => $part + 1,
+                    'totalParts' => $maxParts,
+                    'pData' => $pCopy,
+                ];
+            }
+        }
+
+        return $slideDeck;
+    }
+
+    /**
      * Live Fullscreen Web Projector Mode (Transposed Matrix Layout: Columns = Projects, Rows = Thematic Sub-items).
      */
     public function projector(Request $request): View
@@ -1678,6 +1807,7 @@ class ProgrammesMeetingController extends Controller
         }
 
         $data = $this->getAggregatedPresentationData($request);
+        $slideDeck = self::buildConsolidatedSlideBatches($data['projectDataList'], $data['slidesConfig'], 4);
 
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
@@ -1693,6 +1823,7 @@ class ProgrammesMeetingController extends Controller
         $pdf = Pdf::loadView('pdf.consolidated_presentation_pdf', [
             'projects' => $data['projects'],
             'projectDataList' => $data['projectDataList'],
+            'slideDeck' => $slideDeck,
             'slidesConfig' => $data['slidesConfig'],
             'meetingTitle' => 'Play It Forward Zambia',
             'meetingSubtitle' => 'Programmes Meeting',
@@ -1736,6 +1867,8 @@ class ProgrammesMeetingController extends Controller
         }
 
         $data = $this->getAggregatedPresentationData($request, $project);
+        $primaryPData = !empty($data['projectDataList']) ? $data['projectDataList'][0] : null;
+        $slideDeck = $primaryPData ? self::buildSingleProjectSlideBatches($primaryPData, $data['slidesConfig'], 6) : [];
 
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
@@ -1751,6 +1884,7 @@ class ProgrammesMeetingController extends Controller
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'project' => $project,
             'projectDataList' => $data['projectDataList'],
+            'slideDeck' => $slideDeck,
             'slidesConfig' => $data['slidesConfig'],
             'periodTitle' => $data['periodTitle'],
             'generatedDate' => now()->format('d M Y, H:i'),
