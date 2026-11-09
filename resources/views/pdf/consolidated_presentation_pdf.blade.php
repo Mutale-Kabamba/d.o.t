@@ -248,6 +248,10 @@
 <body>
 
     @php
+        $logo3Base64 = $logo3Base64 ?? '';
+        if (empty($logo3Base64) && file_exists(public_path('logos/logo3.png'))) {
+            $logo3Base64 = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logos/logo3.png')));
+        }
         $projectChunks = !empty($projectDataList) ? array_chunk($projectDataList, 2) : [[]];
         $totalChunks = count($projectChunks);
         $totalPillarSlides = count($slidesConfig) * $totalChunks;
@@ -260,8 +264,8 @@
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo3.png')))
-            <img src="{{ public_path('logos/logo3.png') }}" class="cover-logo" alt="Logo">
+        @if(!empty($logo3Base64))
+            <img src="{{ $logo3Base64 }}" class="cover-logo" alt="Logo">
         @endif
 
         <div class="cover-title">{{ $meetingTitle ?? 'Play It Forward Zambia' }}</div>
@@ -296,8 +300,8 @@
 
             <!-- Header -->
             <div class="slide-header">
-                @if(file_exists(public_path('logos/logo3.png')))
-                    <img src="{{ public_path('logos/logo3.png') }}" class="header-logo3" alt="Logo">
+                @if(!empty($logo3Base64))
+                    <img src="{{ $logo3Base64 }}" class="header-logo3" alt="Logo">
                 @endif
                 <div class="slide-meta">
                     PILLAR {{ $slide['number'] }} OF 5 • {{ strtoupper($quarter) }}@if($totalChunks > 1) • PART {{ $chunkIdx + 1 }} OF {{ $totalChunks }}@endif
@@ -406,8 +410,8 @@
     <div class="slide thank-you-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo3.png')))
-            <img src="{{ public_path('logos/logo3.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
+        @if(!empty($logo3Base64))
+            <img src="{{ $logo3Base64 }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
         @endif
 
         <div class="ty-title">Thank You!</div>

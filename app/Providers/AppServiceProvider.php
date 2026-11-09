@@ -27,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(ActivityEntry::class, ActivityEntryPolicy::class);
 
+        // Ensure DomPDF fonts & temporary directories exist
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
         if (config('database.default') === 'sqlite') {
             $dbPath = config('database.connections.sqlite.database');
             if ($dbPath && $dbPath !== ':memory:' && !file_exists($dbPath)) {

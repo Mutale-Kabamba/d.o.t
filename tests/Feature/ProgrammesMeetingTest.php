@@ -457,6 +457,36 @@ class ProgrammesMeetingTest extends TestCase
     }
 
     /**
+     * Test PDF exports reflect selected period query parameters.
+     */
+    public function test_pdf_exports_reflect_selected_period(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+        $project = Project::create(['name' => 'Youth Education', 'status' => 'active']);
+
+        // 1. Quarter interval
+        $resQuarterPdf = $this->actingAs($user)->get(route('programmes.export_consolidated_pdf', [
+            'interval' => 'quarter',
+            'quarter' => 3,
+            'year' => 2026,
+        ]));
+        $resQuarterPdf->assertStatus(200);
+        $resQuarterPdf->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('quarter-3-july-september-2026', strtolower($resQuarterPdf->headers->get('content-disposition')));
+
+        // 2. Month interval
+        $resMonthPdf = $this->actingAs($user)->get(route('programmes.projects.export_pdf', [
+            'project' => $project->id,
+            'interval' => 'month',
+            'month' => 5,
+            'year' => 2026,
+        ]));
+        $resMonthPdf->assertStatus(200);
+        $resMonthPdf->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('may-2026', strtolower($resMonthPdf->headers->get('content-disposition')));
+    }
+
+    /**
      * Test Smart Dynamic Project-Scoped Entry Creation with Structured Pillar JSON.
      */
     public function test_smart_dynamic_project_scoped_entry_creation_and_structured_pillars(): void

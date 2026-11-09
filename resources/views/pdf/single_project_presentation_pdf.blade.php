@@ -235,13 +235,15 @@
 <body>
 
     @php
-        $logo3Path = public_path('logos/logo3.png');
-        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+        $logo3Base64 = $logo3Base64 ?? '';
+        if (empty($logo3Base64) && file_exists(public_path('logos/logo3.png'))) {
+            $logo3Base64 = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('logos/logo3.png')));
+        }
 
         $pName = $project->name ?? $submission->project_name ?? 'Project';
         $oName = $project->lead_officer_name ?? $submission->officer_name ?? 'Project Officer';
         $loc = $project->location ?? $submission->location ?? 'Livingstone, Zambia';
-        $period = $periodTitle ?? $submission->reporting_period ?? 'Quarter 2 April, May, June 2026';
+        $period = $periodTitle ?? $submission->reporting_period ?? 'All Time Comprehensive Review';
 
         $pData = !empty($projectDataList) ? $projectDataList[0] : null;
 

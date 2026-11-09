@@ -1117,7 +1117,20 @@ class ProgrammesMeetingController extends Controller
         }
 
         // 2. Determine interval filter
-        $interval = $request->query('interval', 'all');
+        $interval = $request->query('interval');
+        if (!$interval) {
+            if ($request->has('quarter')) {
+                $interval = 'quarter';
+            } elseif ($request->has('month')) {
+                $interval = 'month';
+            } elseif ($request->has('from_date') && $request->has('to_date')) {
+                $interval = 'custom';
+            } elseif ($request->has('date')) {
+                $interval = 'day';
+            } else {
+                $interval = 'all';
+            }
+        }
         $filterParams = [
             'date' => $request->query('date', now()->toDateString()),
             'month' => (int) $request->query('month', now()->month),
@@ -1336,13 +1349,27 @@ class ProgrammesMeetingController extends Controller
             ];
         }
 
-        // Period title for slides
+        // Period title for slides and exports
         $periodTitle = match ($interval) {
             'day' => 'Day: ' . Carbon::parse($filterParams['date'])->format('d M Y'),
             'month' => Carbon::create($filterParams['year'], $filterParams['month'], 1)->format('F Y'),
-            'quarter' => "Quarter {$filterParams['quarter']} {$filterParams['year']}",
+            'quarter' => (function () use ($filterParams) {
+                $q = (int) ($filterParams['quarter'] ?? ceil(now()->month / 3));
+                $qMonths = match ($q) {
+                    1 => 'January - March',
+                    2 => 'April - June',
+                    3 => 'July - September',
+                    4 => 'October - December',
+                    default => '',
+                };
+                return "Quarter {$q}" . ($qMonths ? " ({$qMonths})" : '') . " {$filterParams['year']}";
+            })(),
             'year' => "Annual {$filterParams['year']}",
-            default => 'Quarter 2 April, May, June 2026',
+            'custom' => (!empty($filterParams['from_date']) && !empty($filterParams['to_date']))
+                ? Carbon::parse($filterParams['from_date'])->format('d M Y') . ' — ' . Carbon::parse($filterParams['to_date'])->format('d M Y')
+                : 'Custom Date Range',
+            'all' => 'All Time Comprehensive Review' . (!empty($filterParams['year']) && $request->has('year') ? " ({$filterParams['year']})" : ''),
+            default => 'All Time Comprehensive Review',
         };
 
         return [
@@ -1642,7 +1669,26 @@ class ProgrammesMeetingController extends Controller
      */
     public function exportConsolidatedPresentation(Request $request): Response
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
         $data = $this->getAggregatedPresentationData($request);
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
 
         $pdf = Pdf::loadView('pdf.consolidated_presentation_pdf', [
             'projects' => $data['projects'],
@@ -1653,14 +1699,20 @@ class ProgrammesMeetingController extends Controller
             'quarter' => $data['periodTitle'],
             'generatedDate' => now()->format('F j, Y'),
             'isSingleProject' => false,
+            'logo3Base64' => $logo3Base64,
         ])->setPaper('a4', 'landscape')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = 'PIFZ_Consolidated_Presentation_' . date('Ymd_His') . '.pdf';
+        $periodSlug = Str::slug($data['periodTitle']);
+        $filename = 'PIFZ_Consolidated_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
@@ -1675,7 +1727,26 @@ class ProgrammesMeetingController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
         $data = $this->getAggregatedPresentationData($request, $project);
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
 
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'project' => $project,
@@ -1683,14 +1754,20 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => $data['slidesConfig'],
             'periodTitle' => $data['periodTitle'],
             'generatedDate' => now()->format('d M Y, H:i'),
+            'logo3Base64' => $logo3Base64,
         ])->setPaper('a4', 'landscape')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = Str::slug($project->name . '_Presentation') . '_' . date('Ymd_His') . '.pdf';
+        $periodSlug = Str::slug($data['periodTitle']);
+        $filename = Str::slug($project->name . '_Presentation') . '_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
@@ -1702,18 +1779,43 @@ class ProgrammesMeetingController extends Controller
     {
         $submission = ProjectSubmission::where('token', $token)->firstOrFail();
 
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
+
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'submission' => $submission,
             'slidesConfig' => self::$slidesConfig,
+            'periodTitle' => $submission->reporting_period ?? 'All Time Comprehensive Review',
             'generatedDate' => now()->format('d M Y, H:i'),
+            'logo3Base64' => $logo3Base64,
         ])->setPaper('a4', 'landscape')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = Str::slug($submission->project_name . '_Meeting_Slides') . '.pdf';
+        $filename = Str::slug($submission->project_name . '_Meeting_Slides') . '_' . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
