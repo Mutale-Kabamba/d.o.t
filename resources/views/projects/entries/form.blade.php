@@ -2376,6 +2376,28 @@ function refreshPillarSummaries() {
     }
 }
 
+let expandedPointSections = new Set();
+
+function togglePointsExpand(p, key) {
+    const id = `${p}-${key}`;
+    const extraEl = document.getElementById(`point-extra-${p}-${key}`);
+    const btnText = document.getElementById(`btn-expand-text-${p}-${key}`);
+    const btnIcon = document.getElementById(`btn-expand-icon-${p}-${key}`);
+    const count = parseInt(btnText?.getAttribute('data-count') || '0', 10);
+
+    if (expandedPointSections.has(id)) {
+        expandedPointSections.delete(id);
+        if (extraEl) extraEl.classList.add('hidden');
+        if (btnText) btnText.textContent = `View ${count} more point${count === 1 ? '' : 's'}`;
+        if (btnIcon) btnIcon.classList.remove('rotate-180');
+    } else {
+        expandedPointSections.add(id);
+        if (extraEl) extraEl.classList.remove('hidden');
+        if (btnText) btnText.textContent = 'View less';
+        if (btnIcon) btnIcon.classList.add('rotate-180');
+    }
+}
+
 function refreshPointSummaries() {
     const subKeys = {
         1: ['milestones', 'impact', 'stories'],
@@ -2406,14 +2428,52 @@ function refreshPointSummaries() {
             if (bullets.length === 0) {
                 summaryEl.className = 'text-xs text-slate-400 italic';
                 summaryEl.innerHTML = 'Not yet filled';
-            } else {
+            } else if (bullets.length <= 2) {
                 summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
-                summaryEl.innerHTML = bullets.map(b => `
-                    <div class="flex items-start gap-2.5 py-1 border-b border-slate-100/80 last:border-b-0">
+                summaryEl.innerHTML = bullets.map((b, idx) => `
+                    <div class="flex items-start gap-2.5 py-1 ${idx < bullets.length - 1 ? 'border-b border-slate-100/80' : ''}">
                         <span class="text-blue-500 font-bold leading-relaxed">•</span>
                         <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
                     </div>
                 `).join('');
+            } else {
+                const isExpanded = expandedPointSections.has(`${p}-${key}`);
+                const firstTwo = bullets.slice(0, 2);
+                const remaining = bullets.slice(2);
+
+                const firstTwoHtml = firstTwo.map(b => `
+                    <div class="flex items-start gap-2.5 py-1 border-b border-slate-100/80">
+                        <span class="text-blue-500 font-bold leading-relaxed">•</span>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
+                    </div>
+                `).join('');
+
+                const remainingHtml = remaining.map((b, idx) => `
+                    <div class="flex items-start gap-2.5 py-1 ${idx < remaining.length - 1 ? 'border-b border-slate-100/80' : ''}">
+                        <span class="text-blue-500 font-bold leading-relaxed">•</span>
+                        <div class="font-normal text-slate-700 leading-relaxed flex-1">${renderPointPreview(b)}</div>
+                    </div>
+                `).join('');
+
+                const btnLabel = isExpanded ? 'View less' : `View ${remaining.length} more point${remaining.length === 1 ? '' : 's'}`;
+
+                summaryEl.className = 'text-xs text-slate-700 space-y-2 pt-1';
+                summaryEl.innerHTML = `
+                    ${firstTwoHtml}
+                    <div id="point-extra-${p}-${key}" class="${isExpanded ? 'space-y-2' : 'hidden space-y-2'}">
+                        ${remainingHtml}
+                    </div>
+                    <div class="pt-1 flex items-center">
+                        <button type="button"
+                                onclick="togglePointsExpand(${p}, '${key}')"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition cursor-pointer group">
+                            <span id="btn-expand-text-${p}-${key}" data-count="${remaining.length}">${btnLabel}</span>
+                            <svg id="btn-expand-icon-${p}-${key}" class="w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
             }
         });
     }
