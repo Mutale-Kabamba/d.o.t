@@ -486,6 +486,7 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => null,
             'isEdit' => false,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
     }
 
@@ -511,7 +512,22 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => null,
             'isEdit' => false,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
+    }
+
+    /**
+     * Helper to fetch recent submitted activity entries across accessible projects.
+     */
+    protected function getRecentSubmittedEntries($user, $projects)
+    {
+        if (!$user) return collect();
+        return ActivityEntry::with('project')
+            ->when(!$user->hasAdminAccess(), fn($q) => $q->whereIn('project_id', $projects->pluck('id')))
+            ->latest('activity_date')
+            ->latest('created_at')
+            ->take(15)
+            ->get();
     }
 
     /**
@@ -659,6 +675,7 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => $activity,
             'isEdit' => true,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
     }
 

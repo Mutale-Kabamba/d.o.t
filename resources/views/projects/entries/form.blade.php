@@ -192,6 +192,31 @@ $rawEndDate = (string)old('end_date', (isset($activity) && $activity && $activit
 $rawPeriodCadence = (string)old('period_cadence', $activity->period_cadence ?? '');
 $isOngoingType = in_array(strtolower($rawActivityType), ['training', 'class', 'session']);
 
+$recentSubmittedJson = ($recentSubmittedEntries ?? collect())->map(function($e) {
+    return [
+        'id' => $e->id,
+        'token' => (string)$e->token,
+        'title' => (string)$e->activity_title,
+        'projectId' => (string)$e->project_id,
+        'projectName' => (string)($e->project->name ?? 'Project'),
+        'date' => $e->activity_date ? $e->activity_date->toDateString() : ($e->start_date ? $e->start_date->toDateString() : ''),
+        'activityType' => (string)$e->activity_type,
+        'periodType' => (string)$e->period_type,
+        'location' => (string)$e->location,
+        'pointsCount' => (int)($e->total_presentation_points ?? 0),
+        'pillar1' => $e->pillar_1_achievements,
+        'narrative1' => (string)($e->pillar_1_narrative ?? $e->achievements_narrative ?? ''),
+        'pillar2' => $e->pillar_2_challenges,
+        'narrative2' => (string)($e->pillar_2_narrative ?? $e->challenges_narrative ?? ''),
+        'pillar3' => $e->pillar_3_learning,
+        'narrative3' => (string)($e->pillar_3_narrative ?? $e->learning_narrative ?? ''),
+        'pillar4' => $e->pillar_4_monitoring,
+        'narrative4' => (string)($e->pillar_4_narrative ?? $e->mne_narrative ?? ''),
+        'pillar5' => $e->pillar_5_collaboration,
+        'narrative5' => (string)($e->pillar_5_narrative ?? $e->collab_narrative ?? ''),
+    ];
+})->values();
+
 $entryFormConfig = [
     'isEdit' => (bool)$isEdit,
     'activityToken' => (string)($activity->token ?? ''),
@@ -207,33 +232,45 @@ $entryFormConfig = [
 
 <div class="min-h-screen bg-slate-50 text-slate-800 antialiased font-sans pb-16">
 
-    <!-- Top Sticky Header & Global Stepper Info -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+    <!-- Top Sticky Header & Global Stepper Info (Minimalist) -->
+    <header class="bg-white/95 backdrop-blur-xs border-b border-slate-200/90 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-                <a href="{{ route('programmes.hub') }}" class="w-9 h-9 rounded-lg bg-blue-600 text-white font-black text-lg flex items-center justify-center shrink-0 shadow-xs hover:bg-blue-700 transition">
+                <a href="{{ route('programmes.hub') }}" class="w-8 h-8 rounded-lg bg-slate-900 text-white font-bold text-sm flex items-center justify-center shrink-0 hover:bg-slate-800 transition">
                     P
                 </a>
-                <div class="flex items-center gap-2.5 truncate">
-                    <span class="text-base font-bold text-slate-900 truncate">Play It Forward Zambia</span>
-                    <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full shrink-0">
-                        {{ $isEdit ? 'Edit Activity Entry' : 'Thematic Pillar Activity Log' }}
+                <div class="flex items-center gap-2 truncate">
+                    <span class="text-sm font-bold text-slate-900 truncate">Play It Forward Zambia</span>
+                    <span class="text-[11px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md shrink-0">
+                        {{ $isEdit ? 'Edit Activity Entry' : 'Activity Log' }}
                     </span>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center gap-2.5 shrink-0">
                 <!-- Auto-Save Status Pill -->
-                <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">
+                <div class="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
                     <span id="draft-status-indicator" class="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span id="draft-status-text">Draft ready</span>
                 </div>
 
-                <a href="{{ route('programmes.hub') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition shadow-xs">
-                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Previous Submissions Button -->
+                <button type="button"
+                        onclick="openPreviousSubmissionsModal()"
+                        id="btn-prev-submissions"
+                        title="Resume or prefill from previous submitted entries"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-lg transition cursor-pointer shadow-2xs">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Previous Submissions</span>
+                </button>
+
+                <a href="{{ route('programmes.hub') }}" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition shadow-2xs">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
-                    <span>Back to Hub</span>
+                    <span class="hidden sm:inline">Hub</span>
                 </a>
             </div>
         </div>
@@ -241,6 +278,41 @@ $entryFormConfig = [
 
     <!-- Main Container -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        <!-- Unfinished Draft Resume Banner (Minimalist) -->
+        <div id="resume-draft-banner" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs transition-all">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start sm:items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-semibold shrink-0 border border-slate-200">
+                        📝
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-slate-900">Unfinished draft available</span>
+                            <span id="resume-draft-time-badge" class="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Saved today</span>
+                        </div>
+                        <p id="resume-draft-desc" class="text-xs text-slate-500 truncate mt-0.5">
+                            You have an unfinished entry with recorded points and details.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    <button type="button"
+                            onclick="discardStoredDraft()"
+                            class="px-3 py-1 text-xs font-medium text-slate-500 hover:text-rose-600 transition cursor-pointer">
+                        Discard
+                    </button>
+                    <button type="button"
+                            onclick="applyStoredDraft()"
+                            class="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition shadow-2xs cursor-pointer flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Resume Draft</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         @php
             $backUrl = route('programmes.hub');
@@ -483,7 +555,7 @@ $entryFormConfig = [
                 <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                            <span class="w-6 h-6 rounded-md bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
                                 1
                             </span>
                             <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 1: Project Achievements</h3>
@@ -696,7 +768,7 @@ $entryFormConfig = [
                 <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-7 h-7 rounded-lg bg-amber-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                            <span class="w-6 h-6 rounded-md bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
                                 2
                             </span>
                             <h3 class="text-base font-bold text-slate-900 tracking-tight">Pillar 2: Challenges &amp; Risks</h3>
@@ -1844,6 +1916,42 @@ $entryFormConfig = [
                 </div>
             </div>
 
+            <!-- Previous Submissions Modal (Minimalist) -->
+            <div id="previous-submissions-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="prev-modal-title" role="dialog" aria-modal="true">
+                <div class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity" onclick="closePreviousSubmissionsModal()"></div>
+                <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
+                    <div class="relative bg-white rounded-2xl shadow-xl border border-slate-200 text-left overflow-hidden transform transition-all sm:my-8 sm:max-w-2xl sm:w-full p-6 space-y-4" onclick="event.stopPropagation()">
+                        <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-3">
+                            <div>
+                                <h3 id="prev-modal-title" class="text-base font-bold text-slate-900">
+                                    Previous Submissions
+                                </h3>
+                                <p class="text-xs text-slate-400">
+                                    Resume or prefill this form from a previously submitted entry
+                                </p>
+                            </div>
+                            <button type="button" onclick="closePreviousSubmissionsModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Submissions List -->
+                        <div id="previous-submissions-list" class="space-y-2.5 max-h-[55vh] overflow-y-auto pr-1">
+                            <!-- Dynamically populated -->
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                            <span>Prefilling copies all pillar points and narratives into your current form.</span>
+                            <button type="button" onclick="closePreviousSubmissionsModal()" class="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Action Buttons Footer -->
             <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -2807,6 +2915,7 @@ function savePointModal() {
 
     updatePillarCounts();
     closePointModal();
+    triggerAutosave();
 }
 
 function escapeHtmlAttr(text) {
@@ -3114,24 +3223,450 @@ document.getElementById('activity-entry-form').addEventListener('submit', functi
     if (p5Narr) document.getElementById('flat_collab_narrative').value = p5Narr.value.trim();
 });
 
-// --- LocalStorage Draft Backup ---
-const storageKey = 'PIFZ_ACTIVITY_DRAFT_{{ $isEdit ? ($activity->token ?? "") : (old("project_id", $preselectedProject->id ?? "NEW")) }}';
+// --- Autosave Drafts & Resume Engine (Minimalist & Resilient) ---
+window.recentSubmittedEntries = @json($recentSubmittedJson);
+
+const currentProjectSelectId = document.getElementById('project_id_select')?.value || '{{ old("project_id", $preselectedProject->id ?? "NEW") }}';
+const baseStoragePrefix = 'PIFZ_ACTIVITY_DRAFT_';
+const storageKey = baseStoragePrefix + '{{ $isEdit ? ($activity->token ?? "") : "" }}' + (currentProjectSelectId || 'DEFAULT');
+const recentDraftsIndexKey = 'PIFZ_RECENT_DRAFTS_INDEX';
+
+function extractFormDraft() {
+    const projSelect = document.getElementById('project_id_select');
+    const titleInput = document.getElementById('activity_title_input');
+    const locInput = document.getElementById('activity_location_input');
+    const dateInput = document.getElementById('activity_date_input');
+    const endDateInput = document.getElementById('activity_end_date_input');
+    const cadenceSelect = document.getElementById('period_cadence_select');
+    const typeRadio = document.querySelector('input[name="activity_type"]:checked');
+    const periodRadio = document.querySelector('input[name="period_type"]:checked');
+
+    const draft = {
+        version: 2,
+        savedAt: new Date().toISOString(),
+        savedTimeFormatted: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        projectId: projSelect ? projSelect.value : '',
+        projectName: projSelect && projSelect.selectedOptions[0] ? projSelect.selectedOptions[0].text.trim() : '',
+        title: titleInput ? titleInput.value.trim() : '',
+        location: locInput ? locInput.value.trim() : '',
+        startDate: dateInput ? dateInput.value : '',
+        endDate: endDateInput ? endDateInput.value : '',
+        periodCadence: cadenceSelect ? cadenceSelect.value : '',
+        activityType: typeRadio ? typeRadio.value : 'activity',
+        periodType: periodRadio ? periodRadio.value : 'single_day',
+        pillars: {},
+        totalPoints: 0
+    };
+
+    const pillarFields = {
+        1: { field: 'achievements', keys: ['milestones', 'impact', 'stories'] },
+        2: { field: 'challenges', keys: ['operational', 'resources', 'risks'] },
+        3: { field: 'learning', keys: ['lessons', 'feedback', 'innovation'] },
+        4: { field: 'monitoring', keys: ['performance', 'data_quality', 'evaluation'] },
+        5: { field: 'collaboration', keys: ['project_collab', 'partnerships', 'cross_learning'] }
+    };
+
+    let ptsCount = 0;
+    for (let p = 1; p <= 5; p++) {
+        const pInfo = pillarFields[p];
+        const narrativeVal = document.getElementById(`pillar_${p}_narrative`)?.value || '';
+        draft.pillars[p] = {
+            narrative: narrativeVal,
+            subPillars: {}
+        };
+
+        pInfo.keys.forEach(k => {
+            const points = [];
+            const container = document.getElementById(`point-inputs-${p}-${k}`);
+            if (container) {
+                container.querySelectorAll('input.bullet-input').forEach(inp => {
+                    const v = (inp.value || '').trim();
+                    if (v.length > 0) points.push(v);
+                });
+            }
+
+            const mediaLinks = [];
+            const mediaContainer = document.getElementById(`point-media-links-${p}-${k}`);
+            if (mediaContainer) {
+                mediaContainer.querySelectorAll('input.media-link-input').forEach(inp => {
+                    const v = (inp.value || '').trim();
+                    if (v.length > 0) mediaLinks.push(v);
+                });
+            }
+
+            draft.pillars[p].subPillars[k] = {
+                points: points,
+                media_links: mediaLinks
+            };
+
+            ptsCount += points.length;
+        });
+    }
+
+    draft.totalPoints = ptsCount;
+    return draft;
+}
+
+let autosaveDebounceTimer = null;
+function triggerAutosave() {
+    const indicator = document.getElementById('draft-status-indicator');
+    const statusText = document.getElementById('draft-status-text');
+    if (indicator) {
+        indicator.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+    }
+    if (statusText) {
+        statusText.textContent = 'Autosaving...';
+    }
+
+    clearTimeout(autosaveDebounceTimer);
+    autosaveDebounceTimer = setTimeout(() => {
+        saveDraftToStorage();
+    }, 600);
+}
+
+function saveDraftToStorage() {
+    try {
+        const draft = extractFormDraft();
+        localStorage.setItem(storageKey, JSON.stringify(draft));
+
+        // Update index of recent unfinished drafts
+        let draftsIndex = [];
+        try {
+            draftsIndex = JSON.parse(localStorage.getItem(recentDraftsIndexKey) || '[]');
+        } catch(e) { draftsIndex = []; }
+
+        const entryIndex = {
+            key: storageKey,
+            projectId: draft.projectId,
+            projectName: draft.projectName,
+            title: draft.title,
+            savedAt: draft.savedAt,
+            savedTimeFormatted: draft.savedTimeFormatted,
+            totalPoints: draft.totalPoints
+        };
+
+        draftsIndex = draftsIndex.filter(d => d.key !== storageKey);
+        draftsIndex.unshift(entryIndex);
+        if (draftsIndex.length > 10) draftsIndex = draftsIndex.slice(0, 10);
+        localStorage.setItem(recentDraftsIndexKey, JSON.stringify(draftsIndex));
+
+        const indicator = document.getElementById('draft-status-indicator');
+        const statusText = document.getElementById('draft-status-text');
+        if (indicator) {
+            indicator.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        }
+        if (statusText) {
+            statusText.textContent = 'Saved ' + draft.savedTimeFormatted;
+        }
+    } catch(e) {
+        // LocalStorage quota or access denied fallback
+    }
+}
 
 function saveDraftManual() {
+    saveDraftToStorage();
+    showToast('Draft saved successfully.');
+}
+
+function getStoredDraft() {
     try {
-        const draft = {
-            savedAt: new Date().toISOString(),
-            title: document.getElementById('activity_title_input')?.value || '',
-            date: document.getElementById('activity_date_input')?.value || '',
-            location: document.getElementById('activity_location_input')?.value || ''
-        };
-        localStorage.setItem(storageKey, JSON.stringify(draft));
-        const statusText = document.getElementById('draft-status-text');
-        if (statusText) {
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            statusText.textContent = 'Draft saved ' + time;
-        }
+        const raw = localStorage.getItem(storageKey);
+        if (raw) return JSON.parse(raw);
     } catch(e) {}
+    return null;
+}
+
+function clearStoredDraft() {
+    try {
+        localStorage.removeItem(storageKey);
+        let draftsIndex = JSON.parse(localStorage.getItem(recentDraftsIndexKey) || '[]');
+        draftsIndex = draftsIndex.filter(d => d.key !== storageKey);
+        localStorage.setItem(recentDraftsIndexKey, JSON.stringify(draftsIndex));
+    } catch(e) {}
+}
+
+function checkForUnfinishedDraft() {
+    const draft = getStoredDraft();
+    if (!draft) return;
+
+    // Has meaningful content
+    const hasContent = (draft.title && draft.title.trim().length > 0) ||
+                       (draft.totalPoints && draft.totalPoints > 0) ||
+                       Object.values(draft.pillars || {}).some(p => (p.narrative || '').trim().length > 0);
+
+    if (!hasContent) return;
+
+    const banner = document.getElementById('resume-draft-banner');
+    const badge = document.getElementById('resume-draft-time-badge');
+    const desc = document.getElementById('resume-draft-desc');
+    if (banner && badge && desc) {
+        badge.textContent = 'Saved ' + (draft.savedTimeFormatted || 'recently');
+        const proj = draft.projectName ? `for ${draft.projectName}` : '';
+        const pts = draft.totalPoints ? `(${draft.totalPoints} point${draft.totalPoints === 1 ? '' : 's'})` : '';
+        desc.textContent = `Unfinished draft "${draft.title || 'Untitled Activity'}" ${proj} ${pts}`.trim();
+        banner.classList.remove('hidden');
+    }
+}
+
+function discardStoredDraft() {
+    clearStoredDraft();
+    const banner = document.getElementById('resume-draft-banner');
+    if (banner) banner.classList.add('hidden');
+    const statusText = document.getElementById('draft-status-text');
+    if (statusText) statusText.textContent = 'Draft discarded';
+    showToast('Draft discarded.');
+}
+
+function applyStoredDraft(draftToApply) {
+    const draft = draftToApply || getStoredDraft();
+    if (!draft) return;
+
+    if (draft.title) {
+        const el = document.getElementById('activity_title_input');
+        if (el) el.value = draft.title;
+    }
+    if (draft.projectId) {
+        const el = document.getElementById('project_id_select');
+        if (el && el.value !== draft.projectId) el.value = draft.projectId;
+    }
+    if (draft.activityType) {
+        const radio = document.querySelector(`input[name="activity_type"][value="${draft.activityType}"]`);
+        if (radio) {
+            radio.checked = true;
+            if (typeof handleActivityTypeChange === 'function') handleActivityTypeChange(draft.activityType);
+        }
+    }
+    if (draft.periodType) {
+        const radio = document.querySelector(`input[name="period_type"][value="${draft.periodType}"]`);
+        if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change'));
+        }
+    }
+    if (draft.startDate) {
+        const el = document.getElementById('activity_date_input');
+        if (el) el.value = draft.startDate;
+    }
+    if (draft.endDate) {
+        const el = document.getElementById('activity_end_date_input');
+        if (el) el.value = draft.endDate;
+    }
+    if (draft.periodCadence) {
+        const el = document.getElementById('period_cadence_select');
+        if (el) el.value = draft.periodCadence;
+    }
+    if (draft.location) {
+        const el = document.getElementById('activity_location_input');
+        if (el) el.value = draft.location;
+    }
+
+    const pillarFields = {
+        1: { field: 'achievements', keys: ['milestones', 'impact', 'stories'] },
+        2: { field: 'challenges', keys: ['operational', 'resources', 'risks'] },
+        3: { field: 'learning', keys: ['lessons', 'feedback', 'innovation'] },
+        4: { field: 'monitoring', keys: ['performance', 'data_quality', 'evaluation'] },
+        5: { field: 'collaboration', keys: ['project_collab', 'partnerships', 'cross_learning'] }
+    };
+
+    if (draft.pillars) {
+        for (let p = 1; p <= 5; p++) {
+            const pData = draft.pillars[p];
+            if (!pData) continue;
+
+            const narrEl = document.getElementById(`pillar_${p}_narrative`);
+            if (narrEl && pData.narrative !== undefined) {
+                narrEl.value = pData.narrative;
+            }
+
+            const pInfo = pillarFields[p];
+            pInfo.keys.forEach(k => {
+                const sub = pData.subPillars ? pData.subPillars[k] : null;
+                if (!sub) return;
+
+                const pointsContainer = document.getElementById(`point-inputs-${p}-${k}`);
+                if (pointsContainer && Array.isArray(sub.points)) {
+                    pointsContainer.innerHTML = sub.points.map(pt => `
+                        <input type="hidden"
+                               name="pillar_${p}_${pInfo.field}[${k}][points][]"
+                               value="${escapeHtmlAttr(pt)}"
+                               class="bullet-input"
+                               data-pillar="${p}"
+                               data-key="${k}">
+                    `).join('');
+                }
+
+                const mediaContainer = document.getElementById(`point-media-links-${p}-${k}`);
+                if (mediaContainer && Array.isArray(sub.media_links)) {
+                    mediaContainer.innerHTML = sub.media_links.map(ml => `
+                        <input type="hidden"
+                               name="pillar_${p}_${pInfo.field}[${k}][media_links][]"
+                               value="${escapeHtmlAttr(ml)}"
+                               class="media-link-input"
+                               data-pillar="${p}"
+                               data-key="${k}">
+                    `).join('');
+                }
+            });
+        }
+    }
+
+    refreshPointSummaries();
+    refreshPillarSummaries();
+    updatePillarCounts();
+    syncDates();
+
+    const banner = document.getElementById('resume-draft-banner');
+    if (banner) banner.classList.add('hidden');
+
+    const statusText = document.getElementById('draft-status-text');
+    if (statusText) statusText.textContent = 'Draft restored ' + (draft.savedTimeFormatted || '');
+
+    showToast('Draft resumed successfully.');
+}
+
+// --- Previous Submissions Modal Logic ---
+function openPreviousSubmissionsModal() {
+    renderPreviousSubmissionsList();
+    const modal = document.getElementById('previous-submissions-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+}
+
+function closePreviousSubmissionsModal() {
+    const modal = document.getElementById('previous-submissions-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+}
+
+function renderPreviousSubmissionsList() {
+    const listEl = document.getElementById('previous-submissions-list');
+    if (!listEl) return;
+
+    const currentProjId = document.getElementById('project_id_select')?.value || '';
+    const entries = (window.recentSubmittedEntries || []).filter(e => !currentProjId || e.projectId === currentProjId || true);
+
+    if (entries.length === 0) {
+        listEl.innerHTML = `
+            <div class="py-8 text-center text-xs text-slate-400 italic">
+                No previous submitted entries found for this project.
+            </div>
+        `;
+        return;
+    }
+
+    listEl.innerHTML = entries.map(e => `
+        <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h5 class="text-xs font-bold text-slate-900 truncate">${escapeHtml(e.title || 'Untitled Entry')}</h5>
+                    <span class="text-[10px] font-semibold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                        ${escapeHtml(e.projectName)}
+                    </span>
+                    <span class="text-[10px] text-slate-400">
+                        ${escapeHtml(e.date || '')}
+                    </span>
+                </div>
+                <p class="text-[11px] text-slate-500 truncate">
+                    ${e.pointsCount} points recorded • Location: ${escapeHtml(e.location || 'Not specified')}
+                </p>
+            </div>
+            <button type="button"
+                    onclick="applySubmittedEntry('${escapeHtmlAttr(e.token)}')"
+                    class="px-3 py-1.5 text-xs font-semibold text-slate-800 hover:text-white bg-white hover:bg-slate-900 border border-slate-300 rounded-lg transition shadow-2xs shrink-0 self-start sm:self-auto cursor-pointer">
+                Prefill Form
+            </button>
+        </div>
+    `).join('');
+}
+
+function applySubmittedEntry(token) {
+    const list = window.recentSubmittedEntries || [];
+    const entry = list.find(e => e.token === token);
+    if (!entry) return;
+
+    function extractSubPillarPoints(pillarData, key) {
+        if (!pillarData) return [];
+        if (pillarData[key] && Array.isArray(pillarData[key].points)) return pillarData[key].points;
+        if (Array.isArray(pillarData[key])) return pillarData[key];
+        return [];
+    }
+
+    function extractSubPillarMedia(pillarData, key) {
+        if (!pillarData || !pillarData[key]) return [];
+        if (Array.isArray(pillarData[key].media_links)) return pillarData[key].media_links;
+        return [];
+    }
+
+    const draft = {
+        title: entry.title ? `${entry.title} (Resumed)` : '',
+        projectId: entry.projectId,
+        activityType: entry.activityType || 'activity',
+        periodType: entry.periodType || 'single_day',
+        startDate: entry.date,
+        location: entry.location || '',
+        pillars: {
+            1: {
+                narrative: entry.narrative1 || '',
+                subPillars: {
+                    milestones: { points: extractSubPillarPoints(entry.pillar1, 'milestones'), media_links: extractSubPillarMedia(entry.pillar1, 'milestones') },
+                    impact: { points: extractSubPillarPoints(entry.pillar1, 'impact'), media_links: extractSubPillarMedia(entry.pillar1, 'impact') },
+                    stories: { points: extractSubPillarPoints(entry.pillar1, 'stories'), media_links: extractSubPillarMedia(entry.pillar1, 'stories') }
+                }
+            },
+            2: {
+                narrative: entry.narrative2 || '',
+                subPillars: {
+                    operational: { points: extractSubPillarPoints(entry.pillar2, 'operational'), media_links: extractSubPillarMedia(entry.pillar2, 'operational') },
+                    resources: { points: extractSubPillarPoints(entry.pillar2, 'resources'), media_links: extractSubPillarMedia(entry.pillar2, 'resources') },
+                    risks: { points: extractSubPillarPoints(entry.pillar2, 'risks'), media_links: extractSubPillarMedia(entry.pillar2, 'risks') }
+                }
+            },
+            3: {
+                narrative: entry.narrative3 || '',
+                subPillars: {
+                    lessons: { points: extractSubPillarPoints(entry.pillar3, 'lessons'), media_links: extractSubPillarMedia(entry.pillar3, 'lessons') },
+                    feedback: { points: extractSubPillarPoints(entry.pillar3, 'feedback'), media_links: extractSubPillarMedia(entry.pillar3, 'feedback') },
+                    innovation: { points: extractSubPillarPoints(entry.pillar3, 'innovation'), media_links: extractSubPillarMedia(entry.pillar3, 'innovation') }
+                }
+            },
+            4: {
+                narrative: entry.narrative4 || '',
+                subPillars: {
+                    performance: { points: extractSubPillarPoints(entry.pillar4, 'performance'), media_links: extractSubPillarMedia(entry.pillar4, 'performance') },
+                    data_quality: { points: extractSubPillarPoints(entry.pillar4, 'data_quality'), media_links: extractSubPillarMedia(entry.pillar4, 'data_quality') },
+                    evaluation: { points: extractSubPillarPoints(entry.pillar4, 'evaluation'), media_links: extractSubPillarMedia(entry.pillar4, 'evaluation') }
+                }
+            },
+            5: {
+                narrative: entry.narrative5 || '',
+                subPillars: {
+                    project_collab: { points: extractSubPillarPoints(entry.pillar5, 'project_collab') || extractSubPillarPoints(entry.pillar5, 'projects'), media_links: extractSubPillarMedia(entry.pillar5, 'project_collab') },
+                    partnerships: { points: extractSubPillarPoints(entry.pillar5, 'partnerships'), media_links: extractSubPillarMedia(entry.pillar5, 'partnerships') },
+                    cross_learning: { points: extractSubPillarPoints(entry.pillar5, 'cross_learning'), media_links: extractSubPillarMedia(entry.pillar5, 'cross_learning') }
+                }
+            }
+        }
+    };
+
+    applyStoredDraft(draft);
+    closePreviousSubmissionsModal();
+    triggerAutosave();
+    showToast(`Prefilled from "${entry.title}"`);
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = msg;
+    toast.classList.remove('opacity-0', 'translate-y-20', 'pointer-events-none');
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-20', 'pointer-events-none');
+    }, 2800);
 }
 
 // --- Activity Type, Period, and Venue/Location dynamic handler ---
@@ -3279,9 +3814,39 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let p = 1; p <= 5; p++) {
         const narr = document.getElementById(`pillar_${p}_narrative`);
         if (narr) {
-            narr.addEventListener('input', refreshPillarSummaries);
+            narr.addEventListener('input', () => {
+                refreshPillarSummaries();
+                triggerAutosave();
+            });
         }
     }
+
+    // Input listeners to trigger autosave automatically
+    ['activity_title_input', 'activity_location_input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', triggerAutosave);
+    });
+    ['activity_date_input', 'activity_end_date_input', 'period_cadence_select', 'project_id_select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', triggerAutosave);
+    });
+    document.querySelectorAll('input[name="activity_type"], input[name="period_type"]').forEach(radio => {
+        radio.addEventListener('change', triggerAutosave);
+    });
+
+    // Check for unfinished draft on load
+    checkForUnfinishedDraft();
+
+    // Clear draft on successful form submission
+    const mainForm = document.getElementById('activity-entry-form');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function() {
+            clearStoredDraft();
+        });
+    }
+
+    // Periodic heartbeat autosave every 25 seconds
+    setInterval(saveDraftToStorage, 25000);
 
     // Point modal editor Enter, formatting shortcuts & paste handling
     const editor = document.getElementById('point-modal-editor');
