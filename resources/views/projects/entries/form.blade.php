@@ -1472,7 +1472,7 @@ $entryFormConfig = [
                                 </div>
                             </div>
 
-                            <!-- Expandable Link Text Area (with Auto-Detect & Abbreviated Badge) -->
+                            <!-- Expandable Link Input Area (Auto-Detects Document Type + Done button, No doc name) -->
                             <div id="drive-link-box" class="hidden p-4 bg-gradient-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/90 rounded-2xl space-y-3 transition-all shadow-xs">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
@@ -1481,7 +1481,7 @@ $entryFormConfig = [
                                         </span>
                                         <div>
                                             <h5 class="text-xs font-bold text-slate-900">Add Media Link from Drive</h5>
-                                            <p class="text-[11px] text-slate-500">Auto-detects document type and creates an abbreviated badge</p>
+                                            <p class="text-[11px] text-slate-500">Auto-detects document type and creates a clickable link</p>
                                         </div>
                                     </div>
                                     <button type="button"
@@ -1494,53 +1494,40 @@ $entryFormConfig = [
                                     </button>
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- Link URL Input -->
-                                    <div class="space-y-1">
-                                        <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
-                                            <span>Google Drive / Document Link <span class="text-rose-500">*</span></span>
-                                            <span id="drive-detected-badge" class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-1.5 py-0.5 rounded-md hidden">
-                                                📁 Google Drive
-                                            </span>
-                                        </label>
-                                        <input type="url"
-                                               id="drive-link-input"
-                                               placeholder="Paste link: https://docs.google.com/spreadsheets/d/..."
-                                               class="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                                               oninput="onDriveUrlInput()">
-                                    </div>
-
-                                    <!-- Optional Document Name Input -->
-                                    <div class="space-y-1">
-                                        <label class="text-[11px] font-bold text-slate-700">
-                                            Document Name <span class="text-slate-400 font-normal">(optional title)</span>
-                                        </label>
-                                        <input type="text"
-                                               id="drive-doc-name-input"
-                                               placeholder="e.g. Q2 Attendance, Budget Tracker, Match Fixtures"
-                                               class="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                                               oninput="updateDriveBadgePreview()">
-                                    </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+                                        <span>Google Drive / Document Link <span class="text-rose-500">*</span></span>
+                                        <span id="drive-detected-badge" class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded-md hidden">
+                                            📁 Google Drive
+                                        </span>
+                                    </label>
+                                    <input type="url"
+                                           id="drive-link-input"
+                                           placeholder="Paste link: https://docs.google.com/spreadsheets/d/... or Google Doc / Drive link"
+                                           class="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                           oninput="onDriveUrlInput()">
                                 </div>
 
                                 <!-- Live Preview Badge -->
                                 <div class="flex items-center justify-between pt-1 border-t border-blue-100 text-[11px]">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-slate-500 font-medium">Badge preview:</span>
+                                        <span class="text-slate-500 font-medium">Link preview:</span>
                                         <span id="drive-link-preview-badge" class="font-semibold text-blue-800 bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-2xs">
                                             ( 📁 Drive Link )
                                         </span>
                                     </div>
-                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into text as an abbreviated badge</span>
+                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into the text area as a clickable link</span>
                                 </div>
                             </div>
 
-                            <!-- Free Large Text Area -->
+                            <!-- Free Large Text Area with Clickable Links Support -->
                             <div class="relative">
-                                <textarea id="point-modal-textarea"
-                                          rows="11"
-                                          class="w-full text-xs sm:text-sm font-normal text-slate-800 placeholder:text-slate-400 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-relaxed outline-none resize-y min-h-[240px]"
-                                          placeholder="• e.g. 5 Coach Clinics conducted across 3 zones&#10;• e.g. 40 youth peer educators trained and certified"></textarea>
+                                <div id="point-modal-editor"
+                                     contenteditable="true"
+                                     role="textbox"
+                                     aria-multiline="true"
+                                     class="w-full text-xs sm:text-sm font-normal text-slate-800 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-relaxed outline-none min-h-[240px] max-h-[50vh] overflow-y-auto bg-white whitespace-pre-wrap select-text"
+                                     data-placeholder="• e.g. 5 Coach Clinics conducted across 3 zones&#10;• e.g. 40 youth peer educators trained and certified"></div>
                             </div>
 
                             <!-- Footer tip -->
@@ -1818,8 +1805,7 @@ const pointSectionMeta = {
 
 let currentModalPillar = 1;
 let currentModalKey = 'milestones';
-let lastCursorPosInTextarea = 0;
-let modalLinkMap = {}; // Maps abbreviated badges: "( 📊 Name - Type )" -> "https://..."
+let lastSavedRange = null;
 
 function detectDocumentInfo(url) {
     if (!url) return { icon: '📁', type: 'Drive Link' };
@@ -1858,6 +1844,7 @@ function detectDocumentInfo(url) {
 function onDriveUrlInput() {
     const input = document.getElementById('drive-link-input');
     const badge = document.getElementById('drive-detected-badge');
+    const preview = document.getElementById('drive-link-preview-badge');
     if (!input) return;
 
     const url = input.value.trim();
@@ -1867,42 +1854,27 @@ function onDriveUrlInput() {
             badge.textContent = `${info.icon} ${info.type}`;
             badge.classList.remove('hidden');
         }
+        if (preview) {
+            preview.textContent = `( ${info.icon} ${info.type} )`;
+        }
     } else {
         if (badge) badge.classList.add('hidden');
+        if (preview) preview.textContent = '( 📁 Drive Link )';
     }
-    updateDriveBadgePreview();
-}
-
-function updateDriveBadgePreview() {
-    const urlInput = document.getElementById('drive-link-input');
-    const nameInput = document.getElementById('drive-doc-name-input');
-    const previewEl = document.getElementById('drive-link-preview-badge');
-    if (!previewEl) return;
-
-    const url = urlInput ? urlInput.value.trim() : '';
-    const name = nameInput ? nameInput.value.trim() : '';
-    const info = detectDocumentInfo(url);
-
-    let badgeText = '';
-    if (name.length > 0) {
-        badgeText = `( ${info.icon} ${name} - ${info.type} )`;
-    } else {
-        badgeText = `( ${info.icon} ${info.type} )`;
-    }
-
-    previewEl.textContent = badgeText;
 }
 
 function toggleDriveLinkArea() {
     const box = document.getElementById('drive-link-box');
     const input = document.getElementById('drive-link-input');
-    const textarea = document.getElementById('point-modal-textarea');
+    const editor = document.getElementById('point-modal-editor');
     if (!box) return;
 
     const isHidden = box.classList.contains('hidden');
     if (isHidden) {
-        if (textarea) {
-            lastCursorPosInTextarea = textarea.selectionStart || textarea.value.length;
+        // Save current editor caret position
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+            lastSavedRange = sel.getRangeAt(0).cloneRange();
         }
         box.classList.remove('hidden');
         if (input) {
@@ -1911,82 +1883,110 @@ function toggleDriveLinkArea() {
         onDriveUrlInput();
     } else {
         box.classList.add('hidden');
-        if (textarea) textarea.focus();
+        if (editor) editor.focus();
     }
 }
 
 function applyDriveLinkAndClose() {
     const box = document.getElementById('drive-link-box');
     const urlInput = document.getElementById('drive-link-input');
-    const nameInput = document.getElementById('drive-doc-name-input');
-    const textarea = document.getElementById('point-modal-textarea');
+    const editor = document.getElementById('point-modal-editor');
 
-    if (urlInput && textarea) {
+    if (urlInput && editor) {
         const url = urlInput.value.trim();
         if (url.length > 0) {
-            const name = nameInput ? nameInput.value.trim() : '';
             const info = detectDocumentInfo(url);
             
-            // Format: ( Drive Icon: Document Name - Document Type )
-            let badgeText = '';
-            if (name.length > 0) {
-                badgeText = `( ${info.icon} ${name} - ${info.type} )`;
+            // Create clickable link badge element: ( Drive Icon: Document Type )
+            const linkA = document.createElement('a');
+            linkA.href = url;
+            linkA.target = '_blank';
+            linkA.rel = 'noopener noreferrer';
+            linkA.contentEditable = 'false';
+            linkA.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-xs no-underline mx-1 align-baseline transition cursor-pointer select-none';
+            linkA.title = `Open ${info.type} in new tab`;
+            linkA.innerHTML = `${info.icon} ${info.type} <span class="text-[10px] opacity-70">↗</span>`;
+
+            editor.focus();
+            const sel = window.getSelection();
+
+            // Restore saved range if available
+            if (lastSavedRange) {
+                sel.removeAllRanges();
+                sel.addRange(lastSavedRange);
+            }
+
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(linkA);
+
+                // Add non-breaking space after link and place cursor after
+                const space = document.createTextNode(' ');
+                linkA.parentNode.insertBefore(space, linkA.nextSibling);
+
+                range.setStartAfter(space);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
             } else {
-                badgeText = `( ${info.icon} ${info.type} )`;
+                editor.appendChild(linkA);
+                editor.appendChild(document.createTextNode(' '));
             }
 
-            // Register mapping so full URL is preserved on form save
-            modalLinkMap[badgeText] = url;
-
-            const val = textarea.value;
-            const pos = lastCursorPosInTextarea || textarea.selectionStart || val.length;
-
-            let prefix = ' ';
-            if (pos === 0 || val[pos - 1] === '\n' || val[pos - 1] === ' ') {
-                prefix = '';
-            }
-            if (pos === 0 && !val.startsWith('•')) {
-                prefix = '• ';
-            }
-
-            const insertText = prefix + badgeText;
-            textarea.value = val.substring(0, pos) + insertText + val.substring(pos);
-            const newCursor = pos + insertText.length;
-            textarea.selectionStart = textarea.selectionEnd = newCursor;
-
-            // Reset inputs
             urlInput.value = '';
-            if (nameInput) nameInput.value = '';
+            lastSavedRange = null;
         }
     }
 
     if (box) box.classList.add('hidden');
-    if (textarea) textarea.focus();
+    if (editor) editor.focus();
+    updateModalPointsBadge();
+}
+
+function insertBulletPoint() {
+    const editor = document.getElementById('point-modal-editor');
+    if (!editor) return;
+
+    editor.focus();
+    const sel = window.getSelection();
+    
+    const div = document.createElement('div');
+    div.innerHTML = '• ';
+
+    if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(div);
+        range.setStart(div, div.childNodes.length);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else {
+        editor.appendChild(div);
+    }
     updateModalPointsBadge();
 }
 
 function openPointModal(pillarNum, subKey) {
     currentModalPillar = pillarNum;
     currentModalKey = subKey;
-    modalLinkMap = {}; // Reset active link mappings
+    lastSavedRange = null;
 
     const meta = pointSectionMeta[pillarNum]?.sub[subKey];
     if (!meta) return;
 
     const titleEl = document.getElementById('point-modal-title');
     const subtitleEl = document.getElementById('point-modal-subtitle');
-    const textarea = document.getElementById('point-modal-textarea');
+    const editor = document.getElementById('point-modal-editor');
     const saveBtn = document.getElementById('point-modal-save-btn');
     const linkBox = document.getElementById('drive-link-box');
     const linkInput = document.getElementById('drive-link-input');
-    const nameInput = document.getElementById('drive-doc-name-input');
 
     if (titleEl) titleEl.textContent = `Update ${meta.title}`;
     if (subtitleEl) subtitleEl.textContent = meta.subtitle;
-    if (textarea) textarea.placeholder = meta.placeholder;
     if (linkBox) linkBox.classList.add('hidden');
     if (linkInput) linkInput.value = '';
-    if (nameInput) nameInput.value = '';
 
     const colorClasses = {
         blue: 'bg-blue-600 hover:bg-blue-700',
@@ -2000,7 +2000,7 @@ function openPointModal(pillarNum, subKey) {
         saveBtn.className = `px-5 py-2 text-xs font-bold text-white rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 ${colorClasses[pillarColor] || 'bg-blue-600 hover:bg-blue-700'}`;
     }
 
-    // Populate textarea with existing points, auto-abbreviating any full URLs into styled badges
+    // Populate editor with existing points, rendering clickable link badges
     const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
     const existingPoints = [];
     if (container) {
@@ -2011,36 +2011,31 @@ function openPointModal(pillarNum, subKey) {
         });
     }
 
-    if (textarea) {
+    if (editor) {
+        editor.innerHTML = '';
         if (existingPoints.length > 0) {
-            textarea.value = existingPoints.map(p => {
-                let cleanLine = p.startsWith('•') ? p : `• ${p}`;
-
-                // Check for existing custom badge pattern: ( Icon Name - Type ) URL
-                const badgeMatch = cleanLine.match(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
-                if (badgeMatch) {
-                    const fullBadge = `( ${badgeMatch[1] || badgeMatch[2]} )`;
-                    const url = badgeMatch[3];
-                    modalLinkMap[fullBadge] = url;
-                    // Replace the URL part so textarea displays only the clean abbreviated badge
-                    cleanLine = cleanLine.replace(badgeMatch[0], fullBadge);
-                    return cleanLine;
-                }
-
-                // Check for raw standalone or embedded URLs
-                const urlMatch = cleanLine.match(/https?:\/\/[^\s<>"')]+/i);
+            existingPoints.forEach(p => {
+                let text = p.startsWith('•') ? p.substring(1).trim() : p;
+                
+                // Extract URL if present
+                const urlMatch = text.match(/https?:\/\/[^\s<>"')]+/i);
+                let linkHtml = '';
                 if (urlMatch) {
-                    const rawUrl = urlMatch[0];
-                    const info = detectDocumentInfo(rawUrl);
-                    const autoBadge = `( ${info.icon} ${info.type} )`;
-                    modalLinkMap[autoBadge] = rawUrl;
-                    cleanLine = cleanLine.replace(rawUrl, autoBadge).trim();
+                    const url = urlMatch[0];
+                    const info = detectDocumentInfo(url);
+                    // Remove any old badge or url from the text so it does not duplicate
+                    text = text.replace(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])?\s*https?:\/\/[^\s<>"')]+/iu, '').trim();
+                    linkHtml = ` <a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" contenteditable="false" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-semibold text-xs no-underline mx-1 align-baseline transition cursor-pointer select-none" title="Open ${info.type} in new tab">${info.icon} ${info.type} <span class="text-[10px] opacity-70">↗</span></a>\u00A0`;
                 }
 
-                return cleanLine;
-            }).join('\n');
+                const lineDiv = document.createElement('div');
+                lineDiv.innerHTML = `•\u00A0${escapeHtml(text)}${linkHtml}`;
+                editor.appendChild(lineDiv);
+            });
         } else {
-            textarea.value = '• ';
+            const lineDiv = document.createElement('div');
+            lineDiv.innerHTML = '•\u00A0';
+            editor.appendChild(lineDiv);
         }
     }
 
@@ -2054,9 +2049,8 @@ function openPointModal(pillarNum, subKey) {
     }
 
     setTimeout(() => {
-        if (textarea) {
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        if (editor) {
+            editor.focus();
         }
     }, 50);
 }
@@ -2069,60 +2063,67 @@ function closePointModal() {
     }
 }
 
-function insertBulletPoint() {
-    const textarea = document.getElementById('point-modal-textarea');
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const val = textarea.value;
-
-    let insertion = '• ';
-    if (start > 0 && val[start - 1] !== '\n') {
-        insertion = '\n• ';
-    }
-
-    textarea.value = val.substring(0, start) + insertion + val.substring(end);
-    textarea.selectionStart = textarea.selectionEnd = start + insertion.length;
-    textarea.focus();
-    updateModalPointsBadge();
-}
-
 function updateModalPointsBadge() {
-    const textarea = document.getElementById('point-modal-textarea');
     const badge = document.getElementById('point-modal-badge');
-    if (!textarea || !badge) return;
+    const editor = document.getElementById('point-modal-editor');
+    if (!badge || !editor) return;
 
-    const points = parsePointsFromText(textarea.value);
-    badge.textContent = `${points.length} point${points.length === 1 ? '' : 's'}`;
-}
+    let count = 0;
+    const lines = editor.innerText.split('\n');
+    lines.forEach(line => {
+        const clean = line.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+        if (clean.length > 0) count++;
+    });
 
-function parsePointsFromText(text) {
-    if (!text) return [];
-    return text.split('\n')
-        .map(line => line.replace(/^[•\-\*\d+\.]\s*/, '').trim())
-        .filter(line => line.length > 0);
+    badge.textContent = `${count} point${count === 1 ? '' : 's'}`;
 }
 
 function savePointModal() {
-    const textarea = document.getElementById('point-modal-textarea');
-    if (!textarea) return;
+    const editor = document.getElementById('point-modal-editor');
+    if (!editor) return;
 
-    const rawLines = textarea.value.split('\n')
-        .map(l => l.replace(/^[•\-\*\d+\.]\s*/, '').trim())
-        .filter(l => l.length > 0);
+    const points = [];
+    const childNodes = Array.from(editor.childNodes);
+    const lineElements = [];
 
-    // Re-attach mapped URLs to lines containing abbreviated badges
-    const points = rawLines.map(line => {
-        let combined = line;
-        for (const [badge, url] of Object.entries(modalLinkMap)) {
-            if (combined.includes(badge) && !combined.includes(url)) {
-                combined = `${combined} ${url}`;
-                break;
-            }
+    childNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === 'div') {
+            lineElements.push(node);
+        } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+            const d = document.createElement('div');
+            d.textContent = node.textContent;
+            lineElements.push(d);
         }
-        return combined;
     });
+
+    if (lineElements.length === 0) {
+        const raw = editor.innerText || editor.textContent || '';
+        raw.split('\n').forEach(l => {
+            const clean = l.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+            if (clean.length > 0) points.push(clean);
+        });
+    } else {
+        lineElements.forEach(lineEl => {
+            const linkA = lineEl.querySelector('a[href]');
+            const url = linkA ? linkA.getAttribute('href') : null;
+
+            const clone = lineEl.cloneNode(true);
+            const cloneA = clone.querySelector('a');
+            if (cloneA) cloneA.remove();
+
+            let text = clone.innerText || clone.textContent || '';
+            text = text.replace(/\u00A0/g, ' ').replace(/^[•\-\*\d+\.]\s*/, '').trim();
+
+            if (url) {
+                const info = detectDocumentInfo(url);
+                const badge = `( ${info.icon} ${info.type} )`;
+                const combined = text ? `${text} ${badge} ${url}` : `${badge} ${url}`;
+                points.push(combined);
+            } else if (text.length > 0) {
+                points.push(text);
+            }
+        });
+    }
 
     const pillarNum = currentModalPillar;
     const subKey = currentModalKey;
@@ -2536,10 +2537,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Point modal smart Enter bullet insertion
-    const textarea = document.getElementById('point-modal-textarea');
-    if (textarea) {
-        textarea.addEventListener('keydown', function(e) {
+    // Point modal editor Enter & keyboard shortcuts
+    const editor = document.getElementById('point-modal-editor');
+    if (editor) {
+        editor.addEventListener('keydown', function(e) {
             // Ctrl + Enter to save
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
@@ -2547,29 +2548,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Enter key auto bullet
-            if (e.key === 'Enter') {
-                const cursorPos = this.selectionStart;
-                const value = this.value;
-                const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1;
-                const currentLine = value.substring(lineStart, cursorPos);
+            // Normal Enter key creates a new bullet div
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    const newDiv = document.createElement('div');
+                    newDiv.innerHTML = '•\u00A0';
 
-                if (/^[•\-\*]\s*/.test(currentLine)) {
-                    e.preventDefault();
-                    if (/^[•\-\*]\s*$/.test(currentLine)) {
-                        this.value = value.substring(0, lineStart) + value.substring(cursorPos);
-                        this.selectionStart = this.selectionEnd = lineStart;
-                    } else {
-                        const bullet = '\n• ';
-                        this.value = value.substring(0, cursorPos) + bullet + value.substring(cursorPos);
-                        this.selectionStart = this.selectionEnd = cursorPos + bullet.length;
+                    // Insert after current block
+                    let currentBlock = range.startContainer;
+                    while (currentBlock && currentBlock.parentNode !== editor) {
+                        currentBlock = currentBlock.parentNode;
                     }
-                    updateModalPointsBadge();
+
+                    if (currentBlock && currentBlock.parentNode === editor) {
+                        currentBlock.parentNode.insertBefore(newDiv, currentBlock.nextSibling);
+                    } else {
+                        editor.appendChild(newDiv);
+                    }
+
+                    range.setStart(newDiv, newDiv.childNodes.length);
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
                 }
+                updateModalPointsBadge();
             }
         });
 
-        textarea.addEventListener('input', updateModalPointsBadge);
+        editor.addEventListener('input', updateModalPointsBadge);
     }
 
     // Drive link input Enter key triggers "Done"
@@ -2589,8 +2598,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const linkBox = document.getElementById('drive-link-box');
             if (linkBox && !linkBox.classList.contains('hidden')) {
                 linkBox.classList.add('hidden');
-                const t = document.getElementById('point-modal-textarea');
-                if (t) t.focus();
+                const ed = document.getElementById('point-modal-editor');
+                if (ed) ed.focus();
                 return;
             }
             const modal = document.getElementById('point-modal');
