@@ -655,6 +655,21 @@ class ActivityEntry extends Model
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
 
+        // Check for custom styled badge: ( [Icon] Name - Type ) URL or [ [Icon] Name - Type ](URL)
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        if (preg_match($badgePattern, $text)) {
+            return preg_replace_callback($badgePattern, function ($m) use ($isPdf) {
+                $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
+                $url = $m[3];
+
+                if ($isPdf) {
+                    return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                }
+
+                return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 1px 0;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
+            }, htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+        }
+
         // Regex pattern for URLs
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 
@@ -697,6 +712,14 @@ class ActivityEntry extends Model
         $text = preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $text);
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
+
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        if (preg_match($badgePattern, $text)) {
+            return preg_replace_callback($badgePattern, function ($m) {
+                $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
+                return "[{$label}]";
+            }, $text);
+        }
 
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 

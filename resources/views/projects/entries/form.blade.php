@@ -1472,25 +1472,67 @@ $entryFormConfig = [
                                 </div>
                             </div>
 
-                            <!-- Expandable Link Text Area (with "Done" button to close) -->
-                            <div id="drive-link-box" class="hidden p-3.5 bg-blue-50/80 border border-blue-200 rounded-2xl space-y-2 transition-all">
+                            <!-- Expandable Link Text Area (with Auto-Detect & Abbreviated Badge) -->
+                            <div id="drive-link-box" class="hidden p-4 bg-gradient-to-r from-blue-50/90 to-indigo-50/70 border border-blue-200/90 rounded-2xl space-y-3 transition-all shadow-xs">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-                                        </svg>
-                                        <span>Add Media Link from drive</span>
-                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                                            🔗
+                                        </span>
+                                        <div>
+                                            <h5 class="text-xs font-bold text-slate-900">Add Media Link from Drive</h5>
+                                            <p class="text-[11px] text-slate-500">Auto-detects document type and creates an abbreviated badge</p>
+                                        </div>
+                                    </div>
                                     <button type="button"
                                             onclick="applyDriveLinkAndClose()"
-                                            class="px-3.5 py-1 text-xs font-bold text-blue-700 hover:text-white bg-white hover:bg-blue-600 border border-blue-300 hover:border-blue-600 rounded-lg transition shadow-2xs cursor-pointer">
-                                        Done
+                                            class="px-4 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs cursor-pointer flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        <span>Done</span>
                                     </button>
                                 </div>
-                                <textarea id="drive-link-input"
-                                          rows="2"
-                                          placeholder="Paste Google Drive link here (e.g. https://drive.google.com/drive/folders/...)"
-                                          class="w-full text-xs font-mono text-blue-900 placeholder:text-blue-300 bg-white border border-blue-200 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none leading-relaxed resize-y"></textarea>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <!-- Link URL Input -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-700 flex items-center justify-between">
+                                            <span>Google Drive / Document Link <span class="text-rose-500">*</span></span>
+                                            <span id="drive-detected-badge" class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-1.5 py-0.5 rounded-md hidden">
+                                                📁 Google Drive
+                                            </span>
+                                        </label>
+                                        <input type="url"
+                                               id="drive-link-input"
+                                               placeholder="Paste link: https://docs.google.com/spreadsheets/d/..."
+                                               class="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                               oninput="onDriveUrlInput()">
+                                    </div>
+
+                                    <!-- Optional Document Name Input -->
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-slate-700">
+                                            Document Name <span class="text-slate-400 font-normal">(optional title)</span>
+                                        </label>
+                                        <input type="text"
+                                               id="drive-doc-name-input"
+                                               placeholder="e.g. Q2 Attendance, Budget Tracker, Match Fixtures"
+                                               class="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400 bg-white border border-slate-300 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                               oninput="updateDriveBadgePreview()">
+                                    </div>
+                                </div>
+
+                                <!-- Live Preview Badge -->
+                                <div class="flex items-center justify-between pt-1 border-t border-blue-100 text-[11px]">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-slate-500 font-medium">Badge preview:</span>
+                                        <span id="drive-link-preview-badge" class="font-semibold text-blue-800 bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-2xs">
+                                            ( 📁 Drive Link )
+                                        </span>
+                                    </div>
+                                    <span class="text-slate-400 hidden sm:inline">Will be inserted into text as an abbreviated badge</span>
+                                </div>
                             </div>
 
                             <!-- Free Large Text Area -->
@@ -1777,6 +1819,79 @@ const pointSectionMeta = {
 let currentModalPillar = 1;
 let currentModalKey = 'milestones';
 let lastCursorPosInTextarea = 0;
+let modalLinkMap = {}; // Maps abbreviated badges: "( 📊 Name - Type )" -> "https://..."
+
+function detectDocumentInfo(url) {
+    if (!url) return { icon: '📁', type: 'Drive Link' };
+    const u = url.toLowerCase();
+
+    if (u.includes('docs.google.com/spreadsheets')) {
+        return { icon: '📊', type: 'Google Sheets' };
+    }
+    if (u.includes('docs.google.com/document')) {
+        return { icon: '📄', type: 'Google Doc' };
+    }
+    if (u.includes('docs.google.com/presentation')) {
+        return { icon: '📑', type: 'Google Slides' };
+    }
+    if (u.includes('drive.google.com/drive/folders')) {
+        return { icon: '📁', type: 'Drive Folder' };
+    }
+    if (u.includes('drive.google.com/file') || u.includes('drive.google.com/open')) {
+        return { icon: '📁', type: 'Drive File' };
+    }
+    if (u.includes('drive.google.com')) {
+        return { icon: '📁', type: 'Google Drive' };
+    }
+    if (u.includes('youtube.com') || u.includes('youtu.be')) {
+        return { icon: '🎥', type: 'Video' };
+    }
+    if (u.includes('dropbox.com')) {
+        return { icon: '📦', type: 'Dropbox' };
+    }
+    if (u.includes('onedrive') || u.includes('sharepoint.com')) {
+        return { icon: '📁', type: 'OneDrive' };
+    }
+    return { icon: '🔗', type: 'Media Link' };
+}
+
+function onDriveUrlInput() {
+    const input = document.getElementById('drive-link-input');
+    const badge = document.getElementById('drive-detected-badge');
+    if (!input) return;
+
+    const url = input.value.trim();
+    if (url.length > 0) {
+        const info = detectDocumentInfo(url);
+        if (badge) {
+            badge.textContent = `${info.icon} ${info.type}`;
+            badge.classList.remove('hidden');
+        }
+    } else {
+        if (badge) badge.classList.add('hidden');
+    }
+    updateDriveBadgePreview();
+}
+
+function updateDriveBadgePreview() {
+    const urlInput = document.getElementById('drive-link-input');
+    const nameInput = document.getElementById('drive-doc-name-input');
+    const previewEl = document.getElementById('drive-link-preview-badge');
+    if (!previewEl) return;
+
+    const url = urlInput ? urlInput.value.trim() : '';
+    const name = nameInput ? nameInput.value.trim() : '';
+    const info = detectDocumentInfo(url);
+
+    let badgeText = '';
+    if (name.length > 0) {
+        badgeText = `( ${info.icon} ${name} - ${info.type} )`;
+    } else {
+        badgeText = `( ${info.icon} ${info.type} )`;
+    }
+
+    previewEl.textContent = badgeText;
+}
 
 function toggleDriveLinkArea() {
     const box = document.getElementById('drive-link-box');
@@ -1793,6 +1908,7 @@ function toggleDriveLinkArea() {
         if (input) {
             input.focus();
         }
+        onDriveUrlInput();
     } else {
         box.classList.add('hidden');
         if (textarea) textarea.focus();
@@ -1801,16 +1917,30 @@ function toggleDriveLinkArea() {
 
 function applyDriveLinkAndClose() {
     const box = document.getElementById('drive-link-box');
-    const input = document.getElementById('drive-link-input');
+    const urlInput = document.getElementById('drive-link-input');
+    const nameInput = document.getElementById('drive-doc-name-input');
     const textarea = document.getElementById('point-modal-textarea');
 
-    if (input && textarea) {
-        const link = input.value.trim();
-        if (link.length > 0) {
+    if (urlInput && textarea) {
+        const url = urlInput.value.trim();
+        if (url.length > 0) {
+            const name = nameInput ? nameInput.value.trim() : '';
+            const info = detectDocumentInfo(url);
+            
+            // Format: ( Drive Icon: Document Name - Document Type )
+            let badgeText = '';
+            if (name.length > 0) {
+                badgeText = `( ${info.icon} ${name} - ${info.type} )`;
+            } else {
+                badgeText = `( ${info.icon} ${info.type} )`;
+            }
+
+            // Register mapping so full URL is preserved on form save
+            modalLinkMap[badgeText] = url;
+
             const val = textarea.value;
             const pos = lastCursorPosInTextarea || textarea.selectionStart || val.length;
 
-            // Determine neat insertion
             let prefix = ' ';
             if (pos === 0 || val[pos - 1] === '\n' || val[pos - 1] === ' ') {
                 prefix = '';
@@ -1819,11 +1949,14 @@ function applyDriveLinkAndClose() {
                 prefix = '• ';
             }
 
-            const insertText = prefix + link;
+            const insertText = prefix + badgeText;
             textarea.value = val.substring(0, pos) + insertText + val.substring(pos);
             const newCursor = pos + insertText.length;
             textarea.selectionStart = textarea.selectionEnd = newCursor;
-            input.value = '';
+
+            // Reset inputs
+            urlInput.value = '';
+            if (nameInput) nameInput.value = '';
         }
     }
 
@@ -1835,6 +1968,7 @@ function applyDriveLinkAndClose() {
 function openPointModal(pillarNum, subKey) {
     currentModalPillar = pillarNum;
     currentModalKey = subKey;
+    modalLinkMap = {}; // Reset active link mappings
 
     const meta = pointSectionMeta[pillarNum]?.sub[subKey];
     if (!meta) return;
@@ -1845,12 +1979,14 @@ function openPointModal(pillarNum, subKey) {
     const saveBtn = document.getElementById('point-modal-save-btn');
     const linkBox = document.getElementById('drive-link-box');
     const linkInput = document.getElementById('drive-link-input');
+    const nameInput = document.getElementById('drive-doc-name-input');
 
     if (titleEl) titleEl.textContent = `Update ${meta.title}`;
     if (subtitleEl) subtitleEl.textContent = meta.subtitle;
     if (textarea) textarea.placeholder = meta.placeholder;
     if (linkBox) linkBox.classList.add('hidden');
     if (linkInput) linkInput.value = '';
+    if (nameInput) nameInput.value = '';
 
     const colorClasses = {
         blue: 'bg-blue-600 hover:bg-blue-700',
@@ -1864,7 +2000,7 @@ function openPointModal(pillarNum, subKey) {
         saveBtn.className = `px-5 py-2 text-xs font-bold text-white rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 ${colorClasses[pillarColor] || 'bg-blue-600 hover:bg-blue-700'}`;
     }
 
-    // Populate textarea with existing points
+    // Populate textarea with existing points, auto-abbreviating any full URLs into styled badges
     const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
     const existingPoints = [];
     if (container) {
@@ -1877,7 +2013,32 @@ function openPointModal(pillarNum, subKey) {
 
     if (textarea) {
         if (existingPoints.length > 0) {
-            textarea.value = existingPoints.map(p => p.startsWith('•') ? p : `• ${p}`).join('\n');
+            textarea.value = existingPoints.map(p => {
+                let cleanLine = p.startsWith('•') ? p : `• ${p}`;
+
+                // Check for existing custom badge pattern: ( Icon Name - Type ) URL
+                const badgeMatch = cleanLine.match(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
+                if (badgeMatch) {
+                    const fullBadge = `( ${badgeMatch[1] || badgeMatch[2]} )`;
+                    const url = badgeMatch[3];
+                    modalLinkMap[fullBadge] = url;
+                    // Replace the URL part so textarea displays only the clean abbreviated badge
+                    cleanLine = cleanLine.replace(badgeMatch[0], fullBadge);
+                    return cleanLine;
+                }
+
+                // Check for raw standalone or embedded URLs
+                const urlMatch = cleanLine.match(/https?:\/\/[^\s<>"')]+/i);
+                if (urlMatch) {
+                    const rawUrl = urlMatch[0];
+                    const info = detectDocumentInfo(rawUrl);
+                    const autoBadge = `( ${info.icon} ${info.type} )`;
+                    modalLinkMap[autoBadge] = rawUrl;
+                    cleanLine = cleanLine.replace(rawUrl, autoBadge).trim();
+                }
+
+                return cleanLine;
+            }).join('\n');
         } else {
             textarea.value = '• ';
         }
@@ -1947,7 +2108,22 @@ function savePointModal() {
     const textarea = document.getElementById('point-modal-textarea');
     if (!textarea) return;
 
-    const points = parsePointsFromText(textarea.value);
+    const rawLines = textarea.value.split('\n')
+        .map(l => l.replace(/^[•\-\*\d+\.]\s*/, '').trim())
+        .filter(l => l.length > 0);
+
+    // Re-attach mapped URLs to lines containing abbreviated badges
+    const points = rawLines.map(line => {
+        let combined = line;
+        for (const [badge, url] of Object.entries(modalLinkMap)) {
+            if (combined.includes(badge) && !combined.includes(url)) {
+                combined = `${combined} ${url}`;
+                break;
+            }
+        }
+        return combined;
+    });
+
     const pillarNum = currentModalPillar;
     const subKey = currentModalKey;
     const field = pointSectionMeta[pillarNum]?.field || 'achievements';
@@ -1987,20 +2163,27 @@ function escapeHtml(text) {
 }
 
 function renderPointPreview(pt) {
+    // 1. Check for custom badge + url pattern: ( Icon Name - Type ) URL
+    const badgeMatch = pt.match(/(?:\(\s*([📁📄📊📑🎥📦🔗][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"'\)]+)\s*\)?/u);
+    if (badgeMatch) {
+        const label = badgeMatch[1] || badgeMatch[2];
+        const url = badgeMatch[3];
+        const textOnly = pt.replace(badgeMatch[0], '').trim();
+        const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
+        return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
+    }
+
+    // 2. Check for raw URL
     const urlMatch = pt.match(/https?:\/\/[^\s<>"')]+/i);
     if (!urlMatch) {
         return escapeHtml(pt);
     }
     const url = urlMatch[0];
     const textOnly = pt.replace(url, '').trim();
-    
-    let label = 'Drive Link';
-    if (url.includes('drive.google.com')) label = '📁 Google Drive';
-    else if (url.includes('docs.google.com')) label = '📄 Google Doc';
-    else if (url.includes('youtube.com') || url.includes('youtu.be')) label = '🎥 Video';
-    else label = '🔗 Media Link';
+    const info = detectDocumentInfo(url);
+    const label = `${info.icon} ${info.type}`;
 
-    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${label} ↗</a>`;
+    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${escapeHtml(label)} <span class="text-[10px] opacity-70">↗</span></a>`;
 
     return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
 }
