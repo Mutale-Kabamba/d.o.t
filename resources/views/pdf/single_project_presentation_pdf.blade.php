@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ $project->name ?? $submission->project_name ?? 'Project' }} - Programmes Meeting Presentation</title>
+    <style>
+        @page {
+            size: 297mm 210mm landscape;
+            margin: 8mm 12mm 8mm 14mm;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #0f172a;
+            font-size: 10.5px;
+            line-height: 1.38;
+        }
+
+        .slide {
+            width: 100%;
+            page-break-after: always;
+            page-break-inside: avoid;
+            position: relative;
+            background-color: #ffffff;
+            padding-bottom: 8px;
+        }
+        .slide:last-child {
+            page-break-after: avoid;
+        }
+
+        /* Left Branding Color Bar */
+        .brand-bar-left {
+            position: absolute;
+            left: -14mm;
+            top: -8mm;
+            bottom: -8mm;
+            width: 5mm;
+            background-color: #2563eb;
+        }
+
+        /* Cover Slide */
+        .cover-slide {
+            padding-top: 14mm;
+            padding-left: 6mm;
+        }
+        .cover-logo {
+            height: 44px;
+            margin-bottom: 10px;
+        }
+        .cover-title {
+            font-size: 34px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 5px 0;
+            letter-spacing: -0.5px;
+        }
+        .cover-subtitle {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 0 0 12px 0;
+        }
+        .cover-badge {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 5px 16px;
+            font-size: 11.5px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        .project-meta-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #2563eb;
+            border-radius: 8px;
+            padding: 14px 20px;
+            width: 90%;
+        }
+        .meta-row {
+            margin-bottom: 6px;
+            font-size: 11.5px;
+        }
+        .meta-label {
+            font-weight: 800;
+            color: #475569;
+            width: 140px;
+            display: inline-block;
+            text-transform: uppercase;
+            font-size: 9.5px;
+            letter-spacing: 0.5px;
+        }
+        .meta-val {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Slide Header */
+        .slide-header {
+            margin-bottom: 8px;
+            position: relative;
+            padding-right: 120px;
+        }
+        .header-logo3 {
+            position: absolute;
+            right: 0;
+            top: -2px;
+            height: 34px;
+        }
+        .slide-meta {
+            font-size: 10px;
+            font-weight: 800;
+            color: #2563eb;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .slide-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* 3-Column Items Grid */
+        .items-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            table-layout: fixed;
+            margin-left: -5px;
+            margin-right: -5px;
+        }
+        .item-card {
+            vertical-align: top;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .item-bar {
+            width: 24px;
+            height: 3px;
+            background-color: #2563eb;
+            border-radius: 1.5px;
+            margin-bottom: 4px;
+        }
+        .item-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+        .item-prompt {
+            font-size: 9px;
+            color: #64748b;
+            font-style: italic;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .bullet-list {
+            margin: 0;
+            padding-left: 12px;
+        }
+        .bullet-list li {
+            font-size: 9.5px;
+            color: #1e293b;
+            margin-bottom: 3.5px;
+            line-height: 1.4;
+            font-weight: 500;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Thank You Slide */
+        .thank-you-slide {
+            padding-top: 22mm;
+            text-align: center;
+        }
+        .thank-you-title {
+            font-size: 38px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.5px;
+        }
+        .thank-you-subtitle {
+            font-size: 20px;
+            font-weight: 800;
+            color: #2563eb;
+            margin: 0 0 10px 0;
+        }
+        .thank-you-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            max-width: 550px;
+            margin: 0 auto 16px auto;
+            line-height: 1.4;
+        }
+
+        /* Slide Footer */
+        .slide-footer {
+            margin-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 3px;
+            font-size: 8px;
+            color: #94a3b8;
+        }
+        .footer-table {
+            width: 100%;
+        }
+        .footer-left {
+            text-align: left;
+            font-weight: 600;
+        }
+        .footer-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    @php
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $pName = $project->name ?? $submission->project_name ?? 'Project';
+        $oName = $project->lead_officer_name ?? $submission->officer_name ?? 'Project Officer';
+        $loc = $project->location ?? $submission->location ?? 'Livingstone, Zambia';
+        $period = $periodTitle ?? $submission->reporting_period ?? 'Quarter 2 April, May, June 2026';
+
+        $pData = !empty($projectDataList) ? $projectDataList[0] : null;
+
+        $slideIndex = 1;
+        $totalPdfSlides = 7;
+    @endphp
+
+    <!-- ==================== SLIDE 1: COVER SLIDE ==================== -->
+    <div class="slide cover-slide">
+        <div class="brand-bar-left"></div>
+
+        @if($logo3Base64)
+            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
+        @endif
+
+        <h1 class="cover-title">{{ $pName }}</h1>
+        <h2 class="cover-subtitle">Isolated Project Presentation</h2>
+        <div class="cover-badge">{{ $period }}</div>
+
+        <div class="project-meta-box">
+            <div class="meta-row">
+                <span class="meta-label">Project:</span>
+                <span class="meta-val">{{ $pName }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Lead Officer:</span>
+                <span class="meta-val">{{ $oName }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Location:</span>
+                <span class="meta-val">{{ $loc }}</span>
+            </div>
+            <div class="meta-row" style="margin-bottom: 0;">
+                <span class="meta-label">Generated:</span>
+                <span class="meta-val">{{ $generatedDate }}</span>
+            </div>
+        </div>
+
+        <div class="slide-footer" style="margin-top: 14mm;">
+            <table class="footer-table">
+                <tr>
+                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
+                    <td class="footer-right">Cover Slide • Generated {{ $generatedDate }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== 5 THEMATIC SLIDES ==================== -->
+    @foreach($slidesConfig as $slideKey => $slide)
+    @php
+        $slideIndex++;
+        $themePts = $pData['theme_points'][$slideKey] ?? [];
+    @endphp
+    <div class="slide">
+        <div class="brand-bar-left"></div>
+
+        <!-- Slide Header -->
+        <div class="slide-header">
+            @if($logo3Base64)
+                <img src="{{ $logo3Base64 }}" alt="Play It Forward" class="header-logo3">
+            @endif
+
+            <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ strtoupper($period) }}</div>
+            <h2 class="slide-title">{{ $slide['title'] }}</h2>
+        </div>
+
+        <!-- Single Project 3 Focus Sections Grid -->
+        @php
+            $sections = $pData['theme_sections'][$slideKey] ?? [];
+            $narrativeText = $pData['theme_narrative_text'][$slideKey] ?? '';
+            $hasSections = false;
+            foreach($sections as $s) {
+                if (!empty($s['points'])) { $hasSections = true; break; }
+            }
+        @endphp
+
+        <table class="items-grid">
+            <tr>
+                @if($hasSections)
+                    @foreach($sections as $itemKey => $sec)
+                    <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
+                        <div class="item-bar"></div>
+                        <div class="item-title">{{ $sec['title'] }}</div>
+                        <div class="item-prompt">{{ $sec['prompt'] }}</div>
+
+                        @if(!empty($sec['points']))
+                            <ul class="bullet-list">
+                                @foreach($sec['points'] as $pt)
+                                    <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if(!empty($sec['media_links']))
+                            <div style="margin-top: 4px; padding-top: 3px; border-top: 1px dashed #e2e8f0; font-size: 8px;">
+                                <strong style="color: #64748b; font-size: 7.5px;">Attached:</strong>
+                                @foreach($sec['media_links'] as $mLink)
+                                    {!! \App\Models\ActivityEntry::formatPointHtml($mLink, true) !!}
+                                @endforeach
+                            </div>
+                        @endif
+
+                        @if(!empty($sec['narrative']))
+                            <div style="margin-top: 4px; padding: 3px 6px; background-color: #f8fafc; border-left: 2.5px solid #2563eb; border-radius: 4px; font-size: 8px; color: #475569; line-height: 1.3;">
+                                <strong style="color: #0f172a; font-size: 7.5px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
+                            </div>
+                        @elseif(empty($sec['points']))
+                            <div style="font-size: 8.5px; color: #94a3b8; font-style: italic;">No specific entries recorded.</div>
+                        @endif
+                    </td>
+                    @endforeach
+                @elseif(!empty($themePts))
+                    <td class="item-card" style="width: 100%; border-left: 4px solid #2563eb;">
+                        <div class="item-title" style="margin-bottom: 8px;">Key Presentation Points</div>
+                        <ul class="bullet-list" style="padding-left: 16px;">
+                            @foreach($themePts as $pt)
+                                <li style="font-size: 10px; margin-bottom: 5px; line-height: 1.4;">
+                                    {!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </td>
+                @elseif(isset($submission))
+                    @foreach($slide['items'] as $itemKey => $item)
+                    @php
+                        $points = $submission->getPoints($itemKey);
+                    @endphp
+                    <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
+                        <div class="item-bar"></div>
+                        <div class="item-title">{{ $item['title'] }}</div>
+                        <div class="item-prompt">{{ $item['prompt'] }}</div>
+
+                        @if(!empty($points))
+                            <ul class="bullet-list">
+                                @foreach($points as $pt)
+                                    <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div style="font-size: 8.5px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
+                        @endif
+                    </td>
+                    @endforeach
+                @else
+                    <td class="item-card" style="width: 100%;">
+                        <div style="font-size: 9px; color: #94a3b8; font-style: italic;">No specific points entered for this period.</div>
+                    </td>
+                @endif
+            </tr>
+        </table>
+
+        <!-- Detailed Qualitative Narrative Block -->
+        @if(!empty($narrativeText))
+            <div style="margin-top: 8px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-left: 3.5px solid #2563eb; border-radius: 6px; padding: 7px 12px;">
+                <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">
+                    📝 Detailed Qualitative Narrative
+                </div>
+                <div style="font-size: 9px; color: #1e293b; line-height: 1.35;">
+                    {{ $narrativeText }}
+                </div>
+            </div>
+        @endif
+
+        <!-- Slide Footer -->
+        <div class="slide-footer">
+            <table class="footer-table">
+                <tr>
+                    <td class="footer-left">{{ $pName }} • {{ $oName }}</td>
+                    <td class="footer-right">Slide {{ $slideIndex }} of {{ $totalPdfSlides }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    @endforeach
+
+    <!-- ==================== SLIDE 7: THANK YOU ENDING SLIDE ==================== -->
+    <div class="slide thank-you-slide">
+        <div class="brand-bar-left"></div>
+
+        @if($logo3Base64)
+            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" style="height: 56px; margin-bottom: 16px;">
+        @endif
+
+        <h1 class="thank-you-title">Thank You!</h1>
+        <h2 class="thank-you-subtitle">{{ $pName }}</h2>
+        <p class="thank-you-text">
+            Play It Forward Zambia • {{ $oName }}
+        </p>
+        <div class="cover-badge" style="margin-bottom: 24px;">{{ $period }}</div>
+
+        <div class="slide-footer" style="margin-top: 15mm;">
+            <table class="footer-table">
+                <tr>
+                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
+                    <td class="footer-right">Slide {{ $totalPdfSlides }} of {{ $totalPdfSlides }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

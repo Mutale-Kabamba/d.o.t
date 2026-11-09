@@ -22,6 +22,7 @@ class AdminTest extends TestCase
             'name' => 'DOT Admin',
             'email' => 'admin@dot.org',
             'password' => Hash::make('password'),
+            'role' => User::ROLE_SUPER_ADMIN,
         ]);
     }
 
@@ -29,7 +30,7 @@ class AdminTest extends TestCase
     {
         $response = $this->get('/admin/submissions');
 
-        $response->assertRedirect('/admin/login');
+        $response->assertRedirect('/login');
     }
 
     public function test_admin_can_login_with_valid_credentials(): void
@@ -39,7 +40,7 @@ class AdminTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect('/admin/submissions');
+        $response->assertRedirect(route('programmes.hub'));
         $this->assertAuthenticatedAs($this->admin);
     }
 

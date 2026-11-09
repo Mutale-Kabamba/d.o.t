@@ -22,7 +22,56 @@
     <!-- html2pdf for high quality client-side PDF rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Vite Assets -->
+    <!-- Alpine.js cloak helper style -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
+    <!-- Alpine.js Core (deferred) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+
+    <!-- Tailwind CSS (Play CDN for instant utility compiling) & Vite Assets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        pif: {
+                            teal: '#0d6c60',
+                            'teal-dark': '#09544a',
+                            'teal-light': '#e8f4f2',
+                            green: '#4f992f',
+                            'green-dark': '#3e7c25',
+                            'green-light': '#eef7eb',
+                            pine: '#2c6d51',
+                            'pine-light': '#edf6f2',
+                            berry: '#992f50',
+                            'berry-light': '#faebf0',
+                            charcoal: '#464a44',
+                        },
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#082f49',
+                            950: '#041c2d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>

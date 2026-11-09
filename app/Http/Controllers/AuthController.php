@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -40,7 +41,7 @@ class AuthController extends Controller
             if (Auth::attempt($credentials, $request->boolean('remember'))) {
                 $request->session()->regenerate();
 
-                return redirect()->intended(route('admin.submissions.index'));
+                return redirect()->intended(route('programmes.hub'));
             }
         } catch (\Throwable $e) {
             Log::error('Admin login error: ' . $e->getMessage());
@@ -57,16 +58,27 @@ class AuthController extends Controller
     protected function ensureDatabaseReady(): void
     {
         try {
-            if (!Schema::hasTable('users')) {
-                Artisan::call('migrate', ['--force' => true]);
+            if (config('database.default') === 'sqlite') {
+                $dbPath = config('database.connections.sqlite.database');
+                if ($dbPath && $dbPath !== ':memory:' && !file_exists($dbPath)) {
+                    $dbDir = dirname($dbPath);
+                    if (!is_dir($dbDir)) {
+                        @mkdir($dbDir, 0755, true);
+                    }
+                    @touch($dbPath);
+                }
             }
 
-            if (Schema::hasTable('users') && User::count() === 0) {
-                User::create([
-                    'name' => 'DOT Administrator',
-                    'email' => 'admin@dot.org',
-                    'password' => Hash::make('password'),
-                ]);
+            if (!Schema::hasTable('users')) {
+                Schema::create('users', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('name');
+                    $table->string('email')->unique();
+                    $table->timestamp('email_verified_at')->nullable();
+                    $table->string('password');
+                    $table->rememberToken();
+                    $table->timestamps();
+                });
             }
         } catch (\Throwable $e) {
             Log::warning('Database auto-initialization note: ' . $e->getMessage());
@@ -83,6 +95,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('worksheet.index')->with('success', 'You have been logged out and returned to the app.');
+        return redirect('/')->with('success', 'You have been logged out and returned to the app.');
     }
 }
