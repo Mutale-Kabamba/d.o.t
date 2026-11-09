@@ -1408,14 +1408,14 @@ $entryFormConfig = [
             <input type="hidden" name="collab_cross_learning" id="flat_collab_cross_learning" value="">
             <input type="hidden" name="collab_narrative" id="flat_collab_narrative" value="">
 
-            <!-- Point Section Update Modal (Popup with Large Text Area allowing Points) -->
+            <!-- Point Section Update Modal (Popup with Large Text Area allowing Points & Media Links) -->
             <div id="point-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="point-modal-title" role="dialog" aria-modal="true">
                 <!-- Backdrop -->
                 <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onclick="closePointModal()"></div>
 
-                <!-- Dialog container -->
+                <!-- Dialog container: Bigger size (sm:max-w-4xl) -->
                 <div class="min-h-full flex items-center justify-center p-4 text-center sm:p-0">
-                    <div class="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 text-left overflow-hidden transform transition-all sm:my-8 sm:max-w-2xl sm:w-full p-6 sm:p-8 space-y-5" onclick="event.stopPropagation()">
+                    <div class="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 text-left overflow-hidden transform transition-all sm:my-8 sm:max-w-4xl sm:w-full p-6 sm:p-8 space-y-5" onclick="event.stopPropagation()">
                         
                         <!-- Header matching DOT modal -->
                         <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
@@ -1445,31 +1445,34 @@ $entryFormConfig = [
                             </div>
                         </div>
 
-                        <!-- Modal Body with Large Text Area that allows points -->
+                        <!-- Modal Body with Points Editor allowing Media Links -->
                         <div class="space-y-3">
                             <!-- Helper toolbar / point controls -->
                             <div class="flex items-center justify-between">
-                                <label for="point-modal-textarea" class="text-xs font-bold text-slate-700 flex items-center gap-2">
-                                    <span>Points &amp; Key Highlights</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-slate-700">Points &amp; Key Highlights</span>
                                     <span id="point-modal-badge" class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">0 points</span>
-                                </label>
-                                <button type="button" onclick="insertBulletPoint()" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition cursor-pointer">
-                                    <span>+ Add Bullet Point</span>
+                                </div>
+                                <button type="button" onclick="addModalPointRow()" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-xl transition cursor-pointer shadow-2xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    <span>Add Point</span>
                                 </button>
                             </div>
 
-                            <!-- Large Text Area -->
-                            <div class="relative">
-                                <textarea id="point-modal-textarea"
-                                          rows="9"
-                                          class="w-full text-xs sm:text-sm font-normal text-slate-800 placeholder:text-slate-400 border border-slate-200 rounded-2xl p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 leading-relaxed outline-none resize-y min-h-[200px]"
-                                          placeholder="• e.g. 5 Coach Clinics conducted across 3 zones&#10;• e.g. 40 youth peer educators trained and certified"></textarea>
+                            <!-- Points List Container -->
+                            <div id="modal-points-list" class="space-y-3 min-h-[220px] max-h-[55vh] overflow-y-auto p-1 pr-1.5 border border-slate-200 rounded-2xl bg-slate-50/40 p-3 sm:p-4">
+                                <!-- Populated dynamically by JS -->
                             </div>
 
                             <!-- Footer tip -->
-                            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                                <span>💡 <strong>Tip:</strong> Each line is recorded as a distinct point. Press <strong>Enter</strong> to start a new bullet.</span>
-                                <span class="hidden sm:inline">Press <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Ctrl</kbd> + <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Enter</kbd> to save</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-400 pt-1 gap-2">
+                                <span class="flex items-center gap-1.5">
+                                    <span>💡</span>
+                                    <span>Press <strong>Enter</strong> to create the next point. Click the link icon <span class="inline-flex items-center justify-center w-5 h-5 bg-white border border-slate-300 rounded text-slate-600">🔗</span> against any point to paste a Drive media link.</span>
+                                </span>
+                                <span class="hidden sm:inline shrink-0">Press <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Ctrl</kbd> + <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px] font-mono text-slate-600">Enter</kbd> to save</span>
                             </div>
                         </div>
 
@@ -1636,17 +1639,17 @@ const pointSectionMeta = {
             milestones: {
                 title: 'Key Milestones',
                 subtitle: 'Major operational, structural, or program activities completed this cycle.',
-                placeholder: '• e.g. 5 Coach Clinics conducted across 3 zones\n• e.g. 40 youth peer educators trained and certified'
+                placeholder: 'e.g. 5 Coach Clinics conducted across 3 zones'
             },
             impact: {
                 title: 'Impact Evidence',
                 subtitle: 'Tangible changes, participant numbers, percentages (e.g. 98% passed), or survey data.',
-                placeholder: '• e.g. 94% retention rate achieved among girls cohort\n• e.g. 1,250 youth participants reached across 8 communities'
+                placeholder: 'e.g. 94% retention rate achieved among girls cohort'
             },
             stories: {
                 title: 'Success Stories',
                 subtitle: 'Individual or community transformation highlights, quotes, and peer role model wins.',
-                placeholder: '• e.g. Chanda secured tertiary sports leadership scholarship\n• e.g. Coach Mary awarded Community Mentor of the Quarter'
+                placeholder: 'e.g. Chanda secured tertiary sports leadership scholarship'
             }
         }
     },
@@ -1657,17 +1660,17 @@ const pointSectionMeta = {
             operational: {
                 title: 'Operational Challenges',
                 subtitle: 'Field execution bottlenecks, transport, scheduling, or attendance barriers.',
-                placeholder: '• e.g. Heavy seasonal rains delayed week 4 fixtures\n• e.g. Transport logistics interrupted by road repairs'
+                placeholder: 'e.g. Heavy seasonal rains delayed week 4 fixtures'
             },
             resources: {
                 title: 'Resource Gaps',
                 subtitle: 'Deficits in kit, sports equipment, learning materials, or venue accessibility.',
-                placeholder: '• e.g. Additional size 4 footballs and bibs required for junior hub\n• e.g. First aid supplies replenishment needed'
+                placeholder: 'e.g. Additional size 4 footballs and bibs required for junior hub'
             },
             risks: {
                 title: 'Risk Monitoring',
                 subtitle: 'Safeguarding, child protection, health risks, or external dependencies with mitigation.',
-                placeholder: '• e.g. Safeguarding refreshers completed for all volunteer referees\n• e.g. Updated participant sign-in registers to prevent unescorted departures'
+                placeholder: 'e.g. Safeguarding refreshers completed for all volunteer referees'
             }
         }
     },
@@ -1678,17 +1681,17 @@ const pointSectionMeta = {
             lessons: {
                 title: 'Key Lessons Learned',
                 subtitle: 'Operational or pedagogical adaptations discovered during implementation.',
-                placeholder: '• e.g. Shifting match kickoff to 09:00 increased spectator attendance by 35%\n• e.g. Pre-session warmups improved participant focus'
+                placeholder: 'e.g. Shifting match kickoff to 09:00 increased spectator attendance by 35%'
             },
             feedback: {
                 title: 'Stakeholder Feedback',
                 subtitle: 'Community, coach, or participant sentiment and suggestions for improvement.',
-                placeholder: '• e.g. Parents requested additional weekend life skills workshops\n• e.g. Headteachers praised reduction in truancy on activity days'
+                placeholder: 'e.g. Parents requested additional weekend life skills workshops'
             },
             innovation: {
                 title: 'Innovations & Adaptations',
                 subtitle: 'Novel methodologies, digital tools, or creative solutions deployed.',
-                placeholder: '• e.g. Piloted peer-led digital registers using shared mobile tablets\n• e.g. Introduced peer voting for Fair Play MVP'
+                placeholder: 'e.g. Piloted peer-led digital registers using shared mobile tablets'
             }
         }
     },
@@ -1699,17 +1702,17 @@ const pointSectionMeta = {
             performance: {
                 title: 'KPI & Target Performance',
                 subtitle: 'Actual progress against quarterly milestones, participant targets, and output metrics.',
-                placeholder: '• e.g. Achieved 104% of quarterly youth engagement target (520 vs 500 planned)\n• e.g. 92% coach attendance across all sessions'
+                placeholder: 'e.g. Achieved 104% of quarterly youth engagement target (520 vs 500 planned)'
             },
             data_quality: {
                 title: 'Data Quality & Verification',
                 subtitle: 'Completeness of attendance registers, verification checks, and data discrepancies.',
-                placeholder: '• e.g. 100% of attendance registers digitised and cross-verified by MEAL officer\n• e.g. Resolved 3 duplicate registration records'
+                placeholder: 'e.g. 100% of attendance registers digitised and cross-verified by MEAL officer'
             },
             evaluation: {
                 title: 'Upcoming Evaluations',
                 subtitle: 'Planned assessments, internal audits, baseline/endline studies, or reviews.',
-                placeholder: '• e.g. Mid-term cohort outcome survey scheduled for next month\n• e.g. Focus group discussion planned with youth peer leaders'
+                placeholder: 'e.g. Mid-term cohort outcome survey scheduled for next month'
             }
         }
     },
@@ -1720,17 +1723,17 @@ const pointSectionMeta = {
             project_collab: {
                 title: 'Inter-Project Collaboration',
                 subtitle: 'Cross-team synergies, joint activity delivery, or shared resources within the hub.',
-                placeholder: '• e.g. Partnered with Health & Wellness team for nutrition screenings\n• e.g. Shared tournament pitch with Livingstone Youth League'
+                placeholder: 'e.g. Partnered with Health & Wellness team for nutrition screenings'
             },
             partnerships: {
                 title: 'Institutional Partnerships',
                 subtitle: 'Engagement with ministries, schools, civic authorities, or external partners.',
-                placeholder: '• e.g. Signed MOU with Ministry of Youth & Sport for community pitch usage\n• e.g. District Education Board approved secondary school sports calendar'
+                placeholder: 'e.g. Signed MOU with Ministry of Youth & Sport for community pitch usage'
             },
             cross_learning: {
                 title: 'Cross-Learning Opportunities',
                 subtitle: 'Knowledge exchanges, peer-to-peer visits, or shared best practices across hubs.',
-                placeholder: '• e.g. Shared coaching methodology toolkit at provincial quarterly summit\n• e.g. Hosted benchmark visit for Lusaka youth leadership fellows'
+                placeholder: 'e.g. Shared coaching methodology toolkit at provincial quarterly summit'
             }
         }
     }
@@ -1738,6 +1741,168 @@ const pointSectionMeta = {
 
 let currentModalPillar = 1;
 let currentModalKey = 'milestones';
+let pointRowCounter = 0;
+
+function createModalPointRow(id, text = '', link = '', isExpanded = false) {
+    const hasLink = link && link.trim().length > 0;
+    const linkBoxClass = (hasLink || isExpanded) ? '' : 'hidden';
+    const linkBtnActive = hasLink
+        ? 'text-blue-600 bg-blue-50 border-blue-300 ring-2 ring-blue-500/20'
+        : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50 border-slate-200 hover:border-blue-200';
+
+    const div = document.createElement('div');
+    div.className = 'modal-point-item border border-slate-200/90 rounded-2xl p-3.5 bg-white hover:border-slate-300 transition-all shadow-2xs space-y-2.5';
+    div.id = `modal-point-item-${id}`;
+    div.innerHTML = `
+        <div class="flex items-start gap-2.5">
+            <span class="text-slate-400 font-bold text-sm mt-2 select-none">•</span>
+            <textarea rows="2"
+                      id="modal-point-text-${id}"
+                      class="modal-point-text flex-1 text-xs sm:text-sm font-normal text-slate-800 placeholder:text-slate-400 border border-slate-200 rounded-xl p-2.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none leading-relaxed resize-y min-h-[50px]"
+                      placeholder="Enter point description...">${escapeHtmlAttr(text)}</textarea>
+            
+            <div class="flex items-center gap-1 shrink-0 mt-1">
+                <!-- Icon-only link button with tooltip -->
+                <button type="button"
+                        id="modal-point-link-btn-${id}"
+                        onclick="togglePointLinkBox(${id})"
+                        title="Add Media Link from drive"
+                        class="p-2 ${linkBtnActive} rounded-xl border transition cursor-pointer"
+                        aria-label="Add Media Link from drive">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                    </svg>
+                </button>
+
+                <!-- Delete point button -->
+                <button type="button"
+                        onclick="removeModalPointRow(${id})"
+                        title="Remove point"
+                        class="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Expandable text area to paste Drive link -->
+        <div id="modal-point-link-box-${id}" class="modal-point-link-box pl-6 ${linkBoxClass}">
+            <div class="p-3 bg-blue-50/70 border border-blue-200/90 rounded-xl space-y-1.5">
+                <div class="flex items-center justify-between text-[11px]">
+                    <span class="font-bold text-blue-900 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                        </svg>
+                        <span>Google Drive / Cloud Media Link</span>
+                    </span>
+                    <button type="button" onclick="clearPointLink(${id})" class="text-blue-600 hover:text-rose-600 font-semibold cursor-pointer text-[10px]">
+                        Clear Link
+                    </button>
+                </div>
+                <textarea rows="1"
+                          id="modal-point-link-input-${id}"
+                          class="modal-point-link-input w-full text-xs font-mono text-blue-900 placeholder:text-blue-300 bg-white border border-blue-200 rounded-lg p-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-y"
+                          placeholder="Paste Google Drive link (e.g. https://drive.google.com/drive/folders/...)"
+                          oninput="onModalPointLinkInput(${id})">${escapeHtmlAttr(link)}</textarea>
+            </div>
+        </div>
+    `;
+
+    // Attach Enter key listener on text area for seamless next point creation
+    const textarea = div.querySelector('.modal-point-text');
+    if (textarea) {
+        textarea.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                savePointModal();
+                return;
+            }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addModalPointRow();
+            }
+        });
+        textarea.addEventListener('input', updateModalPointsBadge);
+    }
+
+    return div;
+}
+
+function addModalPointRow(text = '', link = '', isExpanded = false) {
+    pointRowCounter++;
+    const id = pointRowCounter;
+    const container = document.getElementById('modal-points-list');
+    if (!container) return;
+
+    const row = createModalPointRow(id, text, link, isExpanded);
+    container.appendChild(row);
+
+    const textarea = row.querySelector('.modal-point-text');
+    if (textarea) {
+        textarea.focus();
+    }
+    updateModalPointsBadge();
+}
+
+function removeModalPointRow(id) {
+    const row = document.getElementById(`modal-point-item-${id}`);
+    if (row) {
+        const container = document.getElementById('modal-points-list');
+        if (container.querySelectorAll('.modal-point-item').length > 1) {
+            row.remove();
+        } else {
+            // Keep at least one row, just clear it
+            const t = row.querySelector('.modal-point-text');
+            const l = row.querySelector('.modal-point-link-input');
+            if (t) t.value = '';
+            if (l) l.value = '';
+            clearPointLink(id);
+        }
+    }
+    updateModalPointsBadge();
+}
+
+function togglePointLinkBox(id) {
+    const box = document.getElementById(`modal-point-link-box-${id}`);
+    const btn = document.getElementById(`modal-point-link-btn-${id}`);
+    const input = document.getElementById(`modal-point-link-input-${id}`);
+    if (!box) return;
+
+    const isHidden = box.classList.contains('hidden');
+    if (isHidden) {
+        box.classList.remove('hidden');
+        if (input) input.focus();
+    } else {
+        box.classList.add('hidden');
+    }
+    updatePointLinkBtnState(id);
+}
+
+function onModalPointLinkInput(id) {
+    updatePointLinkBtnState(id);
+}
+
+function updatePointLinkBtnState(id) {
+    const btn = document.getElementById(`modal-point-link-btn-${id}`);
+    const input = document.getElementById(`modal-point-link-input-${id}`);
+    if (!btn || !input) return;
+
+    const hasLink = input.value.trim().length > 0;
+    if (hasLink) {
+        btn.className = 'p-2 text-blue-600 bg-blue-50 border border-blue-300 ring-2 ring-blue-500/20 rounded-xl transition cursor-pointer';
+    } else {
+        btn.className = 'p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-xl transition cursor-pointer';
+    }
+}
+
+function clearPointLink(id) {
+    const input = document.getElementById(`modal-point-link-input-${id}`);
+    const box = document.getElementById(`modal-point-link-box-${id}`);
+    if (input) input.value = '';
+    if (box) box.classList.add('hidden');
+    updatePointLinkBtnState(id);
+}
 
 function openPointModal(pillarNum, subKey) {
     currentModalPillar = pillarNum;
@@ -1748,12 +1913,11 @@ function openPointModal(pillarNum, subKey) {
 
     const titleEl = document.getElementById('point-modal-title');
     const subtitleEl = document.getElementById('point-modal-subtitle');
-    const textarea = document.getElementById('point-modal-textarea');
     const saveBtn = document.getElementById('point-modal-save-btn');
+    const listContainer = document.getElementById('modal-points-list');
 
     if (titleEl) titleEl.textContent = `Update ${meta.title}`;
     if (subtitleEl) subtitleEl.textContent = meta.subtitle;
-    if (textarea) textarea.placeholder = meta.placeholder;
 
     const colorClasses = {
         blue: 'bg-blue-600 hover:bg-blue-700',
@@ -1767,22 +1931,30 @@ function openPointModal(pillarNum, subKey) {
         saveBtn.className = `px-5 py-2 text-xs font-bold text-white rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5 ${colorClasses[pillarColor] || 'bg-blue-600 hover:bg-blue-700'}`;
     }
 
-    // Populate textarea with existing points
-    const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
-    const existingPoints = [];
-    if (container) {
-        container.querySelectorAll('input.bullet-input').forEach(inp => {
-            if (inp.value && inp.value.trim().length > 0) {
-                existingPoints.push(inp.value.trim());
-            }
-        });
-    }
+    // Populate rows with existing points
+    if (listContainer) {
+        listContainer.innerHTML = '';
+        const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
+        const existingPoints = [];
+        if (container) {
+            container.querySelectorAll('input.bullet-input').forEach(inp => {
+                if (inp.value && inp.value.trim().length > 0) {
+                    existingPoints.push(inp.value.trim());
+                }
+            });
+        }
 
-    if (textarea) {
         if (existingPoints.length > 0) {
-            textarea.value = existingPoints.map(p => `• ${p}`).join('\n');
+            existingPoints.forEach(pt => {
+                // Extract URL if present
+                const urlMatch = pt.match(/https?:\/\/[^\s<>"')]+/i);
+                const link = urlMatch ? urlMatch[0] : '';
+                const text = urlMatch ? pt.replace(urlMatch[0], '').trim() : pt;
+                addModalPointRow(text, link, Boolean(link));
+            });
         } else {
-            textarea.value = '';
+            // Start with one empty row
+            addModalPointRow('', '', false);
         }
     }
 
@@ -1794,16 +1966,6 @@ function openPointModal(pillarNum, subKey) {
         modal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
     }
-
-    setTimeout(() => {
-        if (textarea) {
-            textarea.focus();
-            if (!textarea.value) {
-                textarea.value = '• ';
-            }
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-        }
-    }, 50);
 }
 
 function closePointModal() {
@@ -1815,34 +1977,49 @@ function closePointModal() {
 }
 
 function updateModalPointsBadge() {
-    const textarea = document.getElementById('point-modal-textarea');
     const badge = document.getElementById('point-modal-badge');
-    if (!textarea || !badge) return;
+    const container = document.getElementById('modal-points-list');
+    if (!badge || !container) return;
 
-    const points = parsePointsFromText(textarea.value);
-    badge.textContent = `${points.length} point${points.length === 1 ? '' : 's'}`;
-}
+    let count = 0;
+    container.querySelectorAll('.modal-point-item').forEach(row => {
+        const text = row.querySelector('.modal-point-text')?.value.trim() || '';
+        const link = row.querySelector('.modal-point-link-input')?.value.trim() || '';
+        if (text.length > 0 || link.length > 0) count++;
+    });
 
-function parsePointsFromText(text) {
-    if (!text) return [];
-    return text.split('\n')
-        .map(line => line.replace(/^[•\-\*\d+\.]\s*/, '').trim())
-        .filter(line => line.length > 0);
+    badge.textContent = `${count} point${count === 1 ? '' : 's'}`;
 }
 
 function savePointModal() {
-    const textarea = document.getElementById('point-modal-textarea');
-    if (!textarea) return;
+    const container = document.getElementById('modal-points-list');
+    if (!container) return;
 
-    const points = parsePointsFromText(textarea.value);
+    const points = [];
+    container.querySelectorAll('.modal-point-item').forEach(row => {
+        let text = row.querySelector('.modal-point-text')?.value.trim() || '';
+        const link = row.querySelector('.modal-point-link-input')?.value.trim() || '';
+        
+        // Clean leading bullet artifacts if typed
+        text = text.replace(/^[•\-\*\d+\.]\s*/, '').trim();
+
+        if (text.length > 0 || link.length > 0) {
+            let combined = text;
+            if (link.length > 0 && !text.includes(link)) {
+                combined = text ? `${text} ${link}` : link;
+            }
+            points.push(combined);
+        }
+    });
+
     const pillarNum = currentModalPillar;
     const subKey = currentModalKey;
     const field = pointSectionMeta[pillarNum]?.field || 'achievements';
 
     // Update hidden inputs container
-    const container = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
-    if (container) {
-        container.innerHTML = points.map(p => `
+    const inputsContainer = document.getElementById(`point-inputs-${pillarNum}-${subKey}`);
+    if (inputsContainer) {
+        inputsContainer.innerHTML = points.map(p => `
             <input type="hidden"
                    name="pillar_${pillarNum}_${field}[${subKey}][points][]"
                    value="${escapeHtmlAttr(p)}"
@@ -1856,26 +2033,8 @@ function savePointModal() {
     closePointModal();
 }
 
-function insertBulletPoint() {
-    const textarea = document.getElementById('point-modal-textarea');
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const val = textarea.value;
-
-    let insertion = '• ';
-    if (start > 0 && val[start - 1] !== '\n') {
-        insertion = '\n• ';
-    }
-
-    textarea.value = val.substring(0, start) + insertion + val.substring(end);
-    textarea.selectionStart = textarea.selectionEnd = start + insertion.length;
-    textarea.focus();
-    updateModalPointsBadge();
-}
-
 function escapeHtmlAttr(text) {
+    if (!text) return '';
     return text
         .replace(/&/g, '&amp;')
         .replace(/"/g, '&quot;')
@@ -1885,9 +2044,29 @@ function escapeHtmlAttr(text) {
 }
 
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function renderPointPreview(pt) {
+    const urlMatch = pt.match(/https?:\/\/[^\s<>"')]+/i);
+    if (!urlMatch) {
+        return escapeHtml(pt);
+    }
+    const url = urlMatch[0];
+    const textOnly = pt.replace(url, '').trim();
+    
+    let label = 'Drive Link';
+    if (url.includes('drive.google.com')) label = '📁 Google Drive';
+    else if (url.includes('docs.google.com')) label = '📄 Google Doc';
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) label = '🎥 Video';
+    else label = '🔗 Media Link';
+
+    const linkHtml = `<a href="${escapeHtmlAttr(url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-semibold text-[11px] transition shadow-2xs">${label} ↗</a>`;
+
+    return textOnly ? `${escapeHtml(textOnly)} ${linkHtml}` : linkHtml;
 }
 
 function refreshPillarSummaries() {
@@ -1971,7 +2150,7 @@ function refreshPointSummaries() {
                 summaryEl.innerHTML = bullets.map(b => `
                     <div class="flex items-start gap-2">
                         <span class="text-slate-400 font-bold">•</span>
-                        <span class="font-normal text-slate-700 leading-snug">${escapeHtml(b)}</span>
+                        <div class="font-normal text-slate-700 leading-snug flex-1">${renderPointPreview(b)}</div>
                     </div>
                 `).join('');
             }
