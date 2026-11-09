@@ -235,9 +235,6 @@
 <body>
 
     @php
-        $logo2Path = public_path('logos/logo2.png');
-        $logo2Base64 = file_exists($logo2Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo2Path)) : '';
-
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
 
@@ -256,8 +253,8 @@
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
 
-        @if($logo2Base64)
-            <img src="{{ $logo2Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
+        @if($logo3Base64)
+            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
         @endif
 
         <h1 class="cover-title">{{ $pName }}</h1>
@@ -425,8 +422,8 @@
     <div class="slide thank-you-slide">
         <div class="brand-bar-left"></div>
 
-        @if($logo2Base64)
-            <img src="{{ $logo2Base64 }}" alt="Play It Forward Zambia" style="height: 56px; margin-bottom: 16px;">
+        @if($logo3Base64)
+            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" style="height: 56px; margin-bottom: 16px;">
         @endif
 
         <h1 class="thank-you-title">Thank You!</h1>

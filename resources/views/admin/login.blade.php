@@ -8,9 +8,7 @@
         
         <!-- Header & Branding -->
         <div class="text-center space-y-2">
-            <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-md shadow-blue-500/20 font-black text-xl">
-                P
-            </div>
+            <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward Zambia" class="h-12 w-auto object-contain mx-auto mb-2">
             <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Play It Forward Zambia</h1>
             <p class="text-xs text-slate-500 leading-relaxed">
                 Sign in to your authenticated account to access assigned projects, continuous activity logging, and presentation tools.

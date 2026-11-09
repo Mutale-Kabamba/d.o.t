@@ -236,8 +236,8 @@ $entryFormConfig = [
     <header class="bg-white/95 backdrop-blur-xs border-b border-slate-200/90 sticky top-0 z-40">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
-                <a href="{{ route('programmes.hub') }}" class="w-8 h-8 rounded-lg bg-slate-900 text-white font-bold text-sm flex items-center justify-center shrink-0 hover:bg-slate-800 transition">
-                    P
+                <a href="{{ route('programmes.hub') }}" class="flex items-center shrink-0 hover:opacity-90 transition" title="Back to Hub">
+                    <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward" class="h-8 max-h-8 w-auto object-contain">
                 </a>
                 <div class="flex items-center gap-2 truncate">
                     <span class="text-sm font-bold text-slate-900 truncate">Play It Forward Zambia</span>

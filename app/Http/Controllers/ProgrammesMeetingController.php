@@ -1439,10 +1439,10 @@ class ProgrammesMeetingController extends Controller
         $bar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
         $bar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
 
-        if (file_exists(public_path('logos/logo2.png'))) {
+        if (file_exists(public_path('logos/logo3.png'))) {
             $logoShape = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
-            $logoShape->setName('Logo 2')
-                      ->setPath(public_path('logos/logo2.png'))
+            $logoShape->setName('Logo 3')
+                      ->setPath(public_path('logos/logo3.png'))
                       ->setHeight(48)
                       ->setOffsetX(50)
                       ->setOffsetY(35);
@@ -1600,10 +1600,10 @@ class ProgrammesMeetingController extends Controller
         $tBar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
         $tBar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
 
-        if (file_exists(public_path('logos/logo2.png'))) {
+        if (file_exists(public_path('logos/logo3.png'))) {
             $tLogo = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
             $tLogo->setName('Thank You Logo')
-                  ->setPath(public_path('logos/logo2.png'))
+                  ->setPath(public_path('logos/logo3.png'))
                   ->setHeight(60)
                   ->setOffsetX(420)
                   ->setOffsetY(100);

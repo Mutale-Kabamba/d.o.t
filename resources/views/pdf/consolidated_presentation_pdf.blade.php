@@ -260,8 +260,8 @@
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo2.png')))
-            <img src="{{ public_path('logos/logo2.png') }}" class="cover-logo" alt="Logo">
+        @if(file_exists(public_path('logos/logo3.png')))
+            <img src="{{ public_path('logos/logo3.png') }}" class="cover-logo" alt="Logo">
         @endif
 
         <div class="cover-title">{{ $meetingTitle ?? 'Play It Forward Zambia' }}</div>
@@ -406,8 +406,8 @@
     <div class="slide thank-you-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo2.png')))
-            <img src="{{ public_path('logos/logo2.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
+        @if(file_exists(public_path('logos/logo3.png')))
+            <img src="{{ public_path('logos/logo3.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
         @endif
 
         <div class="ty-title">Thank You!</div>

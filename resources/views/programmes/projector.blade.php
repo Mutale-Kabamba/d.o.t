@@ -133,9 +133,9 @@
     <div id="slide-0" class="slide-screen">
         <div class="cover-layout">
             <div>
-                <!-- Logo 2 above the name -->
+                <!-- Logo 3 above the name -->
                 <div style="margin-bottom: 20px;">
-                    <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia Logo" style="height: 85px; max-width: 260px; object-fit: contain;">
+                    <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward Zambia Logo" style="height: 85px; max-width: 260px; object-fit: contain;">
                 </div>
 
                 <h1 style="font-size: 52px; font-weight: 900; color: #0f172a; margin: 0 0 8px 0; letter-spacing: -1.2px; line-height: 1.08;">
@@ -279,7 +279,7 @@
     <!-- ==================== FINAL SLIDE: THANK YOU ENDING SLIDE ==================== -->
     <div id="slide-{{ $slideIndex }}" class="slide-screen" style="display: none; align-items: center; justify-content: center;">
         <div style="width: 100%; max-width: 950px; padding: 30px 40px; margin: auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <img src="{{ asset('logos/logo2.png') }}" alt="Play It Forward Zambia" style="height: 90px; max-width: 280px; object-fit: contain; margin: 0 auto 24px auto; display: block;">
+            <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward Zambia" style="height: 90px; max-width: 280px; object-fit: contain; margin: 0 auto 24px auto; display: block;">
 
             <h1 style="font-size: 60px; font-weight: 900; color: #0f172a; margin: 0 auto 10px auto; letter-spacing: -1.2px; line-height: 1.05; text-align: center;">
                 Thank You!

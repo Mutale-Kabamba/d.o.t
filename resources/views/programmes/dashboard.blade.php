@@ -10,9 +10,7 @@
         <div class="p-5 space-y-6">
             <!-- Brand & Organization Identity -->
             <div class="flex items-center gap-3 pb-5 border-b border-slate-100">
-                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-blue-500/20 shrink-0">
-                    P
-                </div>
+                <img src="{{ asset('logos/logo3.png') }}" alt="Play It Forward" class="h-9 w-auto object-contain shrink-0">
                 <div class="min-w-0">
                     <h1 class="text-sm font-black text-slate-900 tracking-tight leading-tight truncate">Play It Forward</h1>
                     <span class="text-[11px] text-slate-400 font-medium">Programmes Hub</span>
