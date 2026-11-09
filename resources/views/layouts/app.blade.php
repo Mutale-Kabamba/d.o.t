@@ -41,6 +41,19 @@
                         display: ['Plus Jakarta Sans', 'sans-serif'],
                     },
                     colors: {
+                        pif: {
+                            teal: '#0d6c60',
+                            'teal-dark': '#09544a',
+                            'teal-light': '#e8f4f2',
+                            green: '#4f992f',
+                            'green-dark': '#3e7c25',
+                            'green-light': '#eef7eb',
+                            pine: '#2c6d51',
+                            'pine-light': '#edf6f2',
+                            berry: '#992f50',
+                            'berry-light': '#faebf0',
+                            charcoal: '#464a44',
+                        },
                         brand: {
                             50: '#f0f7ff',
                             100: '#e0effe',

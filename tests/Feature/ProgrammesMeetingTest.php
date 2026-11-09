@@ -71,6 +71,30 @@ class ProgrammesMeetingTest extends TestCase
     }
 
     /**
+     * Test rich text styling actions (Bold, Italics, Underline) are preserved and sanitized.
+     */
+    public function test_rich_text_styling_is_preserved_and_sanitized_in_bullet_points(): void
+    {
+        // 1. Bold, italics, and underline formatting preserved
+        $styledPoint = '• Reached <strong>94% retention</strong> with <em>exemplary attendance</em> and <u>full compliance</u>.';
+        $html = ActivityEntry::formatPointHtml($styledPoint);
+        $this->assertStringContainsString('<strong>94% retention</strong>', $html);
+        $this->assertStringContainsString('<em>exemplary attendance</em>', $html);
+        $this->assertStringContainsString('<u>full compliance</u>', $html);
+
+        // 2. Unsafe scripts are escaped / rendered harmless
+        $xssPoint = '• Normal point <script>alert("hack")</script> with <strong>bold</strong>';
+        $safeHtml = ActivityEntry::formatPointHtml($xssPoint);
+        $this->assertStringNotContainsString('<script>', $safeHtml);
+        $this->assertStringContainsString('&lt;script&gt;', $safeHtml);
+        $this->assertStringContainsString('<strong>bold</strong>', $safeHtml);
+
+        // 3. Plain text format strips HTML tags
+        $plain = ActivityEntry::formatPointText($styledPoint);
+        $this->assertEquals('Reached 94% retention with exemplary attendance and full compliance.', $plain);
+    }
+
+    /**
      * Test User Roles, Project Scoping, and Super Admin Controls.
      */
     public function test_roles_and_project_scoping_authorization(): void

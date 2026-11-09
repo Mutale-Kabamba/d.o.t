@@ -128,7 +128,7 @@
             @foreach($slidesConfig as $themeKey => $theme)
             @php
                 $points = $activity->getPoints($theme['points_field']);
-                $narrative = $activity->{$theme['narrative_field']};
+                $narrative = $activity->getPillarNarrative($theme['number']) ?: $activity->{$theme['narrative_field']};
             @endphp
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-5">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -186,6 +186,7 @@
                             $subPoints = \App\Models\ActivityEntry::extractBulletPoints($activity->{$itemKey});
                         }
                         $subNarrative = $activity->getSubPillarNarrative($theme['number'], $subKey);
+                        $subMediaLinks = method_exists($activity, 'getSubPillarMediaLinks') ? $activity->getSubPillarMediaLinks($theme['number'], $subKey) : [];
                     @endphp
                     <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex flex-col justify-between space-y-3 min-w-0 overflow-hidden">
                         <div class="space-y-2 min-w-0">
@@ -207,6 +208,14 @@
                                             </li>
                                         @endforeach
                                     </ul>
+                                    @if(!empty($subMediaLinks))
+                                        <div class="pt-2 mt-2 border-t border-slate-200/50 flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Attached:</span>
+                                            @foreach($subMediaLinks as $mLink)
+                                                {!! \App\Models\ActivityEntry::formatPointHtml($mLink) !!}
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @else
                                     <p class="text-xs text-slate-400 italic">No bullet points recorded.</p>
                                 @endif
@@ -249,7 +258,7 @@
                         <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span>Detailed Qualitative Narrative</span>
+                        <span>Detailed Summary</span>
                     </div>
                     <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line break-words [overflow-wrap:anywhere]">{{ $narrative }}</p>
                 </div>

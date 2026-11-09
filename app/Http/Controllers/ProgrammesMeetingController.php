@@ -486,6 +486,7 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => null,
             'isEdit' => false,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
     }
 
@@ -511,7 +512,22 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => null,
             'isEdit' => false,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
+    }
+
+    /**
+     * Helper to fetch recent submitted activity entries across accessible projects.
+     */
+    protected function getRecentSubmittedEntries($user, $projects)
+    {
+        if (!$user) return collect();
+        return ActivityEntry::with('project')
+            ->when(!$user->hasAdminAccess(), fn($q) => $q->whereIn('project_id', $projects->pluck('id')))
+            ->latest('activity_date')
+            ->latest('created_at')
+            ->take(15)
+            ->get();
     }
 
     /**
@@ -659,6 +675,7 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => self::$slidesConfig,
             'activity' => $activity,
             'isEdit' => true,
+            'recentSubmittedEntries' => $this->getRecentSubmittedEntries($user, $projects),
         ]);
     }
 
@@ -1422,10 +1439,10 @@ class ProgrammesMeetingController extends Controller
         $bar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
         $bar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
 
-        if (file_exists(public_path('logos/logo2.png'))) {
+        if (file_exists(public_path('logos/logo3.png'))) {
             $logoShape = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
-            $logoShape->setName('Logo 2')
-                      ->setPath(public_path('logos/logo2.png'))
+            $logoShape->setName('Logo 3')
+                      ->setPath(public_path('logos/logo3.png'))
                       ->setHeight(48)
                       ->setOffsetX(50)
                       ->setOffsetY(35);
@@ -1583,10 +1600,10 @@ class ProgrammesMeetingController extends Controller
         $tBar->setOffsetX(0)->setOffsetY(0)->setWidth(15)->setHeight(540);
         $tBar->getFill()->setFillType(\PhpOffice\PhpPresentation\Style\Fill::FILL_SOLID)->setStartColor(new \PhpOffice\PhpPresentation\Style\Color('FF2563EB'));
 
-        if (file_exists(public_path('logos/logo2.png'))) {
+        if (file_exists(public_path('logos/logo3.png'))) {
             $tLogo = new \PhpOffice\PhpPresentation\Shape\Drawing\File();
             $tLogo->setName('Thank You Logo')
-                  ->setPath(public_path('logos/logo2.png'))
+                  ->setPath(public_path('logos/logo3.png'))
                   ->setHeight(60)
                   ->setOffsetX(420)
                   ->setOffsetY(100);

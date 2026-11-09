@@ -61,6 +61,7 @@ class ActivityEntry extends Model
             $parseSubPillar = function ($data, $fallbackCol = null) use ($entry) {
                 $points = [];
                 $narrative = '';
+                $mediaLinks = [];
 
                 if (is_array($data)) {
                     if (isset($data['points'])) {
@@ -77,6 +78,9 @@ class ActivityEntry extends Model
                     }
                     if (isset($data['narrative'])) {
                         $narrative = trim((string) $data['narrative']);
+                    }
+                    if (isset($data['media_links']) && is_array($data['media_links'])) {
+                        $mediaLinks = array_values(array_filter(array_map('trim', $data['media_links'])));
                     }
                 } elseif (!empty($data) && is_string($data)) {
                     $points = self::extractBulletPoints($data);
@@ -96,6 +100,7 @@ class ActivityEntry extends Model
                 return [
                     'points' => array_values($cleanedPoints),
                     'narrative' => $narrative,
+                    'media_links' => $mediaLinks,
                 ];
             };
 
@@ -109,15 +114,6 @@ class ActivityEntry extends Model
             if (!empty($p1['impact_narrative']) && empty($i['narrative'])) $i['narrative'] = trim($p1['impact_narrative']);
             if (!empty($p1['stories_narrative']) && empty($s['narrative'])) $s['narrative'] = trim($p1['stories_narrative']);
 
-            $entry->pillar_1_achievements = [
-                'milestones' => $m,
-                'impact' => $i,
-                'stories' => $s,
-            ];
-            $entry->achievements_milestones = implode("\n", $m['points']);
-            $entry->achievements_impact = implode("\n", $i['points']);
-            $entry->achievements_stories = implode("\n", $s['points']);
-
             // Pillar 1 synthesis
             $subNarratives1 = array_filter([$m['narrative'], $i['narrative'], $s['narrative']]);
             if (empty($entry->pillar_1_narrative) && !empty($subNarratives1)) {
@@ -128,6 +124,20 @@ class ActivityEntry extends Model
             } elseif (!empty($entry->achievements_narrative)) {
                 $entry->pillar_1_narrative = $entry->achievements_narrative;
             }
+            if (!empty($p1['narrative']) && empty($entry->pillar_1_narrative)) {
+                $entry->pillar_1_narrative = trim((string) $p1['narrative']);
+                $entry->achievements_narrative = $entry->pillar_1_narrative;
+            }
+
+            $entry->pillar_1_achievements = [
+                'milestones' => $m,
+                'impact' => $i,
+                'stories' => $s,
+                'narrative' => $entry->pillar_1_narrative ?: '',
+            ];
+            $entry->achievements_milestones = implode("\n", $m['points']);
+            $entry->achievements_impact = implode("\n", $i['points']);
+            $entry->achievements_stories = implode("\n", $s['points']);
 
             // 2. Pillar 2: Challenges
             $p2 = is_array($entry->pillar_2_challenges) ? $entry->pillar_2_challenges : [];
@@ -139,15 +149,6 @@ class ActivityEntry extends Model
             if (!empty($p2['resources_narrative']) && empty($res['narrative'])) $res['narrative'] = trim($p2['resources_narrative']);
             if (!empty($p2['risks_narrative']) && empty($risk['narrative'])) $risk['narrative'] = trim($p2['risks_narrative']);
 
-            $entry->pillar_2_challenges = [
-                'operational' => $op,
-                'resources' => $res,
-                'risks' => $risk,
-            ];
-            $entry->challenges_operational = implode("\n", $op['points']);
-            $entry->challenges_resources = implode("\n", $res['points']);
-            $entry->challenges_risks = implode("\n", $risk['points']);
-
             // Pillar 2 synthesis
             $subNarratives2 = array_filter([$op['narrative'], $res['narrative'], $risk['narrative']]);
             if (empty($entry->pillar_2_narrative) && !empty($subNarratives2)) {
@@ -158,6 +159,20 @@ class ActivityEntry extends Model
             } elseif (!empty($entry->challenges_narrative)) {
                 $entry->pillar_2_narrative = $entry->challenges_narrative;
             }
+            if (!empty($p2['narrative']) && empty($entry->pillar_2_narrative)) {
+                $entry->pillar_2_narrative = trim((string) $p2['narrative']);
+                $entry->challenges_narrative = $entry->pillar_2_narrative;
+            }
+
+            $entry->pillar_2_challenges = [
+                'operational' => $op,
+                'resources' => $res,
+                'risks' => $risk,
+                'narrative' => $entry->pillar_2_narrative ?: '',
+            ];
+            $entry->challenges_operational = implode("\n", $op['points']);
+            $entry->challenges_resources = implode("\n", $res['points']);
+            $entry->challenges_risks = implode("\n", $risk['points']);
 
             // 3. Pillar 3: Learning
             $p3 = is_array($entry->pillar_3_learning) ? $entry->pillar_3_learning : [];
@@ -169,15 +184,6 @@ class ActivityEntry extends Model
             if (!empty($p3['feedback_narrative']) && empty($feed['narrative'])) $feed['narrative'] = trim($p3['feedback_narrative']);
             if (!empty($p3['innovation_narrative']) && empty($inno['narrative'])) $inno['narrative'] = trim($p3['innovation_narrative']);
 
-            $entry->pillar_3_learning = [
-                'lessons' => $les,
-                'feedback' => $feed,
-                'innovation' => $inno,
-            ];
-            $entry->learning_lessons = implode("\n", $les['points']);
-            $entry->learning_feedback = implode("\n", $feed['points']);
-            $entry->learning_innovation = implode("\n", $inno['points']);
-
             // Pillar 3 synthesis
             $subNarratives3 = array_filter([$les['narrative'], $feed['narrative'], $inno['narrative']]);
             if (empty($entry->pillar_3_narrative) && !empty($subNarratives3)) {
@@ -188,6 +194,20 @@ class ActivityEntry extends Model
             } elseif (!empty($entry->learning_narrative)) {
                 $entry->pillar_3_narrative = $entry->learning_narrative;
             }
+            if (!empty($p3['narrative']) && empty($entry->pillar_3_narrative)) {
+                $entry->pillar_3_narrative = trim((string) $p3['narrative']);
+                $entry->learning_narrative = $entry->pillar_3_narrative;
+            }
+
+            $entry->pillar_3_learning = [
+                'lessons' => $les,
+                'feedback' => $feed,
+                'innovation' => $inno,
+                'narrative' => $entry->pillar_3_narrative ?: '',
+            ];
+            $entry->learning_lessons = implode("\n", $les['points']);
+            $entry->learning_feedback = implode("\n", $feed['points']);
+            $entry->learning_innovation = implode("\n", $inno['points']);
 
             // 4. Pillar 4: M&E
             $p4 = is_array($entry->pillar_4_monitoring) ? $entry->pillar_4_monitoring : [];
@@ -199,15 +219,6 @@ class ActivityEntry extends Model
             if (!empty($p4['data_quality_narrative']) && empty($dq['narrative'])) $dq['narrative'] = trim($p4['data_quality_narrative']);
             if (!empty($p4['evaluation_narrative']) && empty($eval['narrative'])) $eval['narrative'] = trim($p4['evaluation_narrative']);
 
-            $entry->pillar_4_monitoring = [
-                'performance' => $perf,
-                'data_quality' => $dq,
-                'evaluation' => $eval,
-            ];
-            $entry->mne_performance = implode("\n", $perf['points']);
-            $entry->mne_data_quality = implode("\n", $dq['points']);
-            $entry->mne_evaluation_plans = implode("\n", $eval['points']);
-
             // Pillar 4 synthesis
             $subNarratives4 = array_filter([$perf['narrative'], $dq['narrative'], $eval['narrative']]);
             if (empty($entry->pillar_4_narrative) && !empty($subNarratives4)) {
@@ -218,6 +229,20 @@ class ActivityEntry extends Model
             } elseif (!empty($entry->mne_narrative)) {
                 $entry->pillar_4_narrative = $entry->mne_narrative;
             }
+            if (!empty($p4['narrative']) && empty($entry->pillar_4_narrative)) {
+                $entry->pillar_4_narrative = trim((string) $p4['narrative']);
+                $entry->mne_narrative = $entry->pillar_4_narrative;
+            }
+
+            $entry->pillar_4_monitoring = [
+                'performance' => $perf,
+                'data_quality' => $dq,
+                'evaluation' => $eval,
+                'narrative' => $entry->pillar_4_narrative ?: '',
+            ];
+            $entry->mne_performance = implode("\n", $perf['points']);
+            $entry->mne_data_quality = implode("\n", $dq['points']);
+            $entry->mne_evaluation_plans = implode("\n", $eval['points']);
 
             // 5. Pillar 5: Collaboration
             $p5 = is_array($entry->pillar_5_collaboration) ? $entry->pillar_5_collaboration : [];
@@ -229,10 +254,26 @@ class ActivityEntry extends Model
             if (!empty($p5['partnerships_narrative']) && empty($part['narrative'])) $part['narrative'] = trim($p5['partnerships_narrative']);
             if (!empty($p5['cross_learning_narrative']) && empty($cross['narrative'])) $cross['narrative'] = trim($p5['cross_learning_narrative']);
 
+            // Pillar 5 synthesis
+            $subNarratives5 = array_filter([$proj['narrative'], $part['narrative'], $cross['narrative']]);
+            if (empty($entry->pillar_5_narrative) && !empty($subNarratives5)) {
+                $entry->pillar_5_narrative = implode("\n\n", $subNarratives5);
+            }
+            if (!empty($entry->pillar_5_narrative)) {
+                $entry->collab_narrative = $entry->pillar_5_narrative;
+            } elseif (!empty($entry->collab_narrative)) {
+                $entry->pillar_5_narrative = $entry->collab_narrative;
+            }
+            if (!empty($p5['narrative']) && empty($entry->pillar_5_narrative)) {
+                $entry->pillar_5_narrative = trim((string) $p5['narrative']);
+                $entry->collab_narrative = $entry->pillar_5_narrative;
+            }
+
             $entry->pillar_5_collaboration = [
                 'project_collab' => $proj,
                 'partnerships' => $part,
                 'cross_learning' => $cross,
+                'narrative' => $entry->pillar_5_narrative ?: '',
             ];
             $entry->collab_projects = implode("\n", $proj['points']);
             $entry->collab_partnerships = implode("\n", $part['points']);
@@ -493,6 +534,40 @@ class ActivityEntry extends Model
     }
 
     /**
+     * Get attached media links array for a specific sub-pillar section.
+     */
+    public function getSubPillarMediaLinks(int $pillarNumber, string $subField): array
+    {
+        $pillarColumn = match ($pillarNumber) {
+            1 => 'pillar_1_achievements',
+            2 => 'pillar_2_challenges',
+            3 => 'pillar_3_learning',
+            4 => 'pillar_4_monitoring',
+            5 => 'pillar_5_collaboration',
+            default => null,
+        };
+
+        $pillarData = $pillarColumn ? $this->{$pillarColumn} : null;
+
+        if (is_array($pillarData)) {
+            if (!empty($pillarData[$subField]) && is_array($pillarData[$subField]) && isset($pillarData[$subField]['media_links'])) {
+                $links = $pillarData[$subField]['media_links'];
+                return is_array($links) ? array_values(array_filter(array_map('trim', $links))) : [];
+            }
+
+            if ($pillarNumber === 5 && ($subField === 'project_collab' || $subField === 'projects')) {
+                $alt = $subField === 'project_collab' ? 'projects' : 'project_collab';
+                if (!empty($pillarData[$alt]) && is_array($pillarData[$alt]) && isset($pillarData[$alt]['media_links'])) {
+                    $links = $pillarData[$alt]['media_links'];
+                    return is_array($links) ? array_values(array_filter(array_map('trim', $links))) : [];
+                }
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * Get qualitative narrative for a specific pillar.
      */
     public function getPillarNarrative(int $pillarNumber): ?string
@@ -506,7 +581,38 @@ class ActivityEntry extends Model
             default => null,
         };
 
-        return $narrativeColumn ? ($this->{$narrativeColumn} ?: null) : null;
+        $val = $narrativeColumn ? ($this->{$narrativeColumn} ?: null) : null;
+        if (!empty($val)) {
+            return $val;
+        }
+
+        $fallbackColumn = match ($pillarNumber) {
+            1 => 'achievements_narrative',
+            2 => 'challenges_narrative',
+            3 => 'learning_narrative',
+            4 => 'mne_narrative',
+            5 => 'collab_narrative',
+            default => null,
+        };
+
+        if ($fallbackColumn && !empty($this->{$fallbackColumn})) {
+            return $this->{$fallbackColumn};
+        }
+
+        $pillarJsonCol = match ($pillarNumber) {
+            1 => 'pillar_1_achievements',
+            2 => 'pillar_2_challenges',
+            3 => 'pillar_3_learning',
+            4 => 'pillar_4_monitoring',
+            5 => 'pillar_5_collaboration',
+            default => null,
+        };
+
+        if ($pillarJsonCol && is_array($this->{$pillarJsonCol}) && !empty($this->{$pillarJsonCol}['narrative'])) {
+            return trim((string) $this->{$pillarJsonCol}['narrative']);
+        }
+
+        return null;
     }
 
     /**
@@ -588,11 +694,40 @@ class ActivityEntry extends Model
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
 
+        // Safe HTML formatting tags whitelist (preserve bold, italics, underline, strikethrough, etc.)
+        $safeTagPattern = '/<\/?(?:strong|b|em|i|u|s|strike|del|mark|code|br|span)(?:\s+[^>]*)?>|<a\s+(?:href=["\'][^"\']*["\']|target=["\'][^"\']*["\']|rel=["\'][^"\']*["\']|\s)+>|<\/a>/i';
+        $tokens = [];
+        $tokenized = preg_replace_callback($safeTagPattern, function ($m) use (&$tokens) {
+            $tokens[] = $m[0];
+            return '___SAFE_TAG_' . (count($tokens) - 1) . '___';
+        }, $text);
+
+        // Check for custom styled badge: ( [Icon] Name - Type ) URL or [ [Icon] Name - Type ](URL)
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        if (preg_match($badgePattern, $tokenized)) {
+            $formatted = preg_replace_callback($badgePattern, function ($m) use ($isPdf) {
+                $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
+                $url = $m[3];
+
+                if ($isPdf) {
+                    return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                }
+
+                return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 2px 4px; vertical-align: middle;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
+            }, $tokenized);
+
+            // Restore safe tokens
+            foreach ($tokens as $idx => $tag) {
+                $formatted = str_replace('___SAFE_TAG_' . $idx . '___', $tag, $formatted);
+            }
+            return $formatted;
+        }
+
         // Regex pattern for URLs
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 
         // Check if the point is strictly a standalone URL
-        if (preg_match('/^https?:\/\/[^\s<>"\'\)]+$/i', $text, $matches)) {
+        if (preg_match('/^https?:\/\/[^\s<>"\'\)]+$/i', trim($text), $matches)) {
             $url = $matches[0];
             $label = self::getSmartUrlLabel($url);
 
@@ -603,18 +738,29 @@ class ActivityEntry extends Model
             return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11.5px; font-weight: 700; text-decoration: none; word-break: break-all; margin: 1px 0; max-width: 100%;"><span>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span> <span style="font-size: 10px; opacity: 0.8;">↗</span></a>';
         }
 
-        // If URL is embedded inside text, escape non-URL text and hyperlink the URL cleanly
-        $escaped = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-        return preg_replace_callback($pattern, function ($matches) use ($isPdf) {
-            $url = $matches[0];
-            $label = self::getSmartUrlLabel($url);
+        // Split by tokens, escape non-tag text, and hyperlink URLs
+        $parts = preg_split('/(___SAFE_TAG_\d+___)/', $tokenized, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $escapedParts = [];
+        foreach ($parts as $p) {
+            if (preg_match('/^___SAFE_TAG_(\d+)___$/', $p, $mTag)) {
+                $escapedParts[] = $tokens[(int)$mTag[1]];
+            } else {
+                $escaped = htmlspecialchars($p, ENT_QUOTES, 'UTF-8');
+                $escaped = preg_replace_callback($pattern, function ($matches) use ($isPdf) {
+                    $url = $matches[0];
+                    $label = self::getSmartUrlLabel($url);
 
-            if ($isPdf) {
-                return '<a href="' . $url . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                    if ($isPdf) {
+                        return '<a href="' . $url . '" target="_blank" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; font-size: 8.5px; word-break: break-all;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ']</a>';
+                    }
+
+                    return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; word-break: break-all; display: inline-block;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ' ↗]</a>';
+                }, $escaped);
+                $escapedParts[] = $escaped;
             }
+        }
 
-            return '<a href="' . $url . '" target="_blank" rel="noopener noreferrer" style="color: #1d4ed8; text-decoration: underline; font-weight: 700; word-break: break-all; display: inline-block;">[' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ' ↗]</a>';
-        }, $escaped);
+        return implode('', $escapedParts);
     }
 
     /**
@@ -622,7 +768,7 @@ class ActivityEntry extends Model
      */
     public static function formatPointText(string $text): string
     {
-        $text = trim($text);
+        $text = strip_tags(trim($text));
         if (empty($text)) {
             return '';
         }
@@ -630,6 +776,14 @@ class ActivityEntry extends Model
         $text = preg_replace('/^[\s\-\*\•\–\—\>]+/u', '', $text);
         $text = preg_replace('/^\s*\(?\d+\)?[.:\-\)]\s+/u', '', $text);
         $text = trim($text);
+
+        $badgePattern = '/(?:\(\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^()\n]+?)\s*\)|\[\s*([📁📄📊📑🎥📦🔗🖼️📸📕🎬📎][^\[\]\n]+?)\s*\])\s*\(?\s*(https?:\/\/[^\s<>"\'\)]+)\s*\)?/u';
+        if (preg_match($badgePattern, $text)) {
+            return preg_replace_callback($badgePattern, function ($m) {
+                $label = trim(!empty($m[1]) ? $m[1] : $m[2]);
+                return "[{$label}]";
+            }, $text);
+        }
 
         $pattern = '/https?:\/\/[^\s<>"\'\)]+/i';
 
@@ -645,30 +799,55 @@ class ActivityEntry extends Model
      */
     public static function getSmartUrlLabel(string $url): string
     {
-        $host = parse_url($url, PHP_URL_HOST) ?? '';
+        $uLower = strtolower($url);
 
+        // 1. Photos & Images (Drive images, Google Photos, direct image links)
+        if (
+            str_contains($uLower, 'photos.google.com') ||
+            str_contains($uLower, 'googleusercontent.com') ||
+            preg_match('/\.(jpg|jpeg|png|gif|webp|svg|bmp|heic|tiff)(\?|$)/i', $url) ||
+            preg_match('/(?:photo|image|picture|screenshot|img_)/i', $url)
+        ) {
+            return '🖼️ Image';
+        }
+
+        // 2. Google Workspace
         if (str_contains($url, 'docs.google.com/document')) {
-            return '📄 Google Document';
+            return '📄 Google Doc';
         }
         if (str_contains($url, 'docs.google.com/spreadsheets')) {
-            return '📊 Google Spreadsheet';
+            return '📊 Google Sheets';
         }
         if (str_contains($url, 'docs.google.com/presentation')) {
-            return '📑 Google Presentation';
+            return '📑 Google Slides';
         }
-        if (str_contains($url, 'drive.google.com/drive/folders') || str_contains($url, 'drive.google.com/drive/u/') || str_contains($url, 'drive.google.com/file')) {
-            return '📁 Google Drive Folder';
+
+        // 3. Drive Folders & Files
+        if (str_contains($url, 'drive.google.com/drive/folders')) {
+            return '📁 Drive Folder';
         }
+        if (str_contains($url, 'drive.google.com/file') || str_contains($url, 'drive.google.com/open')) {
+            return '📁 Drive File';
+        }
+        if (str_contains($url, 'drive.google.com')) {
+            return '📁 Google Drive';
+        }
+
+        // 4. Media & Docs
         if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
             return '🎥 Video Link';
         }
+        if (preg_match('/\.pdf(\?|$)/i', $url)) {
+            return '📕 PDF Document';
+        }
         if (str_contains($url, 'dropbox.com')) {
-            return '📦 Dropbox Attachment';
+            return '📦 Dropbox';
         }
         if (str_contains($url, 'onedrive') || str_contains($url, 'sharepoint.com')) {
-            return '📁 OneDrive Attachment';
+            return '📁 OneDrive';
         }
 
+        $host = parse_url($url, PHP_URL_HOST) ?? '';
         $cleanHost = preg_replace('/^www\./i', '', $host);
         return !empty($cleanHost) ? '🔗 ' . $cleanHost : '🔗 View Attachment';
     }

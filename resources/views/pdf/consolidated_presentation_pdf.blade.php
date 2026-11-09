@@ -260,8 +260,8 @@
     <div class="slide cover-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo2.png')))
-            <img src="{{ public_path('logos/logo2.png') }}" class="cover-logo" alt="Logo">
+        @if(file_exists(public_path('logos/logo3.png')))
+            <img src="{{ public_path('logos/logo3.png') }}" class="cover-logo" alt="Logo">
         @endif
 
         <div class="cover-title">{{ $meetingTitle ?? 'Play It Forward Zambia' }}</div>
@@ -352,6 +352,15 @@
                                                 </ul>
                                             @endif
 
+                                            @if(!empty($sec['media_links']))
+                                                <div style="margin-top: 3px; font-size: 7px;">
+                                                    <strong style="color: #64748b;">Attached:</strong>
+                                                    @foreach($sec['media_links'] as $mLink)
+                                                        {!! \App\Models\ActivityEntry::formatPointHtml($mLink, true) !!}
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
                                             @if(!empty($sec['narrative']))
                                                 <div style="margin-top: 2px; padding: 2px 4px; background-color: #f8fafc; border-left: 2px solid {{ $bColor }}; font-size: 7.5px; color: #475569; line-height: 1.25;">
                                                     <strong style="color: #0f172a; font-size: 7px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
@@ -397,8 +406,8 @@
     <div class="slide thank-you-slide">
         <div class="brand-bar-left"></div>
 
-        @if(file_exists(public_path('logos/logo2.png')))
-            <img src="{{ public_path('logos/logo2.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
+        @if(file_exists(public_path('logos/logo3.png')))
+            <img src="{{ public_path('logos/logo3.png') }}" style="height: 48px; margin-bottom: 12px;" alt="Logo">
         @endif
 
         <div class="ty-title">Thank You!</div>
