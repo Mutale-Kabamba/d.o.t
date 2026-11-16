@@ -1807,7 +1807,7 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Export Consolidated PowerPoint-Style Presentation PDF (16:9 Landscape) with Transposed Matrix Layout.
+     * Export Consolidated Programmes Report PDF (Standard A4 Portrait).
      */
     public function exportConsolidatedPresentation(Request $request): Response
     {
@@ -1820,7 +1820,6 @@ class ProgrammesMeetingController extends Controller
         }
 
         $data = $this->getAggregatedPresentationData($request);
-        $slideDeck = self::buildConsolidatedSlideBatches($data['projectDataList'], $data['slidesConfig'], 4);
 
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
@@ -1836,15 +1835,14 @@ class ProgrammesMeetingController extends Controller
         $pdf = Pdf::loadView('pdf.consolidated_presentation_pdf', [
             'projects' => $data['projects'],
             'projectDataList' => $data['projectDataList'],
-            'slideDeck' => $slideDeck,
             'slidesConfig' => $data['slidesConfig'],
             'meetingTitle' => 'Play It Forward Zambia',
-            'meetingSubtitle' => 'Programmes Meeting',
+            'meetingSubtitle' => 'Programmes Report',
             'quarter' => $data['periodTitle'],
             'generatedDate' => now()->format('F j, Y'),
             'isSingleProject' => false,
             'logo3Base64' => $logo3Base64,
-        ])->setPaper('a4', 'landscape')
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
@@ -1856,13 +1854,13 @@ class ProgrammesMeetingController extends Controller
           ]);
 
         $periodSlug = Str::slug($data['periodTitle']);
-        $filename = 'PIFZ_Consolidated_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
+        $filename = 'PIFZ_Programmes_Report_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
 
     /**
-     * Export Isolated Single Project Presentation PDF (16:9 Landscape).
+     * Export Isolated Single Project Report PDF (Standard A4 Portrait).
      */
     public function exportSingleProjectPdf(Request $request, Project $project): Response
     {
@@ -1880,8 +1878,6 @@ class ProgrammesMeetingController extends Controller
         }
 
         $data = $this->getAggregatedPresentationData($request, $project);
-        $primaryPData = !empty($data['projectDataList']) ? $data['projectDataList'][0] : null;
-        $slideDeck = $primaryPData ? self::buildSingleProjectSlideBatches($primaryPData, $data['slidesConfig'], 6) : [];
 
         $logo3Path = public_path('logos/logo3.png');
         $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
@@ -1897,12 +1893,11 @@ class ProgrammesMeetingController extends Controller
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'project' => $project,
             'projectDataList' => $data['projectDataList'],
-            'slideDeck' => $slideDeck,
             'slidesConfig' => $data['slidesConfig'],
             'periodTitle' => $data['periodTitle'],
             'generatedDate' => now()->format('d M Y, H:i'),
             'logo3Base64' => $logo3Base64,
-        ])->setPaper('a4', 'landscape')
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
@@ -1914,13 +1909,13 @@ class ProgrammesMeetingController extends Controller
           ]);
 
         $periodSlug = Str::slug($data['periodTitle']);
-        $filename = Str::slug($project->name . '_Presentation') . '_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
+        $filename = Str::slug($project->name . '_Report') . '_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
 
     /**
-     * Legacy Single PDF export by token.
+     * Legacy Single PDF export by token (Standard A4 Portrait).
      */
     public function exportSinglePdfByToken(string $token): Response
     {
@@ -1951,7 +1946,7 @@ class ProgrammesMeetingController extends Controller
             'periodTitle' => $submission->reporting_period ?? 'All Time Comprehensive Review',
             'generatedDate' => now()->format('d M Y, H:i'),
             'logo3Base64' => $logo3Base64,
-        ])->setPaper('a4', 'landscape')
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
@@ -1962,7 +1957,7 @@ class ProgrammesMeetingController extends Controller
               'chroot' => $chrootPaths,
           ]);
 
-        $filename = Str::slug($submission->project_name . '_Meeting_Slides') . '_' . date('Ymd_His') . '.pdf';
+        $filename = Str::slug($submission->project_name . '_Report') . '_' . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }

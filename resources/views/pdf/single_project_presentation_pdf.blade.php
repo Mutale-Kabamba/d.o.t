@@ -2,228 +2,203 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $project->name ?? $submission->project_name ?? 'Project' }} - Programmes Meeting Presentation</title>
+    <title>{{ $project->name ?? $submission->project_name ?? 'Project' }} - Programmes Report</title>
     <style>
         @page {
-            size: 297mm 210mm landscape;
-            margin: 8mm 12mm 8mm 14mm;
+            size: A4 portrait;
+            margin: 16mm 14mm 18mm 14mm;
         }
         * {
             box-sizing: border-box;
-            -webkit-print-color-adjust: exact;
         }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #ffffff;
-            color: #0f172a;
-            font-size: 8.5px;
-            line-height: 1.3;
+            color: #1e293b;
+            font-size: 9.5px;
+            line-height: 1.45;
         }
 
-        .slide {
-            width: 100%;
-            page-break-after: always;
-            position: relative;
-            background-color: #ffffff;
-            padding-bottom: 2px;
-        }
-        .slide:last-child {
-            page-break-after: avoid;
-        }
-
-        /* Left Branding Color Bar */
-        .brand-bar-left {
-            position: absolute;
-            left: -14mm;
-            top: -8mm;
-            height: 196mm;
-            width: 5mm;
-            background-color: #2563eb;
-        }
-
-        /* Cover Slide */
-        .cover-slide {
-            padding-top: 14mm;
-            padding-left: 6mm;
-        }
-        .cover-logo {
-            height: 44px;
-            margin-bottom: 10px;
-        }
-        .cover-title {
-            font-size: 32px;
-            font-weight: 900;
-            color: #0f172a;
-            margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-        }
-        .cover-subtitle {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2563eb;
-            margin: 0 0 12px 0;
-        }
-        .cover-badge {
-            background-color: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
-            border-radius: 12px;
-            padding: 4px 14px;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 16px;
-        }
-        .project-meta-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid #2563eb;
-            border-radius: 6px;
-            padding: 12px 18px;
-            width: 90%;
-        }
-        .meta-row {
-            margin-bottom: 5px;
-            font-size: 11px;
-        }
-        .meta-label {
-            font-weight: 800;
-            color: #475569;
-            width: 130px;
-            display: inline-block;
-            text-transform: uppercase;
-            font-size: 9px;
-            letter-spacing: 0.5px;
-        }
-        .meta-val {
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        /* Slide Header */
-        .slide-header {
-            margin-bottom: 6px;
-            position: relative;
-            padding-right: 120px;
-        }
-        .header-logo3 {
-            position: absolute;
+        /* Running Page Footer */
+        .running-footer {
+            position: fixed;
+            bottom: -11mm;
+            left: 0;
             right: 0;
-            top: -2px;
-            height: 28px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 4px;
+            font-size: 8px;
+            color: #64748b;
         }
-        .slide-meta {
-            font-size: 9px;
+        .running-footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .page-num::after {
+            content: "Page " counter(page);
+        }
+
+        /* Report Header */
+        .report-header {
+            border-bottom: 2px solid #0d6c60;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-logo {
+            height: 38px;
+        }
+        .org-kicker {
+            font-size: 8.5px;
             font-weight: 800;
-            color: #2563eb;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
+            color: #0d6c60;
             margin-bottom: 2px;
         }
-        .slide-title {
-            font-size: 18px;
+        .report-title {
+            font-size: 19px;
             font-weight: 900;
             color: #0f172a;
             margin: 0 0 4px 0;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
+        }
+        .period-badge {
+            display: inline-block;
+            background-color: #ecfdf5;
+            color: #0d6c60;
+            border: 1px solid #a7f3d0;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 9px;
+            font-weight: 700;
         }
 
-        /* 3-Column Items Grid */
-        .items-grid {
+        /* Metadata Strip */
+        .meta-strip {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 8px 0;
-            table-layout: fixed;
-            margin-left: -4px;
-            margin-right: -4px;
-        }
-        .item-card {
-            vertical-align: top;
-            background-color: #ffffff;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            background-color: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px 10px;
-            word-break: break-word;
         }
-        .item-bar {
-            width: 20px;
-            height: 2.5px;
-            background-color: #2563eb;
-            border-radius: 1px;
-            margin-bottom: 3px;
+        .meta-strip td {
+            padding: 7px 10px;
+            border-right: 1px solid #e2e8f0;
+            vertical-align: top;
         }
-        .item-title {
-            font-size: 11.5px;
-            font-weight: 800;
-            color: #0f172a;
+        .meta-strip td:last-child {
+            border-right: none;
+        }
+        .meta-label {
+            font-size: 7.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
             margin-bottom: 2px;
         }
-        .item-prompt {
+        .meta-value {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* Pillar Block */
+        .pillar-block {
+            margin-bottom: 14px;
+        }
+        .pillar-header {
+            font-size: 11px;
+            font-weight: 800;
+            color: #0d6c60;
+            background-color: #f1f5f9;
+            border-left: 4px solid #0d6c60;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 5px 10px;
+            margin-bottom: 8px;
+            page-break-after: avoid;
+        }
+        .pillar-number {
+            color: #4f992f;
+            margin-right: 4px;
+        }
+        .pillar-subtitle {
+            font-size: 8px;
+            font-weight: 500;
+            color: #64748b;
+            display: block;
+            margin-top: 1px;
+        }
+
+        /* Sub-section Block */
+        .subsection-block {
+            margin: 0 0 9px 10px;
+        }
+        .subsection-title {
+            font-size: 9px;
+            font-weight: 800;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
+            page-break-after: avoid;
+        }
+        .subsection-prompt {
             font-size: 8px;
             color: #64748b;
             font-style: italic;
-            margin-bottom: 6px;
-            line-height: 1.25;
+            margin-bottom: 4px;
+            page-break-after: avoid;
         }
-
-        .bullet-list {
-            margin: 0;
-            padding-left: 12px;
+        .points-list {
+            margin: 0 0 4px 0;
+            padding-left: 16px;
         }
-        .bullet-list li {
-            font-size: 8px;
+        .points-list li {
+            margin-bottom: 3px;
             color: #1e293b;
-            margin-bottom: 2px;
-            line-height: 1.28;
-            font-weight: 500;
+            line-height: 1.42;
+            word-break: break-word;
         }
-
-        /* Thank You Slide */
-        .thank-you-slide {
-            padding-top: 22mm;
-            text-align: center;
-        }
-        .thank-you-title {
-            font-size: 34px;
-            font-weight: 900;
-            color: #0f172a;
-            margin: 0 0 5px 0;
-            letter-spacing: -0.5px;
-        }
-        .thank-you-subtitle {
-            font-size: 18px;
-            font-weight: 800;
-            color: #2563eb;
-            margin: 0 0 8px 0;
-        }
-        .thank-you-text {
-            font-size: 11px;
-            font-weight: 600;
+        .media-row {
+            margin: 3px 0 4px 16px;
+            font-size: 8px;
             color: #475569;
-            max-width: 550px;
-            margin: 0 auto 14px auto;
+        }
+        .summary-box {
+            margin: 4px 0 4px 10px;
+            padding: 5px 8px;
+            background-color: #f8fafc;
+            border-left: 2.5px solid #4f992f;
+            font-size: 8.5px;
+            color: #334155;
+            line-height: 1.38;
+            page-break-inside: avoid;
+        }
+        .synthesis-box {
+            margin: 6px 0 6px 10px;
+            padding: 6px 10px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid #0d6c60;
+            font-size: 8.5px;
+            color: #1e293b;
             line-height: 1.4;
+            page-break-inside: avoid;
         }
-
-        /* Slide Footer */
-        .slide-footer {
-            margin-top: 4px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 2px;
-            font-size: 7.5px;
+        .empty-note {
+            margin: 2px 0 6px 10px;
+            font-size: 8.5px;
             color: #94a3b8;
-        }
-        .footer-table {
-            width: 100%;
-        }
-        .footer-left {
-            text-align: left;
-            font-weight: 600;
-        }
-        .footer-right {
-            text-align: right;
+            font-style: italic;
         }
     </style>
 </head>
@@ -241,101 +216,94 @@
         $period = $periodTitle ?? $submission->reporting_period ?? 'All Time Comprehensive Review';
 
         $primaryPData = !empty($projectDataList) ? $projectDataList[0] : null;
-
-        if (empty($slideDeck) && $primaryPData) {
-            $slideDeck = \App\Http\Controllers\ProgrammesMeetingController::buildSingleProjectSlideBatches(
-                $primaryPData,
-                $slidesConfig ?? [],
-                6
-            );
-        }
-
-        $totalPdfSlides = !empty($slideDeck) ? (1 + count($slideDeck) + 1) : 7;
-        $currentSlideIdx = 1;
+        $entriesCount = $primaryPData['entries_count'] ?? 0;
     @endphp
 
-    <!-- ==================== SLIDE 1: COVER SLIDE ==================== -->
-    <div class="slide cover-slide">
-        <div class="brand-bar-left"></div>
-
-        @if($logo3Base64)
-            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" class="cover-logo">
-        @endif
-
-        <h1 class="cover-title">{{ $pName }}</h1>
-        <h2 class="cover-subtitle">Isolated Project Presentation</h2>
-        <div class="cover-badge">{{ $period }}</div>
-
-        <div class="project-meta-box">
-            <div class="meta-row">
-                <span class="meta-label">Project:</span>
-                <span class="meta-val">{{ $pName }}</span>
-            </div>
-            <div class="meta-row">
-                <span class="meta-label">Lead Officer:</span>
-                <span class="meta-val">{{ $oName }}</span>
-            </div>
-            <div class="meta-row">
-                <span class="meta-label">Location:</span>
-                <span class="meta-val">{{ $loc }}</span>
-            </div>
-            <div class="meta-row" style="margin-bottom: 0;">
-                <span class="meta-label">Generated:</span>
-                <span class="meta-val">{{ $generatedDate }}</span>
-            </div>
-        </div>
-
-        <div class="slide-footer" style="margin-top: 14mm;">
-            <table class="footer-table">
-                <tr>
-                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
-                    <td class="footer-right">Cover Slide • Generated {{ $generatedDate }}</td>
-                </tr>
-            </table>
-        </div>
+    <!-- Running Footer on Every Page -->
+    <div class="running-footer">
+        <table class="running-footer-table">
+            <tr>
+                <td style="text-align: left;"><strong>Play It Forward Zambia</strong> • {{ $pName }} • {{ $period }}</td>
+                <td style="text-align: right;"><span class="page-num"></span></td>
+            </tr>
+        </table>
     </div>
 
-    <!-- ==================== THEMATIC SLIDES ==================== -->
-    @if(!empty($slideDeck))
-        @foreach($slideDeck as $deckIdx => $deckItem)
-        @php
-            $currentSlideIdx++;
-            $slide = $deckItem['slide'];
-            $slideKey = $deckItem['slideKey'];
-            $curPData = $deckItem['pData'];
-            $sections = $curPData['theme_sections'][$slideKey] ?? [];
-            $hasSections = false;
-            foreach($sections as $s) {
-                if (!empty($s['points'])) { $hasSections = true; break; }
-            }
+    <!-- ==================== REPORT HEADER ==================== -->
+    <div class="report-header">
+        <table class="header-table">
+            <tr>
+                <td style="vertical-align: middle;">
+                    <div class="org-kicker">Play It Forward Zambia • Project Report</div>
+                    <h1 class="report-title">{{ $pName }}</h1>
+                    <div class="period-badge">{{ $period }}</div>
+                </td>
+                <td style="text-align: right; vertical-align: middle; width: 110px;">
+                    @if(!empty($logo3Base64))
+                        <img src="{{ $logo3Base64 }}" class="header-logo" alt="Play It Forward Logo">
+                    @endif
+                </td>
+            </tr>
+        </table>
+    </div>
 
-            $metaStr = "SLIDE " . $slide['number'] . " OF 5 • " . strtoupper($period);
-            if ($deckItem['totalParts'] > 1) {
-                $metaStr .= " • PART " . $deckItem['part'] . " OF " . $deckItem['totalParts'];
+    <!-- Metadata Strip -->
+    <table class="meta-strip">
+        <tr>
+            <td style="width: 30%;">
+                <div class="meta-label">Lead Officer</div>
+                <div class="meta-value">{{ $primaryPData['officer_name'] ?? $oName }}</div>
+            </td>
+            <td style="width: 24%;">
+                <div class="meta-label">Location</div>
+                <div class="meta-value">{{ $primaryPData['location'] ?? $loc }}</div>
+            </td>
+            <td style="width: 22%;">
+                <div class="meta-label">Activities Logged</div>
+                <div class="meta-value">{{ $entriesCount }}</div>
+            </td>
+            <td style="width: 24%;">
+                <div class="meta-label">Date Generated</div>
+                <div class="meta-value">{{ $generatedDate }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ==================== THEMATIC PILLARS ==================== -->
+    @foreach(($slidesConfig ?? []) as $slideKey => $slide)
+        @php
+            $sections = $primaryPData['theme_sections'][$slideKey] ?? [];
+            $themePts = $primaryPData['theme_points'][$slideKey] ?? [];
+            $narrativeText = $primaryPData['theme_narrative_text'][$slideKey] ?? '';
+
+            $hasSectionsContent = false;
+            foreach ($sections as $sec) {
+                if (!empty($sec['points']) || !empty($sec['narrative']) || !empty($sec['media_links'])) {
+                    $hasSectionsContent = true;
+                    break;
+                }
             }
         @endphp
-        <div class="slide">
-            <div class="brand-bar-left"></div>
 
-            <div class="slide-header">
-                @if($logo3Base64)
-                    <img src="{{ $logo3Base64 }}" alt="Play It Forward" class="header-logo3">
+        <div class="pillar-block">
+            <div class="pillar-header">
+                <span class="pillar-number">Pillar {{ $slide['number'] }}:</span> {{ $slide['title'] }}
+                @if(!empty($slide['subtitle']))
+                    <span class="pillar-subtitle">{{ $slide['subtitle'] }}</span>
                 @endif
-                <div class="slide-meta">{{ $metaStr }}</div>
-                <h2 class="slide-title">{{ $slide['title'] }}</h2>
             </div>
 
-            <table class="items-grid">
-                <tr>
-                    @if($hasSections)
-                        @foreach($sections as $itemKey => $sec)
-                        <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
-                            <div class="item-bar"></div>
-                            <div class="item-title">{{ $sec['title'] }}</div>
-                            <div class="item-prompt">{{ $sec['prompt'] }}</div>
+            @if($hasSectionsContent)
+                @foreach($sections as $itemKey => $sec)
+                    @if(!empty($sec['points']) || !empty($sec['narrative']) || !empty($sec['media_links']))
+                        <div class="subsection-block">
+                            <div class="subsection-title">{{ $sec['title'] }}</div>
+                            @if(!empty($sec['prompt']))
+                                <div class="subsection-prompt">{{ $sec['prompt'] }}</div>
+                            @endif
 
                             @if(!empty($sec['points']))
-                                <ul class="bullet-list">
+                                <ul class="points-list">
                                     @foreach($sec['points'] as $pt)
                                         <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
                                     @endforeach
@@ -343,8 +311,8 @@
                             @endif
 
                             @if(!empty($sec['media_links']))
-                                <div style="margin-top: 3px; padding-top: 2px; border-top: 1px dashed #e2e8f0; font-size: 7px;">
-                                    <strong style="color: #64748b;">Attached:</strong>
+                                <div class="media-row">
+                                    <strong>Attached:</strong>
                                     @foreach($sec['media_links'] as $mLink)
                                         {!! \App\Models\ActivityEntry::formatPointHtml($mLink, true) !!}
                                     @endforeach
@@ -352,124 +320,48 @@
                             @endif
 
                             @if(!empty($sec['narrative']))
-                                <div style="margin-top: 3px; padding: 2px 4px; background-color: #f8fafc; border-left: 2px solid #2563eb; border-radius: 3px; font-size: 7.5px; color: #475569; line-height: 1.25;">
-                                    <strong style="color: #0f172a; font-size: 7px; text-transform: uppercase;">Summary:</strong> {{ $sec['narrative'] }}
+                                <div class="summary-box">
+                                    <strong>Summary:</strong> {{ $sec['narrative'] }}
                                 </div>
-                            @elseif(empty($sec['points']) && $deckItem['part'] === 1)
-                                <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific entries recorded.</div>
                             @endif
-                        </td>
-                        @endforeach
-                    @else
-                        <td class="item-card" style="width: 100%;">
-                            <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered for this period.</div>
-                        </td>
+                        </div>
                     @endif
-                </tr>
-            </table>
+                @endforeach
 
-            @if(!empty($curPData['theme_narrative_text'][$slideKey]))
-                <div style="margin-top: 4px; background: #f8fafc; border-left: 3px solid #2563eb; border-radius: 4px; padding: 3px 6px; font-size: 7.5px; color: #334155; line-height: 1.25;">
-                    <strong style="font-size: 7px; color: #1e40af; text-transform: uppercase;">Executive Synthesis:</strong> {{ $curPData['theme_narrative_text'][$slideKey] }}
-                </div>
-            @endif
-
-            <div class="slide-footer">
-                <table class="footer-table">
-                    <tr>
-                        <td class="footer-left">{{ $pName }} • {{ $slide['title'] }}</td>
-                        <td class="footer-right">Slide {{ $currentSlideIdx }} of {{ $totalPdfSlides }}</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        @endforeach
-    @else
-        {{-- Legacy fallback if no slideDeck --}}
-        @foreach($slidesConfig as $slideKey => $slide)
-        @php
-            $currentSlideIdx++;
-        @endphp
-        <div class="slide">
-            <div class="brand-bar-left"></div>
-
-            <div class="slide-header">
-                @if($logo3Base64)
-                    <img src="{{ $logo3Base64 }}" alt="Play It Forward" class="header-logo3">
+                @if(!empty($narrativeText))
+                    <div class="synthesis-box">
+                        <strong>Executive Synthesis:</strong> {{ $narrativeText }}
+                    </div>
                 @endif
-                <div class="slide-meta">SLIDE {{ $slide['number'] }} OF 5 • {{ strtoupper($period) }}</div>
-                <h2 class="slide-title">{{ $slide['title'] }}</h2>
-            </div>
-
-            <table class="items-grid">
-                <tr>
-                    @if(isset($submission))
-                        @foreach($slide['items'] as $itemKey => $item)
-                        @php
-                            $points = $submission->getPoints($itemKey);
-                        @endphp
-                        <td class="item-card" style="width: 33.33%; border-top: 3px solid #2563eb;">
-                            <div class="item-bar"></div>
-                            <div class="item-title">{{ $item['title'] }}</div>
-                            <div class="item-prompt">{{ $item['prompt'] }}</div>
-
-                            @if(!empty($points))
-                                <ul class="bullet-list">
-                                    @foreach($points as $pt)
-                                        <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered.</div>
-                            @endif
-                        </td>
+            @elseif(!empty($themePts))
+                <div class="subsection-block">
+                    <ul class="points-list">
+                        @foreach($themePts as $pt)
+                            <li>{!! \App\Models\ActivityEntry::formatPointHtml($pt, true) !!}</li>
                         @endforeach
-                    @else
-                        <td class="item-card" style="width: 100%;">
-                            <div style="font-size: 8px; color: #94a3b8; font-style: italic;">No specific points entered for this period.</div>
-                        </td>
-                    @endif
-                </tr>
-            </table>
-
-            <div class="slide-footer">
-                <table class="footer-table">
-                    <tr>
-                        <td class="footer-left">{{ $pName }} • {{ $slide['title'] }}</td>
-                        <td class="footer-right">Slide {{ $currentSlideIdx }} of {{ $totalPdfSlides }}</td>
-                    </tr>
-                </table>
-            </div>
+                    </ul>
+                </div>
+            @elseif(isset($submission))
+                @foreach($slide['items'] as $itemKey => $item)
+                    @php $points = $submission->getPoints($itemKey); @endphp
+                    <div class="subsection-block">
+                        <div class="subsection-title">{{ $item['title'] }}</div>
+                        @if(!empty($points))
+                            <ul class="points-list">
+                                @foreach($points as $pt)
+                                    <li>{!! \App\Models\ProjectSubmission::formatPointHtml($pt, true) !!}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            <div class="empty-note">No specific points entered.</div>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <div class="empty-note">No entries recorded for {{ strtolower($slide['title']) }} in this period.</div>
+            @endif
         </div>
-        @endforeach
-    @endif
-
-    <!-- ==================== FINAL SLIDE: THANK YOU ==================== -->
-    <div class="slide thank-you-slide">
-        <div class="brand-bar-left"></div>
-
-        @if($logo3Base64)
-            <img src="{{ $logo3Base64 }}" alt="Play It Forward Zambia" style="height: 52px; margin-bottom: 14px;">
-        @endif
-
-        <h1 class="thank-you-title">Thank You!</h1>
-        <div class="thank-you-subtitle">{{ $pName }}</div>
-        <p class="thank-you-text">
-            Inspiring and empowering young people and their communities through the power of education, health, and sport.
-        </p>
-        <div style="font-size: 11px; font-weight: 800; color: #1d4ed8; margin-top: 6px;">
-            {{ $period }}
-        </div>
-
-        <div class="slide-footer" style="margin-top: 18mm;">
-            <table class="footer-table">
-                <tr>
-                    <td class="footer-left">Play It Forward Zambia • {{ $pName }}</td>
-                    <td class="footer-right">Final Slide • Slide {{ $totalPdfSlides }} of {{ $totalPdfSlides }}</td>
-                </tr>
-            </table>
-        </div>
-    </div>
+    @endforeach
 
 </body>
 </html>
