@@ -207,13 +207,13 @@
 
             <!-- Top Quick Access Links (Presentations & Live Projector) -->
             @php
-                $exportQuery = array_merge(request()->query(), [
+                $exportQuery = array_filter([
                     'project_id' => $selectedProjectId ?? 'all',
                     'interval' => $interval ?? 'all',
-                    'year' => $filterParams['year'] ?? now()->year,
-                    'month' => $filterParams['month'] ?? now()->month,
-                    'quarter' => $filterParams['quarter'] ?? ceil(now()->month / 3),
-                ]);
+                    'year' => ($interval ?? 'all') !== 'all' ? ($filterParams['year'] ?? now()->year) : (request()->has('year') ? ($filterParams['year'] ?? null) : null),
+                    'quarter' => ($interval ?? 'all') === 'quarter' ? ($filterParams['quarter'] ?? ceil(now()->month / 3)) : null,
+                    'month' => ($interval ?? 'all') === 'month' ? ($filterParams['month'] ?? now()->month) : null,
+                ], fn($v) => $v !== null && $v !== '');
             @endphp
             <div class="flex flex-wrap items-center gap-2 shrink-0">
                 <a href="{{ route('programmes.projector', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0d6c60] hover:bg-[#09544a] rounded-lg shadow-2xs transition" title="Open Fullscreen Matrix Projector">
@@ -231,11 +231,11 @@
                     <span>PowerPoint (.pptx)</span>
                 </a>
 
-                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-[#0d6c60] hover:border-[#0d6c60]/30 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated PDF Report">
+                <a href="{{ route('programmes.export_consolidated_pdf', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-[#0d6c60] hover:border-[#0d6c60]/30 border border-slate-200 rounded-lg shadow-2xs transition" title="Generate Consolidated A4 PDF Report">
                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <span>PDF (16:9)</span>
+                    <span>PDF Report (A4)</span>
                 </a>
             </div>
         </header>
@@ -294,10 +294,11 @@
                     <!-- Sleek Inline Scope Controls -->
                     <form action="{{ route('programmes.hub') }}" method="GET" class="flex flex-wrap items-center gap-2">
                         <input type="hidden" name="tab" value="dashboard">
+                        <input type="hidden" name="interval" id="dashboard-interval-input" value="{{ $interval }}">
                         
                         <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
                             @foreach(['all' => 'All', 'quarter' => 'Quarter', 'month' => 'Month', 'year' => 'Year'] as $iKey => $iLabel)
-                                <button type="submit" name="interval" value="{{ $iKey }}" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-[#0d6c60] shadow-2xs font-bold border border-slate-200/60' : 'text-slate-600 hover:text-slate-900' }}">
+                                <button type="submit" onclick="document.getElementById('dashboard-interval-input').value='{{ $iKey }}'" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-[#0d6c60] shadow-2xs font-bold border border-slate-200/60' : 'text-slate-600 hover:text-slate-900' }}">
                                     {{ $iLabel }}
                                 </button>
                             @endforeach
@@ -624,8 +625,8 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-[#992f50] transition">Executive PDF Brief</div>
-                                            <div class="text-[11px] text-slate-500">Print-ready 16:9 document</div>
+                                            <div class="text-xs font-semibold text-slate-900 group-hover:text-[#992f50] transition">Executive PDF Report</div>
+                                            <div class="text-[11px] text-slate-500">Print-ready A4 document</div>
                                         </div>
                                     </div>
                                     <span class="text-xs font-medium text-slate-400 group-hover:text-[#992f50] group-hover:translate-x-0.5 transition">→</span>
@@ -1097,10 +1098,10 @@
                                     <a href="{{ route('programmes.projects.projector', $p->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this specific project directly">
                                         <span>▶ Project Deck</span>
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pptx', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
+                                    <a href="{{ route('programmes.projects.export_pptx', array_merge(['project' => $p->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Isolated PPTX">
                                         PPTX
                                     </a>
-                                    <a href="{{ route('programmes.projects.export_pdf', $p->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
+                                    <a href="{{ route('programmes.projects.export_pdf', array_merge(['project' => $p->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Isolated PDF">
                                         PDF
                                     </a>
                                 </div>
@@ -1253,10 +1254,10 @@
                                 <a href="{{ route('programmes.projects.projector', $dept->id) }}" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-black text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-2xs transition active:scale-95" title="Present this department deck">
                                     <span>▶ Department Deck</span>
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pptx', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
+                                <a href="{{ route('programmes.projects.export_pptx', array_merge(['project' => $dept->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition" title="Download Department PPTX">
                                     PPTX
                                 </a>
-                                <a href="{{ route('programmes.projects.export_pdf', $dept->id) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
+                                <a href="{{ route('programmes.projects.export_pdf', array_merge(['project' => $dept->id], $exportQuery)) }}" class="px-2 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition" title="Download Department PDF">
                                     PDF
                                 </a>
                             </div>

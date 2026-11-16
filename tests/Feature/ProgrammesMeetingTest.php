@@ -457,6 +457,84 @@ class ProgrammesMeetingTest extends TestCase
     }
 
     /**
+     * Test PDF exports reflect selected period query parameters.
+     */
+    public function test_pdf_exports_reflect_selected_period(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+        $project = Project::create(['name' => 'Youth Education', 'status' => 'active']);
+
+        // 1. Quarter interval
+        $resQuarterPdf = $this->actingAs($user)->get(route('programmes.export_consolidated_pdf', [
+            'interval' => 'quarter',
+            'quarter' => 3,
+            'year' => 2026,
+        ]));
+        $resQuarterPdf->assertStatus(200);
+        $resQuarterPdf->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('quarter-3-july-september-2026', strtolower($resQuarterPdf->headers->get('content-disposition')));
+
+        // 2. Month interval
+        $resMonthPdf = $this->actingAs($user)->get(route('programmes.projects.export_pdf', [
+            'project' => $project->id,
+            'interval' => 'month',
+            'month' => 5,
+            'year' => 2026,
+        ]));
+        $resMonthPdf->assertStatus(200);
+        $resMonthPdf->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('may-2026', strtolower($resMonthPdf->headers->get('content-disposition')));
+    }
+
+    /**
+     * Test that selecting a quarter on the dashboard persists interval=quarter and filters report links & data.
+     */
+    public function test_dashboard_quarter_selection_persists_and_filters_reports(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
+        $project = Project::create(['name' => 'Quarter Scope Project', 'status' => 'active']);
+
+        ActivityEntry::create([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'activity_title' => 'Q1 Activity',
+            'activity_date' => '2026-02-15',
+            'achievements_milestones' => '• Q1 milestone achieved',
+        ]);
+
+        ActivityEntry::create([
+            'project_id' => $project->id,
+            'user_id' => $user->id,
+            'activity_title' => 'Q2 Activity',
+            'activity_date' => '2026-05-15',
+            'achievements_milestones' => '• Q2 milestone achieved',
+        ]);
+
+        // Simulate selecting Q1 from dropdown (even without interval in query, or with interval=quarter)
+        $resDash = $this->actingAs($user)->get(route('programmes.hub', [
+            'tab' => 'dashboard',
+            'year' => 2026,
+            'quarter' => 1,
+        ]));
+        $resDash->assertStatus(200);
+        $resDash->assertSee('Q1 2026');
+        $resDash->assertSee('id="dashboard-interval-input" value="quarter"', false);
+        $resDash->assertSee('interval=quarter', false);
+        $resDash->assertSee('quarter=1', false);
+
+        // Verify projector / report aggregation for Q1 only includes Q1 data and displays Q1 title
+        $resProjectorQ1 = $this->actingAs($user)->get(route('programmes.projector', [
+            'interval' => 'quarter',
+            'year' => 2026,
+            'quarter' => 1,
+        ]));
+        $resProjectorQ1->assertStatus(200);
+        $resProjectorQ1->assertSee('Quarter 1 (January - March) 2026');
+        $resProjectorQ1->assertSee('Q1 milestone achieved');
+        $resProjectorQ1->assertDontSee('Q2 milestone achieved');
+    }
+
+    /**
      * Test Smart Dynamic Project-Scoped Entry Creation with Structured Pillar JSON.
      */
     public function test_smart_dynamic_project_scoped_entry_creation_and_structured_pillars(): void

@@ -327,7 +327,20 @@ class ProgrammesMeetingController extends Controller
         $departments = Project::where('is_department', true)->with(['children.activityEntries', 'children.users', 'users', 'activityEntries'])->orderBy('name')->get();
 
         // 2. Interval & Project Filtering
-        $interval = $request->query('interval', 'all'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
+        $interval = $request->query('interval'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
+        if (!$interval) {
+            if ($request->has('quarter')) {
+                $interval = 'quarter';
+            } elseif ($request->has('month')) {
+                $interval = 'month';
+            } elseif ($request->has('from_date') && $request->has('to_date')) {
+                $interval = 'custom';
+            } elseif ($request->has('date')) {
+                $interval = 'day';
+            } else {
+                $interval = 'all';
+            }
+        }
         $selectedProjectId = $request->query('project_id');
         $search = $request->query('q');
 
@@ -1117,7 +1130,20 @@ class ProgrammesMeetingController extends Controller
         }
 
         // 2. Determine interval filter
-        $interval = $request->query('interval', 'all');
+        $interval = $request->query('interval');
+        if (!$interval) {
+            if ($request->has('quarter')) {
+                $interval = 'quarter';
+            } elseif ($request->has('month')) {
+                $interval = 'month';
+            } elseif ($request->has('from_date') && $request->has('to_date')) {
+                $interval = 'custom';
+            } elseif ($request->has('date')) {
+                $interval = 'day';
+            } else {
+                $interval = 'all';
+            }
+        }
         $filterParams = [
             'date' => $request->query('date', now()->toDateString()),
             'month' => (int) $request->query('month', now()->month),
@@ -1336,13 +1362,27 @@ class ProgrammesMeetingController extends Controller
             ];
         }
 
-        // Period title for slides
+        // Period title for slides and exports
         $periodTitle = match ($interval) {
             'day' => 'Day: ' . Carbon::parse($filterParams['date'])->format('d M Y'),
             'month' => Carbon::create($filterParams['year'], $filterParams['month'], 1)->format('F Y'),
-            'quarter' => "Quarter {$filterParams['quarter']} {$filterParams['year']}",
+            'quarter' => (function () use ($filterParams) {
+                $q = (int) ($filterParams['quarter'] ?? ceil(now()->month / 3));
+                $qMonths = match ($q) {
+                    1 => 'January - March',
+                    2 => 'April - June',
+                    3 => 'July - September',
+                    4 => 'October - December',
+                    default => '',
+                };
+                return "Quarter {$q}" . ($qMonths ? " ({$qMonths})" : '') . " {$filterParams['year']}";
+            })(),
             'year' => "Annual {$filterParams['year']}",
-            default => 'Quarter 2 April, May, June 2026',
+            'custom' => (!empty($filterParams['from_date']) && !empty($filterParams['to_date']))
+                ? Carbon::parse($filterParams['from_date'])->format('d M Y') . ' — ' . Carbon::parse($filterParams['to_date'])->format('d M Y')
+                : 'Custom Date Range',
+            'all' => 'All Time Comprehensive Review' . (!empty($filterParams['year']) && $request->has('year') ? " ({$filterParams['year']})" : ''),
+            default => 'All Time Comprehensive Review',
         };
 
         return [
@@ -1354,6 +1394,135 @@ class ProgrammesMeetingController extends Controller
             'isSingleProject' => (bool) $singleProject,
             'singleProject' => $singleProject,
         ];
+    }
+
+    /**
+     * Build balanced, paginated slide batches for Consolidated Presentation PDF to prevent DomPDF overflow/blank pages.
+     */
+    public static function buildConsolidatedSlideBatches(array $projectDataList, array $slidesConfig, int $maxPointsPerSection = 4): array
+    {
+        $projectPairs = !empty($projectDataList) ? array_chunk($projectDataList, 2) : [[]];
+        $slideDeck = [];
+
+        foreach ($slidesConfig as $slideKey => $slide) {
+            foreach ($projectPairs as $pairIdx => $pairProjects) {
+                $maxParts = 1;
+                foreach ($pairProjects as $pData) {
+                    $sections = $pData['theme_sections'][$slideKey] ?? [];
+                    foreach ($sections as $sec) {
+                        $cnt = count($sec['points'] ?? []);
+                        $parts = (int) ceil($cnt / $maxPointsPerSection);
+                        if ($parts > $maxParts) {
+                            $maxParts = $parts;
+                        }
+                    }
+                    $themePts = $pData['theme_points'][$slideKey] ?? [];
+                    $ptsParts = (int) ceil(count($themePts) / ($maxPointsPerSection * 2));
+                    if ($ptsParts > $maxParts) {
+                        $maxParts = $ptsParts;
+                    }
+                }
+
+                for ($part = 0; $part < $maxParts; $part++) {
+                    $chunkProjectsData = [];
+                    foreach ($pairProjects as $pData) {
+                        $pCopy = $pData;
+                        $pCopy['theme_sections'][$slideKey] = [];
+                        $sections = $pData['theme_sections'][$slideKey] ?? [];
+
+                        foreach ($sections as $itemKey => $sec) {
+                            $allPts = $sec['points'] ?? [];
+                            $slicePts = array_slice($allPts, $part * $maxPointsPerSection, $maxPointsPerSection);
+                            $secCopy = $sec;
+                            $secCopy['points'] = $slicePts;
+
+                            if ($part !== $maxParts - 1) {
+                                $secCopy['media_links'] = [];
+                            }
+                            if ($part < $maxParts - 1) {
+                                $secCopy['narrative'] = '';
+                            }
+                            $pCopy['theme_sections'][$slideKey][$itemKey] = $secCopy;
+                        }
+
+                        $themePts = $pData['theme_points'][$slideKey] ?? [];
+                        $pCopy['theme_points'][$slideKey] = array_slice($themePts, $part * ($maxPointsPerSection * 2), $maxPointsPerSection * 2);
+
+                        if ($part < $maxParts - 1) {
+                            $pCopy['theme_narrative_text'][$slideKey] = '';
+                        }
+
+                        $chunkProjectsData[] = $pCopy;
+                    }
+
+                    $slideDeck[] = [
+                        'slideKey' => $slideKey,
+                        'slide' => $slide,
+                        'pairIdx' => $pairIdx,
+                        'totalPairs' => count($projectPairs),
+                        'part' => $part + 1,
+                        'totalParts' => $maxParts,
+                        'projects' => $chunkProjectsData,
+                    ];
+                }
+            }
+        }
+
+        return $slideDeck;
+    }
+
+    /**
+     * Build balanced, paginated slide batches for Single Isolated Project PDF to prevent overflow.
+     */
+    public static function buildSingleProjectSlideBatches(array $pData, array $slidesConfig, int $maxPointsPerSection = 6): array
+    {
+        $slideDeck = [];
+
+        foreach ($slidesConfig as $slideKey => $slide) {
+            $sections = $pData['theme_sections'][$slideKey] ?? [];
+            $maxParts = 1;
+            foreach ($sections as $sec) {
+                $cnt = count($sec['points'] ?? []);
+                $parts = (int) ceil($cnt / $maxPointsPerSection);
+                if ($parts > $maxParts) {
+                    $maxParts = $parts;
+                }
+            }
+
+            for ($part = 0; $part < $maxParts; $part++) {
+                $pCopy = $pData;
+                $pCopy['theme_sections'][$slideKey] = [];
+
+                foreach ($sections as $itemKey => $sec) {
+                    $allPts = $sec['points'] ?? [];
+                    $slicePts = array_slice($allPts, $part * $maxPointsPerSection, $maxPointsPerSection);
+                    $secCopy = $sec;
+                    $secCopy['points'] = $slicePts;
+
+                    if ($part !== $maxParts - 1) {
+                        $secCopy['media_links'] = [];
+                    }
+                    if ($part < $maxParts - 1) {
+                        $secCopy['narrative'] = '';
+                    }
+                    $pCopy['theme_sections'][$slideKey][$itemKey] = $secCopy;
+                }
+
+                if ($part < $maxParts - 1) {
+                    $pCopy['theme_narrative_text'][$slideKey] = '';
+                }
+
+                $slideDeck[] = [
+                    'slideKey' => $slideKey,
+                    'slide' => $slide,
+                    'part' => $part + 1,
+                    'totalParts' => $maxParts,
+                    'pData' => $pCopy,
+                ];
+            }
+        }
+
+        return $slideDeck;
     }
 
     /**
@@ -1638,35 +1807,60 @@ class ProgrammesMeetingController extends Controller
     }
 
     /**
-     * Export Consolidated PowerPoint-Style Presentation PDF (16:9 Landscape) with Transposed Matrix Layout.
+     * Export Consolidated Programmes Report PDF (Standard A4 Portrait).
      */
     public function exportConsolidatedPresentation(Request $request): Response
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
         $data = $this->getAggregatedPresentationData($request);
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
 
         $pdf = Pdf::loadView('pdf.consolidated_presentation_pdf', [
             'projects' => $data['projects'],
             'projectDataList' => $data['projectDataList'],
             'slidesConfig' => $data['slidesConfig'],
             'meetingTitle' => 'Play It Forward Zambia',
-            'meetingSubtitle' => 'Programmes Meeting',
+            'meetingSubtitle' => 'Programmes Report',
             'quarter' => $data['periodTitle'],
             'generatedDate' => now()->format('F j, Y'),
             'isSingleProject' => false,
-        ])->setPaper('a4', 'landscape')
+            'logo3Base64' => $logo3Base64,
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = 'PIFZ_Consolidated_Presentation_' . date('Ymd_His') . '.pdf';
+        $periodSlug = Str::slug($data['periodTitle']);
+        $filename = 'PIFZ_Programmes_Report_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
 
     /**
-     * Export Isolated Single Project Presentation PDF (16:9 Landscape).
+     * Export Isolated Single Project Report PDF (Standard A4 Portrait).
      */
     public function exportSingleProjectPdf(Request $request, Project $project): Response
     {
@@ -1675,7 +1869,26 @@ class ProgrammesMeetingController extends Controller
             abort(403, 'Unauthorized.');
         }
 
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
         $data = $this->getAggregatedPresentationData($request, $project);
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
 
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'project' => $project,
@@ -1683,37 +1896,68 @@ class ProgrammesMeetingController extends Controller
             'slidesConfig' => $data['slidesConfig'],
             'periodTitle' => $data['periodTitle'],
             'generatedDate' => now()->format('d M Y, H:i'),
-        ])->setPaper('a4', 'landscape')
+            'logo3Base64' => $logo3Base64,
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = Str::slug($project->name . '_Presentation') . '_' . date('Ymd_His') . '.pdf';
+        $periodSlug = Str::slug($data['periodTitle']);
+        $filename = Str::slug($project->name . '_Report') . '_' . ($periodSlug ? $periodSlug . '_' : '') . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
 
     /**
-     * Legacy Single PDF export by token.
+     * Legacy Single PDF export by token (Standard A4 Portrait).
      */
     public function exportSinglePdfByToken(string $token): Response
     {
         $submission = ProjectSubmission::where('token', $token)->firstOrFail();
 
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
+        $fontDir = storage_path('fonts');
+        if (!is_dir($fontDir)) {
+            @mkdir($fontDir, 0775, true);
+        }
+
+        $logo3Path = public_path('logos/logo3.png');
+        $logo3Base64 = file_exists($logo3Path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logo3Path)) : '';
+
+        $chrootPaths = array_values(array_filter([
+            realpath(base_path()) ?: base_path(),
+            base_path(),
+            public_path(),
+            storage_path(),
+            sys_get_temp_dir(),
+        ]));
+
         $pdf = Pdf::loadView('pdf.single_project_presentation_pdf', [
             'submission' => $submission,
             'slidesConfig' => self::$slidesConfig,
+            'periodTitle' => $submission->reporting_period ?? 'All Time Comprehensive Review',
             'generatedDate' => now()->format('d M Y, H:i'),
-        ])->setPaper('a4', 'landscape')
+            'logo3Base64' => $logo3Base64,
+        ])->setPaper('a4', 'portrait')
           ->setOption([
               'isHtml5ParserEnabled' => true,
               'isRemoteEnabled' => true,
               'defaultFont' => 'Helvetica',
+              'fontDir' => $fontDir,
+              'fontCache' => $fontDir,
+              'tempDir' => sys_get_temp_dir(),
+              'chroot' => $chrootPaths,
           ]);
 
-        $filename = Str::slug($submission->project_name . '_Meeting_Slides') . '.pdf';
+        $filename = Str::slug($submission->project_name . '_Report') . '_' . date('Ymd_His') . '.pdf';
 
         return $pdf->download($filename);
     }
