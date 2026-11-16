@@ -207,13 +207,13 @@
 
             <!-- Top Quick Access Links (Presentations & Live Projector) -->
             @php
-                $exportQuery = array_merge(request()->query(), [
+                $exportQuery = array_filter([
                     'project_id' => $selectedProjectId ?? 'all',
                     'interval' => $interval ?? 'all',
-                    'year' => $filterParams['year'] ?? now()->year,
-                    'month' => $filterParams['month'] ?? now()->month,
-                    'quarter' => $filterParams['quarter'] ?? ceil(now()->month / 3),
-                ]);
+                    'year' => ($interval ?? 'all') !== 'all' ? ($filterParams['year'] ?? now()->year) : (request()->has('year') ? ($filterParams['year'] ?? null) : null),
+                    'quarter' => ($interval ?? 'all') === 'quarter' ? ($filterParams['quarter'] ?? ceil(now()->month / 3)) : null,
+                    'month' => ($interval ?? 'all') === 'month' ? ($filterParams['month'] ?? now()->month) : null,
+                ], fn($v) => $v !== null && $v !== '');
             @endphp
             <div class="flex flex-wrap items-center gap-2 shrink-0">
                 <a href="{{ route('programmes.projector', $exportQuery) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#0d6c60] hover:bg-[#09544a] rounded-lg shadow-2xs transition" title="Open Fullscreen Matrix Projector">
@@ -294,10 +294,11 @@
                     <!-- Sleek Inline Scope Controls -->
                     <form action="{{ route('programmes.hub') }}" method="GET" class="flex flex-wrap items-center gap-2">
                         <input type="hidden" name="tab" value="dashboard">
+                        <input type="hidden" name="interval" id="dashboard-interval-input" value="{{ $interval }}">
                         
                         <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
                             @foreach(['all' => 'All', 'quarter' => 'Quarter', 'month' => 'Month', 'year' => 'Year'] as $iKey => $iLabel)
-                                <button type="submit" name="interval" value="{{ $iKey }}" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-[#0d6c60] shadow-2xs font-bold border border-slate-200/60' : 'text-slate-600 hover:text-slate-900' }}">
+                                <button type="submit" onclick="document.getElementById('dashboard-interval-input').value='{{ $iKey }}'" class="px-2.5 py-1 text-xs font-medium rounded-md transition {{ $interval === $iKey ? 'bg-white text-[#0d6c60] shadow-2xs font-bold border border-slate-200/60' : 'text-slate-600 hover:text-slate-900' }}">
                                     {{ $iLabel }}
                                 </button>
                             @endforeach

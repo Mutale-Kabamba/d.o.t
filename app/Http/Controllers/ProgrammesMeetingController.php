@@ -327,7 +327,20 @@ class ProgrammesMeetingController extends Controller
         $departments = Project::where('is_department', true)->with(['children.activityEntries', 'children.users', 'users', 'activityEntries'])->orderBy('name')->get();
 
         // 2. Interval & Project Filtering
-        $interval = $request->query('interval', 'all'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
+        $interval = $request->query('interval'); // 'all', 'day', 'month', 'quarter', 'year', 'custom'
+        if (!$interval) {
+            if ($request->has('quarter')) {
+                $interval = 'quarter';
+            } elseif ($request->has('month')) {
+                $interval = 'month';
+            } elseif ($request->has('from_date') && $request->has('to_date')) {
+                $interval = 'custom';
+            } elseif ($request->has('date')) {
+                $interval = 'day';
+            } else {
+                $interval = 'all';
+            }
+        }
         $selectedProjectId = $request->query('project_id');
         $search = $request->query('q');
 
